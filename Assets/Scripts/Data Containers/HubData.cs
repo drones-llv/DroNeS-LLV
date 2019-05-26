@@ -27,6 +27,7 @@ namespace Drones.Data
         public SecureSortedSet<uint, Battery> chargingBatteries;
         public SecureSortedSet<uint, Battery> freeBatteries;
         public Vector3 Position => _source.transform.position;
+        public Queue<uint> jobQueue;
 
         public float energyConsumption;
 
@@ -38,12 +39,14 @@ namespace Drones.Data
             UID = ++Count;
             InitializeCollections();
             SetUpCollectionEvents();
+            jobQueue = new Queue<uint>();
         }
 
         public HubData(SHub data, Hub hub, List<SDrone> droneData, List<SBattery> batteryData)
         {
             _source = hub;
             UID = data.count;
+            jobQueue = new Queue<uint>(data.jobQueue);
             energyConsumption = data.energy;
             InitializeCollections();
             LoadAssignments(data, droneData, batteryData);

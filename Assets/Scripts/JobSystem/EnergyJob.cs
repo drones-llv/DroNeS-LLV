@@ -22,7 +22,7 @@ namespace Drones.Utils.Jobs
         public const float rho = 1.225f; // air density
         public const float Prop_D = 0.25f; // propeller radius
         public const float n_Prop = 8; // number of propellers
-        public const float eff = 0.5f; // efficiency
+        public const float eff = 1f; // efficiency
         public float deltaTime;
         public NativeArray<EnergyInfo> energies;
 
@@ -39,6 +39,7 @@ namespace Drones.Utils.Jobs
             float m = mass + energies[i].pkgWgt;
             float w = m * g;
             float A = (energies[i].pkgXArea < 1e-6f) ? Apkg : energies[i].pkgXArea;
+
             float power = n_Prop * Mathf.Sqrt(Mathf.Pow(w / n_Prop, 3) * 2 / Mathf.PI / Mathf.Pow(Prop_D, 2) / rho) / eff;
             if (energies[i].moveType != DroneMovement.Hover)
             {

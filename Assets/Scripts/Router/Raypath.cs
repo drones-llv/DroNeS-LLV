@@ -143,7 +143,6 @@ namespace Drones.Utils.Router
             tmp2.w = 0;
             return tmp2;
         }
-
         // The public interface to get the list of waypoints
         public override Queue<Vector3> GetRoute(Vector3 start, Vector3 end, bool hubReturn)
         {

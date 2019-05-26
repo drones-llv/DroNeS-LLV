@@ -232,7 +232,7 @@ namespace Drones
 
             if (other.gameObject.layer != LayerMask.NameToLayer("Hub") && _Data.collisionOn)
             {
-                DroneManager.movementJobHandle.Complete();
+                DroneManager.MovementJobHandle.Complete();
                 DestroySelf(other);
             } 
             else if (other.GetComponent<Hub>() == GetHub())
@@ -307,9 +307,10 @@ namespace Drones
 
         private void DestroySelf(Collider other)
         {
-            Explosion.New(transform.position);
             if (gameObject == AbstractCamera.Followee)
                 AbstractCamera.ActiveCamera.BreakFollow();
+
+            Explosion.New(transform.position);
             var dd = new RetiredDrone(this, other);
             SimManager.AllRetiredDrones.Add(dd.UID, dd);
             Delete();

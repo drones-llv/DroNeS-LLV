@@ -1,40 +1,66 @@
 ﻿using System;
 using Drones.Serializable;
+using UnityEngine;
 
 namespace Drones.Utils
 {
     public class CostFunction
     {
-        public CostFunction(SCostFunction cf)
+        public CostFunction(TimeKeeper.Chronos startTime, float revenue, float penalty = 5)
         {
-            CompleteIn = cf.valid_time;
-            Reward = Math.Abs(cf.reward);
+            Start = startTime.SetReadOnly();
+            Reward = revenue;
+            Penalty = -Mathf.Abs(penalty);
         }
 
-        public float CompleteIn { get; private set; }
-        public float Reward { get; private set; }
-
-        public float GetPaid(TimeKeeper.Chronos complete, TimeKeeper.Chronos deadline)
+        public CostFunction(SCostFunction sCost)
         {
-            float dt = complete - deadline;
-            return Reward * Step(dt, deadline - deadline);
+            Start = new TimeKeeper.Chronos(sCost.start);
+            Reward = sCost.reward;
+            Penalty = sCost.penalty;
+        }
+
+        public TimeKeeper.Chronos Start { get; private set; }
+        public float Reward { get; private set; }
+        public float Penalty { get; private set; }
+        public const float GUARANTEE = 1800; // half hour
+
+        public float GetPaid(TimeKeeper.Chronos complete)
+        {
+            float dt = Normalize(complete - Start);
+            float reduction = 1 - Discretize(dt);
+
+            return (reduction > 0) ? Reward * reduction : -Penalty;
         }
 
         public SCostFunction Serialize()
         {
             return new SCostFunction
             {
-                valid_time = CompleteIn,
-                reward = Reward
+                start = Start.Serialize(),
+                reward = Reward,
+                penalty = Penalty
             };
         }
 
-        public static float Tanh(float x, float a = 1, float b = 1, float c = 0) => (float)(a * Math.Tanh(b * x + c));
+        public float Normalize(float dt)
+        {
+            return dt / GUARANTEE;
+        }
 
-        public static float Poly(float x, float a = 1, int n = 1) => (float)(a * Math.Pow(x, n));
+        public float Discretize(float ndt, int division = 10)
+        {
+            if (division < 1) division = 1;
 
-        public static float Step(float x, float n, float yU = 1, float yD = -1) => (x <= n) ? yU : yD;
+            return ((int)(ndt * division)) / (float)division;
+        }
 
-        public static float Exp(float x, float a = 1, float b = 1) => (float)(a * Math.Exp(b * x));
+        public float Step(float x, float n, float yU = 1, float yD = -1) => (x <= n) ? yU : yD;
+
+        public float Tanh(float x, float a = 1, float b = 1, float c = 0) => (float)(a * Math.Tanh(b * x + c));
+
+        public float Poly(float x, float a = 1, int n = 1) => (float)(a * Math.Pow(x, n));
+
+        public float Exp(float x, float a = 1, float b = 1) => (float)(a * Math.Exp(b * x));
     }
 }

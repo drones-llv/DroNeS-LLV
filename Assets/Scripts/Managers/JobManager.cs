@@ -42,6 +42,7 @@ namespace Drones.Managers
         {
             Instance = null;
         }
+
         private IEnumerator ProcessQueue()
         {
             Started = true;

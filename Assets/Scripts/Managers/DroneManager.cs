@@ -12,27 +12,31 @@ namespace Drones.Managers
     using Utils;
 
     public class DroneManager : MonoBehaviour
-    {   
-        public static JobHandle movementJobHandle = new JobHandle();
-        public static JobHandle energyJobHandle = new JobHandle();
-        private static readonly TimeKeeper.Chronos _time = TimeKeeper.Chronos.Get();
-        private static SecureSortedSet<uint, IDataSource> Drones => SimManager.AllDrones;
-        private static TransformAccessArray _Transforms;
-        private static NativeArray<MovementInfo> _JobInfoArray;
-        private static NativeArray<EnergyInfo> _EnergyInfoArray;
-        private static NativeArray<Vector3> _PreviousPositions;
+    {
+        public static JobHandle MovementJobHandle => Instance._movementJobHandle;
+        public static JobHandle EnergyJobHandle => Instance._energyJobHandle;
+        private static DroneManager Instance { get; set; }
+        private JobHandle _movementJobHandle = new JobHandle();
+        private JobHandle _energyJobHandle = new JobHandle();
+        private readonly TimeKeeper.Chronos _time = TimeKeeper.Chronos.Get();
+        private SecureSortedSet<uint, IDataSource> Drones => SimManager.AllDrones;
+        private TransformAccessArray _Transforms;
+        private NativeArray<MovementInfo> _JobInfoArray;
+        private NativeArray<EnergyInfo> _EnergyInfoArray;
+        private NativeArray<Vector3> _PreviousPositions;
+
 
         private void OnDisable()
         {
-            movementJobHandle.Complete();
-            energyJobHandle.Complete();
+            MovementJobHandle.Complete();
+            EnergyJobHandle.Complete();
             if (_Transforms.isCreated) _Transforms.Dispose();
             if (_JobInfoArray.IsCreated) _JobInfoArray.Dispose();
             if (_EnergyInfoArray.IsCreated) _EnergyInfoArray.Dispose();
             if (_PreviousPositions.IsCreated) _PreviousPositions.Dispose();
         }
 
-        private static void Initialise()
+        private void Initialise()
         {
             _Transforms = new TransformAccessArray(0);
             _JobInfoArray = new NativeArray<MovementInfo>(_Transforms.length, Allocator.Persistent);
@@ -43,13 +47,14 @@ namespace Drones.Managers
 
         private IEnumerator Start()
         {
+            Instance = this;
             yield return new WaitUntil(() => SimManager.Instance != null && SimManager.Instance.Initialized);
             Drones.SetChanged += (obj) => OnDroneCountChange();
             Initialise();
             StartCoroutine(Operate());
         }
 
-        private static IEnumerator Operate()
+        private IEnumerator Operate()
         {
             MovementJob _movementJob = new MovementJob();
             EnergyJob _energyJob = new EnergyJob();
@@ -82,19 +87,19 @@ namespace Drones.Managers
                 _energyJob.deltaTime = _time.Timer();
                 _time.Now();
 
-                movementJobHandle = _movementJob.Schedule(_Transforms);
-                energyJobHandle = _energyJob.Schedule(_Transforms.length, 1);
+                _movementJobHandle = _movementJob.Schedule(_Transforms);
+                _energyJobHandle = _energyJob.Schedule(_Transforms.length, 1);
 
                 yield return null;
-                energyJobHandle.Complete();
-                movementJobHandle.Complete();
+                EnergyJobHandle.Complete();
+                MovementJobHandle.Complete();
             }
         }
 
-        public static void OnDroneCountChange()
+        public void OnDroneCountChange()
         {
-            movementJobHandle.Complete();
-            energyJobHandle.Complete();
+            _movementJobHandle.Complete();
+            _energyJobHandle.Complete();
             _Transforms.Dispose();
             _Transforms = new TransformAccessArray(0);
             foreach (Drone drone in Drones.Values)

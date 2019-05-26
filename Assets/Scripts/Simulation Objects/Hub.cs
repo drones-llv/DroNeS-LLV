@@ -14,8 +14,8 @@ namespace Drones
 
     public class Hub : MonoBehaviour, IDataSource, IPoolable
     {
-
         public static Hub New() => PoolController.Get(ObjectPool.Instance).Get<Hub>(null);
+
 
         #region IDataSource
         public override string ToString() => Name;
@@ -49,7 +49,9 @@ namespace Drones
 
         [SerializeField]
         private PathClearer _DronePath;
-
+        [SerializeField]
+        private float _jobGenerationRate = 0.1f;
+        private JobGenerator _jobGenerator;
         private int _rCount;
         #endregion
 
@@ -76,6 +78,8 @@ namespace Drones
             SimManager.AllHubs.Remove(this);
             gameObject.SetActive(false);
             transform.SetParent(PC().PoolParent);
+            StopCoroutine(_jobGenerator.Generate());
+            _jobGenerator = null;
         }
 
         public void OnGet(Transform parent = null)
@@ -85,6 +89,8 @@ namespace Drones
             SimManager.AllHubs.Add(UID, this);
             transform.SetParent(parent);
             gameObject.SetActive(true);
+            _jobGenerator = new JobGenerator(this, JobGenerationRate);
+            StartCoroutine(_jobGenerator.Generate());
             StartCoroutine(DeployDrone());
         }
         #endregion
@@ -100,11 +106,32 @@ namespace Drones
                 return _DronePath;
             }
         }
-
         public void AddToDeploymentQueue(Drone drone) => _Data.deploymentQueue.Enqueue(drone);
         public Vector3 Position => transform.position;
         public void UpdateEnergy(float dE) => _Data.energyConsumption += dE;
         public SecureSortedSet<uint, IDataSource> Drones => _Data.drones;
+
+        public float JobGenerationRate
+        {
+            get => _jobGenerationRate;
+
+            set
+            {
+                _jobGenerationRate = value;
+                _jobGenerator.SetLambda(value);
+            }
+        }
+
+        public void OnJobCreate(params Job[] jobs)
+        {
+            foreach (Job job in jobs)
+            {
+                SimManager.AllJobs.Add(job.UID, job);
+                SimManager.AllIncompleteJobs.Add(job.UID, job);
+                _Data.jobQueue.Enqueue(job.UID);
+            }
+        }
+
         void Awake()
         {
             _Data = new HubData();

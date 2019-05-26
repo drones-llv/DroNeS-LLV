@@ -100,4 +100,10 @@
         Linux,
         Mac
     }
+
+    public enum Pricing
+    {
+        US,
+        UK
+    }
 }

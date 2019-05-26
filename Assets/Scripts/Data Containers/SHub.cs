@@ -14,6 +14,7 @@ namespace Drones.Serializable
         public List<uint> drones;
         public List<uint> freeDrones;
         public List<uint> exitingDrones;
+        public List<uint> jobQueue;
         public SVector3 position;
         public uint uid;
         public float energy;
@@ -30,6 +31,7 @@ namespace Drones.Serializable
             freeDrones = new List<uint>();
             position = hub.transform.position;
             exitingDrones = new List<uint>();
+            jobQueue = new List<uint>(data.jobQueue);
             energy = data.energyConsumption;
 
             foreach (var bat in data.batteries.Keys)

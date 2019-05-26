@@ -8,7 +8,8 @@ namespace Drones.Serializable
     [Serializable]
     public class SCostFunction
     {
-        public float valid_time; // seconds
+        public STime start;
+        public float penalty; // seconds
         public float reward;
     }
 
