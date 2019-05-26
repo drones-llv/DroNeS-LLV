@@ -10,12 +10,12 @@ namespace Drones
     using UI;
     using Interface;
     using Serializable;
-    using Drones.Data;
+    using Data;
+    using Utils.Router;
 
     public class Hub : MonoBehaviour, IDataSource, IPoolable
     {
         public static Hub New() => PoolController.Get(ObjectPool.Instance).Get<Hub>(null);
-
 
         #region IDataSource
         public override string ToString() => Name;
@@ -110,6 +110,7 @@ namespace Drones
         public Vector3 Position => transform.position;
         public void UpdateEnergy(float dE) => _Data.energyConsumption += dE;
         public SecureSortedSet<uint, IDataSource> Drones => _Data.drones;
+        public Pathfinder Router { get; } = new Raypath();
 
         public float JobGenerationRate
         {

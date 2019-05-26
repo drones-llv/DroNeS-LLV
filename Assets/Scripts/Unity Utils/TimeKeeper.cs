@@ -1,10 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using System.Diagnostics;
-using System.Text;
 using System.Collections.Generic;
-using System.Collections;
-using UnityEngine.Networking;
 
 namespace Drones.Utils
 {
@@ -14,8 +11,6 @@ namespace Drones.Utils
 
     public class TimeKeeper : MonoBehaviour
     {
-        public const string DEFAULT_URL = "http://127.0.0.1:5000/update_timescale";
-        public static string SyncURL { get; set; } = DEFAULT_URL;
 
         public static TimeKeeper Instance { get; private set; }
         [SerializeField]
@@ -28,9 +23,8 @@ namespace Drones.Utils
             {
                 if (Instance._TimeSpeed != value)
                 {
-                    if (SimManager.SimStatus == SimulationStatus.EditMode && value != TimeSpeed.Pause) return;
+                    if (SimManager.Status == SimulationStatus.EditMode && value != TimeSpeed.Pause) return;
                     Instance._TimeSpeed = value;
-                    Instance.StartCoroutine(Instance.SendTimeScale());
                 }
                 ShowSimSpeed.OnSpeedChange();
             }
@@ -62,29 +56,11 @@ namespace Drones.Utils
 
         private static int _Day;
 
-        private static int Hour
-        {
-            get
-            {
-                return (int)(_Degree / 360 * 24);
-            }
-        }
+        private static int Hour => (int)(_Degree / 360 * 24);
 
-        private static int Minute
-        {
-            get
-            {
-                return (int)((_Degree / 360 * 24 - Hour) * 60);
-            }
-        }
+        private static int Minute => (int)((_Degree / 360 * 24 - Hour) * 60);
 
-        private static float Seconds
-        {
-            get
-            {
-                return ((_Degree / 360 * 24 - Hour) * 60 - Minute) * 60;
-            }
-        }
+        private static float Seconds => ((_Degree / 360 * 24 - Hour) * 60 - Minute) * 60;
 
         void Awake()
         {
@@ -114,27 +90,7 @@ namespace Drones.Utils
 
         }
 
-        private IEnumerator SendTimeScale()
-        {
-            var request = new UnityWebRequest(SyncURL, "POST")
-            {
-                uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(JsonUtility.ToJson(new TimeScale(_Scale[TimeSpeed])))),
-                downloadHandler = new DownloadHandlerBuffer()
-            };
-            request.SetRequestHeader("Content-Type", "application/json");
-
-            yield return request.SendWebRequest();
-
-            //if (request.responseCode != 200)
-            //{
-            //    SimManager.SimStatus = SimulationStatus.Paused;
-            //}
-        }
-
-        private void Update()
-        {
-            StopWatch.Restart();
-        }
+        private void Update() => StopWatch.Restart();
 
         public class Chronos
         {
@@ -307,8 +263,6 @@ namespace Drones.Utils
             {
                 return (t1.day - t2.day) * 24f * 3600f + (t1.hr - t2.hr) * 3600 + (t1.min - t2.min) * 60 + (t1.sec - t1.sec);
             }
-
-
         }
 
     }

@@ -25,7 +25,6 @@ namespace Drones.Managers
         private NativeArray<EnergyInfo> _EnergyInfoArray;
         private NativeArray<Vector3> _PreviousPositions;
 
-
         private void OnDisable()
         {
             MovementJobHandle.Complete();
@@ -48,7 +47,7 @@ namespace Drones.Managers
         private IEnumerator Start()
         {
             Instance = this;
-            yield return new WaitUntil(() => SimManager.Instance != null && SimManager.Instance.Initialized);
+            yield return new WaitUntil(() => SimManager.Instance != null && SimManager.Initialized);
             Drones.SetChanged += (obj) => OnDroneCountChange();
             Initialise();
             StartCoroutine(Operate());

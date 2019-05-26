@@ -70,7 +70,7 @@ namespace Drones.UI
         {
             get
             {
-                return SimManager.SimStatus == SimulationStatus.EditMode && _Editable;
+                return SimManager.Status == SimulationStatus.EditMode && _Editable;
             }
             set
             {

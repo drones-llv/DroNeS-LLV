@@ -153,13 +153,14 @@ namespace Drones.UI
 
         private void OnEnable()
         {
+            AbstractCamera.ActiveCamera.BreakFollow();
             transform.parent.ToRect().sizeDelta = PanelSize[DashboardMode.EditMode];
             SimulationPanel.Instance?.gameObject.SetActive(false);
             SimulationInfo.SetActive(false);
             CameraOptions.SetActive(true);
             try
             {
-                SimManager.SimStatus = SimulationStatus.EditMode;
+                SimManager.SetStatus(SimulationStatus.EditMode);
             }
             catch (NullReferenceException)
             {
@@ -184,7 +185,7 @@ namespace Drones.UI
 
         public static void ExitEditMode()
         {
-            SimManager.SimStatus = SimulationStatus.Paused;
+            SimManager.SetStatus(SimulationStatus.Paused);
             CameraSwitch.OnRTS();
             Instance.gameObject.SetActive(false);
         }

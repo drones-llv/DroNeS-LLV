@@ -56,10 +56,11 @@ namespace Drones.UI
 
         private void QuitToMainMenu()
         {
-            SimManager.SimStatus = SimulationStatus.Paused;
+            SimManager.SetStatus(SimulationStatus.Paused);
             SimManager.ClearObjects();
             BatteryData.Reset();
             DroneData.Reset();
+            JobData.Reset();
             HubData.Reset();
             NFZData.Reset();
             StartCoroutine(LoadMainMenu());

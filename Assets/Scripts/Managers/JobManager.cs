@@ -20,7 +20,7 @@ namespace Drones.Managers
 
         public static string SchedulerURL { get; set; } = DEFAULT_URL;
 
-        private readonly Queue<Drone> _waitingList = new Queue<Drone>();
+        private Queue<Drone> _waitingList = new Queue<Drone>();
 
         private void Awake()
         {
@@ -114,6 +114,15 @@ namespace Drones.Managers
             if (!Instance._waitingList.Contains(drone))
             {
                 Instance._waitingList.Enqueue(drone);
+            }
+        }
+
+        public static void LoadQueue(List<uint> data)
+        {
+            Instance._waitingList = new Queue<Drone>();
+            foreach (var i in data)
+            {
+                AddToQueue((Drone)SimManager.AllDrones[i]);
             }
         }
 

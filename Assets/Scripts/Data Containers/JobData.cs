@@ -8,6 +8,8 @@ namespace Drones.Data
     public class JobData : IData
     {
         private static uint _Count;
+        public static void Reset() => _Count = 0;
+
         public uint UID { get; }
         public bool IsDataStatic { get; set; } = false;
 

@@ -18,6 +18,8 @@ namespace Drones.UI
         Image _Fast;
         [SerializeField]
         Image _Ultra;
+        [SerializeField]
+        Image _Pause;
 
         static void Init()
         {
@@ -31,6 +33,9 @@ namespace Drones.UI
             {
                 switch (i.name)
                 {
+                    case "Pause":
+                        Instance._Pause = i;
+                        break;
                     case "Slow":
                         Instance._Slow = i;
                         break;
@@ -46,7 +51,17 @@ namespace Drones.UI
                 }
             }
         }
-
+        static Image Pause
+        {
+            get
+            {
+                if (Instance?._Pause == null)
+                {
+                    Init();
+                }
+                return Instance._Pause;
+            }
+        }
         static Image Slow
         {
             get
@@ -112,6 +127,7 @@ namespace Drones.UI
                 {
                     Instance._SpeedToImage = new Dictionary<TimeSpeed, Image>
                     {
+                        {TimeSpeed.Pause, Pause},
                         {TimeSpeed.Slow, Slow},
                         {TimeSpeed.Normal, Play},
                         {TimeSpeed.Fast, Fast},
@@ -130,19 +146,13 @@ namespace Drones.UI
                 Instance.gameObject.SetActive(true);
             }
             Instance.StopAllCoroutines();
-            if (TimeKeeper.TimeSpeed != TimeSpeed.Pause)
-            {
-                Active?.gameObject.SetActive(false);
-                Active = SpeedToImage[TimeKeeper.TimeSpeed];
-                Active.gameObject.SetActive(true);
-                Instance.transform.SetAsLastSibling();
-                Instance.StartCoroutine(Instance.Fade());
-            }
-            else
-            {
-                Active?.gameObject.SetActive(false);
-            }
 
+            Active?.gameObject.SetActive(false);
+            Active = SpeedToImage[TimeKeeper.TimeSpeed];
+            Active.gameObject.SetActive(true);
+            Instance.transform.SetAsLastSibling();
+            if (TimeKeeper.TimeSpeed != TimeSpeed.Pause)
+                Instance.StartCoroutine(Instance.Fade());
         }
 
         IEnumerator Fade()

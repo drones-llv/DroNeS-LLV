@@ -16,31 +16,31 @@
 
         void Pause()
         {
-            SimManager.SimStatus = SimulationStatus.Paused;
+            SimManager.SetStatus(SimulationStatus.Paused);
             TimeKeeper.TimeSpeed = TimeSpeed.Pause;
         }
 
         void Slow()
         {
-            SimManager.SimStatus = SimulationStatus.Running;
+            SimManager.SetStatus(SimulationStatus.Running);
             TimeKeeper.TimeSpeed = TimeSpeed.Slow;
         }
 
         void Play()
         {
-            SimManager.SimStatus = SimulationStatus.Running;
+            SimManager.SetStatus(SimulationStatus.Running);
             TimeKeeper.TimeSpeed = TimeSpeed.Normal;
         }
 
         void Fast()
         {
-            SimManager.SimStatus = SimulationStatus.Running;
+            SimManager.SetStatus(SimulationStatus.Running);
             TimeKeeper.TimeSpeed = TimeSpeed.Fast;
         }
 
         void Faster()
         {
-            SimManager.SimStatus = SimulationStatus.Running;
+            SimManager.SetStatus(SimulationStatus.Running);
             TimeKeeper.TimeSpeed = TimeSpeed.Ultra;
         }
     }

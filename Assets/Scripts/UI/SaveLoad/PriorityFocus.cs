@@ -11,9 +11,9 @@ namespace Drones.UI
         private int _index;
         private void OnEnable()
         {
-            if (SimManager.SimStatus != SimulationStatus.Paused && SimManager.SimStatus != SimulationStatus.EditMode)
+            if (SimManager.Status != SimulationStatus.Paused && SimManager.Status != SimulationStatus.EditMode)
             {
-                SimManager.SimStatus = SimulationStatus.Paused;
+                SimManager.SetStatus(SimulationStatus.Paused);
             }
             _index = (int)Count++;
         }

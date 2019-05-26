@@ -1,13 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Networking;
-using System.Collections;
 
 namespace Drones.StartScreen
 {
-    using Drones.Managers;
-    using Drones.Utils;
-    using Drones.Utils.Extensions;
+    using Utils.Extensions;
 
     public class MainMenu : MonoBehaviour
     {
@@ -23,8 +19,6 @@ namespace Drones.StartScreen
         {
             Instance = null;
         }
-
-        private bool[] _TestStatus = new bool[3];
 
         public Button Play
         {
@@ -67,55 +61,8 @@ namespace Drones.StartScreen
         {
             Instance = this;
             Quit.onClick.AddListener(Application.Quit);
-            Play.onClick.AddListener(delegate {
-                StartCoroutine(StartSimulation());
-            });
+            Play.onClick.AddListener(StartScreen.OnPlay);
             Options.onClick.AddListener(StartScreen.ShowOptions);
-        }
-        IEnumerator SchedulerTest()
-        {
-
-            var request = new UnityWebRequest(JobManager.SchedulerURL, "GET")
-            {
-                timeout = 15
-            };
-            yield return request.SendWebRequest();
-
-            _TestStatus[0] = request.responseCode == 200;
-        }
-
-        IEnumerator RouterTest()
-        {
-
-            var request = new UnityWebRequest(RouteManager.RouterURL, "GET")
-            {
-                timeout = 15
-            };
-            yield return request.SendWebRequest();
-
-            _TestStatus[1] = request.responseCode == 200;
-
-        }
-
-        IEnumerator TimeScaleTest()
-        {
-
-            var request = new UnityWebRequest(TimeKeeper.SyncURL, "GET")
-            {
-                timeout = 15
-            };
-            yield return request.SendWebRequest();
-
-            _TestStatus[2] = request.responseCode == 200;
-        }
-
-        private IEnumerator StartSimulation()
-        {
-            yield return StartCoroutine(SchedulerTest());
-            yield return StartCoroutine(RouterTest());
-            yield return StartCoroutine(TimeScaleTest());
-            if (_TestStatus[0] && _TestStatus[1] && _TestStatus[2])
-                StartScreen.OnPlay();
         }
 
     }

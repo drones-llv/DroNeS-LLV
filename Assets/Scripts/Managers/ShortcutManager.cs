@@ -34,7 +34,7 @@ namespace Drones.Managers
         {
             if (PriorityFocus.Count > 0) return;
 
-            if (SimManager.SimStatus == SimulationStatus.EditMode)
+            if (SimManager.Status == SimulationStatus.EditMode)
                 EditMode();
             else
                 PlayMode();
@@ -45,36 +45,36 @@ namespace Drones.Managers
         {
             if (Input.GetKeyDown(KeyCode.BackQuote))
             {
-                SimManager.SimStatus = SimulationStatus.Paused;
+                SimManager.SetStatus(SimulationStatus.Paused);
                 return;
             }
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
-                SimManager.SimStatus = SimulationStatus.Running;
+                SimManager.SetStatus(SimulationStatus.Running);
                 TimeKeeper.TimeSpeed = TimeSpeed.Slow;
                 return;
             }
             if (Input.GetKeyDown(KeyCode.Alpha2))
             {
-                SimManager.SimStatus = SimulationStatus.Running;
+                SimManager.SetStatus(SimulationStatus.Running);
                 TimeKeeper.TimeSpeed = TimeSpeed.Normal;
                 return;
             }
             if (Input.GetKeyDown(KeyCode.Alpha3))
             {
-                SimManager.SimStatus = SimulationStatus.Running;
+                SimManager.SetStatus(SimulationStatus.Running);
                 TimeKeeper.TimeSpeed = TimeSpeed.Fast;
                 return;
             }
             if (Input.GetKeyDown(KeyCode.Alpha4))
             {
-                SimManager.SimStatus = SimulationStatus.Running;
+                SimManager.SetStatus(SimulationStatus.Running);
                 TimeKeeper.TimeSpeed = TimeSpeed.Ultra;
                 return;
             }
             if (Input.GetKeyDown(KeyCode.Backslash))
             {
-                SimManager.SimStatus = SimulationStatus.EditMode;
+                SimManager.SetStatus(SimulationStatus.Running);
                 return;
             }
         }

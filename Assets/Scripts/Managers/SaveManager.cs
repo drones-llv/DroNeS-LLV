@@ -61,7 +61,7 @@ namespace Drones.Managers
 
         public static void OpenSaveWindow()
         {
-            SimManager.SimStatus = SimulationStatus.Paused;
+            SimManager.SetStatus(SimulationStatus.Paused);
             if (!Directory.Exists(SavePath))
             {
                 Directory.CreateDirectory(SavePath);
@@ -73,7 +73,7 @@ namespace Drones.Managers
 
         public static void OpenLoadWindow()
         {
-            SimManager.SimStatus = SimulationStatus.Paused;
+            SimManager.SetStatus(SimulationStatus.Paused);
             if (!Directory.Exists(SavePath))
             {
                 Directory.CreateDirectory(SavePath);

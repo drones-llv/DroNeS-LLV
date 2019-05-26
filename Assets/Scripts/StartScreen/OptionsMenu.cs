@@ -15,19 +15,7 @@ namespace Drones.StartScreen
     {
         public static OptionsMenu Instance { get; private set; }
 
-        public StatusDisplay schedulerStatus;
-        public StatusDisplay routerStatus;
-        public StatusDisplay timeScaleStatus;
-        public TMP_InputField schedulerInput;
-        public TMP_InputField routerInput;
-        public TMP_InputField syncInput;
-        public TextMeshProUGUI schedulerPlaceholder;
-        public TextMeshProUGUI routerPlaceholder;
-        public TextMeshProUGUI syncPlaceholder;
         public TextMeshProUGUI sliderDisplay;
-        public Image schedulerInputDisabler;
-        public Image routerInputDisabler;
-        public Image syncInputDisabler;
 
         private void OnDestroy()
         {
@@ -40,8 +28,6 @@ namespace Drones.StartScreen
         Button _Back;
         [SerializeField]
         Button _Reset;
-        [SerializeField]
-        Button _Test;
 
         public Slider RenderLimit
         {
@@ -79,18 +65,6 @@ namespace Drones.StartScreen
             }
         }
 
-        public Button Test
-        {
-            get
-            {
-                if (_Test == null)
-                {
-                    _Test = transform.FindDescendent("Test").GetComponent<Button>();
-
-                }
-                return _Test;
-            }
-        }
 
         private void Awake()
         {
@@ -102,159 +76,19 @@ namespace Drones.StartScreen
                 sliderDisplay.SetText(value.ToString());
                 CustomMap.FilterHeight = value;
             });
-            schedulerInput.onValueChanged.AddListener((arg0) =>
-            {
-                StopAllCoroutines();
-                schedulerStatus.ClearStatus();
-            });
-            routerInput.onValueChanged.AddListener((arg0) =>
-            {
-                StopAllCoroutines();
-                routerStatus.ClearStatus();
-            });
-            syncInput.onValueChanged.AddListener((arg0) =>
-            {
-                StopAllCoroutines();
-                routerStatus.ClearStatus();
-            });
-            Reset.onClick.AddListener(OnReset);
+
             Back.onClick.AddListener(GoBack);
-            Test.onClick.AddListener(() => StartCoroutine(StartTest()));
-            routerPlaceholder.SetText(RouteManager.RouterURL);
-            schedulerPlaceholder.SetText(JobManager.SchedulerURL);
-            syncPlaceholder.SetText(TimeKeeper.SyncURL);
+            Reset.onClick.AddListener(OnReset);
         }
 
         private void GoBack()
         {
-            if (schedulerStatus.Status && !string.IsNullOrWhiteSpace(schedulerInput.text))
-            {
-                JobManager.SchedulerURL = schedulerInput.text;
-                schedulerPlaceholder.SetText(JobManager.SchedulerURL);
-            } 
-            else
-            {
-                schedulerInput.text = null;
-                schedulerPlaceholder.SetText(JobManager.DEFAULT_URL);
-            }
-
-            if (routerStatus.Status && !string.IsNullOrWhiteSpace(routerInput.text))
-            {
-                RouteManager.RouterURL = routerInput.text;
-                routerPlaceholder.SetText(RouteManager.RouterURL);
-            }
-            else
-            {
-                routerInput.text = null;
-                routerPlaceholder.SetText(RouteManager.DEFAULT_URL);
-            }
-
-            if (timeScaleStatus.Status && !string.IsNullOrWhiteSpace(syncInput.text))
-            {
-                TimeKeeper.SyncURL = syncInput.text;
-                syncPlaceholder.SetText(TimeKeeper.SyncURL);
-            }
-            else
-            {
-                syncInput.text = null;
-                syncPlaceholder.SetText(TimeKeeper.DEFAULT_URL);
-            }
-
             StartScreen.ShowMain();
-        }
-
-        private void OnEnable()
-        {
-            StartCoroutine(StartTest());
         }
 
         private void OnReset()
         {
-            StopAllCoroutines();
-            JobManager.SchedulerURL = JobManager.DEFAULT_URL;
-            RouteManager.RouterURL = RouteManager.DEFAULT_URL;
-            TimeKeeper.SyncURL = TimeKeeper.DEFAULT_URL;
-            syncPlaceholder.SetText(TimeKeeper.DEFAULT_URL);
-            schedulerPlaceholder.SetText(JobManager.DEFAULT_URL);
-            routerPlaceholder.SetText(RouteManager.DEFAULT_URL);
-            schedulerStatus.ClearStatus();
-            routerStatus.ClearStatus();
-            timeScaleStatus.ClearStatus();
-            StartCoroutine(StartTest());
-        }
 
-        IEnumerator StartTest()
-        {
-            yield return null;
-
-            yield return StartCoroutine(SchedulerTest());
-
-            yield return StartCoroutine(RouterTest());
-
-            yield return StartCoroutine(SyncTest());
-        }
-
-        IEnumerator SchedulerTest()
-        {
-            if (!string.IsNullOrWhiteSpace(schedulerInput.text))
-            {
-                JobManager.SchedulerURL = schedulerInput.text;
-                schedulerPlaceholder.SetText(JobManager.SchedulerURL);
-            }
-            schedulerInput.readOnly = true;
-            schedulerInputDisabler.gameObject.SetActive(true);
-
-            var request = new UnityWebRequest(JobManager.SchedulerURL, "GET")
-            {
-                timeout = 1
-            };
-            yield return request.SendWebRequest();
-
-            schedulerStatus.SetStatus(request.responseCode == 200);
-            schedulerInputDisabler.gameObject.SetActive(false);
-            schedulerInput.readOnly = false;
-        }
-
-        IEnumerator RouterTest()
-        {
-            if (!string.IsNullOrWhiteSpace(routerInput.text))
-            {
-                RouteManager.RouterURL = routerInput.text;
-                routerPlaceholder.SetText(RouteManager.RouterURL);
-            }
-            routerInput.readOnly = true;
-            routerInputDisabler.gameObject.SetActive(true);
-
-            var request = new UnityWebRequest(RouteManager.RouterURL, "GET")
-            {
-                timeout = 1
-            };
-            yield return request.SendWebRequest();
-
-            routerStatus.SetStatus(request.responseCode == 200);
-            routerInputDisabler.gameObject.SetActive(false);
-            routerInput.readOnly = false;
-        }
-
-        IEnumerator SyncTest()
-        {
-            if (!string.IsNullOrWhiteSpace(syncInput.text))
-            {
-                TimeKeeper.SyncURL = syncInput.text;
-                syncPlaceholder.SetText(TimeKeeper.SyncURL);
-            }
-            syncInput.readOnly = true;
-            syncInputDisabler.gameObject.SetActive(true);
-
-            var request = new UnityWebRequest(TimeKeeper.SyncURL, "GET")
-            {
-                timeout = 1
-            };
-            yield return request.SendWebRequest();
-
-            timeScaleStatus.SetStatus(request.responseCode == 200);
-            syncInputDisabler.gameObject.SetActive(false);
-            syncInput.readOnly = false;
         }
 
     }
