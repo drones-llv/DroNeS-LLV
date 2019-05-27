@@ -103,7 +103,6 @@ namespace Drones.Data
         public bool collisionOn;
         public bool isWaiting;
         public float targetAltitude;
-        public float MaxSpeed { get; private set; } = 5f;
         public Queue<Vector3> waypoints = new Queue<Vector3>();
         public Vector3 previousWaypoint;
         public Vector3 currentWaypoint;

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Globalization;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -13,6 +14,7 @@ namespace Drones.Managers
     using static Singletons;
     using Utils.Extensions;
     using Serializable;
+
 
     public class SimManager : MonoBehaviour
     {
@@ -75,7 +77,7 @@ namespace Drones.Managers
                 Instance._Initialized = value;
             }
         }
-
+        public static bool IsLogging { get; set; } = true;
         #endregion
 
         public static void OnMapLoaded() => Instance._mapsLoaded++;
@@ -153,22 +155,32 @@ namespace Drones.Managers
 
         public static void UpdateDelay(float dt) => Instance._Data.totalDelay += dt;
 
+        public static void UpdateDelayCount() => Instance._Data.delayedJobs++;
+        public static void UpdateFailedCount() => Instance._Data.failedJobs++;
+        public static void UpdateCrashCount() => Instance._Data.crashes++;
+
         public static void UpdateAudible(float dt) => Instance._Data.totalAudible += dt;
 
         public static void UpdateEnergy(float dE) => Instance._Data.totalEnergy += dE;
 
         private static IEnumerator StreamDataToDashboard()
         {
+            Instance.StartCoroutine(DataLogger());
             var wait = new WaitForSeconds(0.75f);
             while (true)
             {
                 DataFields[0].SetField(AllDrones.Count.ToString());
-                DataFields[1].SetField(AllHubs.Count.ToString());
-                DataFields[2].SetField(AllCompleteJobs.Count.ToString());
-                DataFields[3].SetField(Instance._Data.revenue.ToString("C", CultureInfo.CurrentCulture));
-                DataFields[4].SetField(UnitConverter.Convert(Chronos.min, Instance._Data.totalDelay / AllCompleteJobs.Count));
-                DataFields[5].SetField(UnitConverter.Convert(Energy.kWh, Instance._Data.totalEnergy));
-                DataFields[6].SetField(UnitConverter.Convert(Chronos.min, Instance._Data.totalAudible));
+                DataFields[1].SetField(Drone.ActiveDrones.childCount.ToString());
+                DataFields[2].SetField(Instance._Data.crashes.ToString());
+                DataFields[3].SetField(JobManager.JobQueueLength.ToString());
+                DataFields[4].SetField(AllCompleteJobs.Count.ToString());
+                DataFields[5].SetField(Instance._Data.delayedJobs.ToString());
+                DataFields[6].SetField(Instance._Data.failedJobs.ToString());
+                DataFields[7].SetField(AllHubs.Count.ToString());
+                DataFields[8].SetField(Instance._Data.revenue.ToString("C", CultureInfo.CurrentCulture));
+                DataFields[9].SetField(UnitConverter.Convert(Chronos.min, Instance._Data.totalDelay / AllCompleteJobs.Count));
+                DataFields[10].SetField(UnitConverter.Convert(Energy.kWh, Instance._Data.totalEnergy));
+                DataFields[11].SetField(UnitConverter.Convert(Chronos.min, Instance._Data.totalAudible));
                 yield return wait;
             }
 
@@ -202,7 +214,8 @@ namespace Drones.Managers
             Instance._Data = new SimulationData(data);
             TimeKeeper.SetTime(data.currentTime);
             RouteManager.LoadQueue(data.routerQueue);
-            JobManager.LoadQueue(data.routerQueue);
+            JobManager.LoadDroneQueue(data.schedulerDroneQueue);
+            JobManager.LoadJobQueue(data.schedulerJobQueue);
         }
 
         public static SchedulerPayload GetSchedulerPayload()
@@ -233,6 +246,51 @@ namespace Drones.Managers
                 output.noFlyZones.Add(nfz.UID, new StaticObstacle(nfz.transform));
 
             return output;
+        }
+
+        private static IEnumerator DataLogger()
+        {
+            if (!IsLogging) yield break;
+            string filename = Instance._Data.simulation.ToString();
+            filename = Path.ChangeExtension(filename, ".csv");
+            string filepath = Path.Combine(SaveManager.ExportPath, filename);
+            if (!File.Exists(filepath))
+            {
+                string[] headers = { "time (s)", 
+                                    "Total Drones",
+                                    "Active Drones",
+                                    "Crashed Drones",
+                                    "Job Queue Length",
+                                    "Jobs Completed",
+                                    "Jobs Delayed",
+                                    "Jobs Failed",
+                                    "Revenue", 
+                                    "Delay (s)", 
+                                    "Audibility (s)", 
+                                    "Energy (J)" };
+                SaveManager.WriteTupleToCSV(filepath, headers);
+            }
+            var time = TimeKeeper.Chronos.Get();
+            var wait = new WaitUntil(() => time.Timer() > 300);
+            string[] data = new string[6];
+            while (true)
+            {
+                data[0] = time.ToCSVFormat();
+                data[1] = AllDrones.Count.ToString();
+                data[2] = Drone.ActiveDrones.childCount.ToString();
+                data[3] = Instance._Data.crashes.ToString();
+                data[4] = JobManager.JobQueueLength.ToString();
+                data[5] = AllCompleteJobs.Count.ToString();
+                data[6] = Instance._Data.delayedJobs.ToString();
+                data[7] = Instance._Data.failedJobs.ToString();
+                data[8] = Instance._Data.revenue.ToString("C", CultureInfo.CurrentCulture);
+                data[9] = Instance._Data.totalDelay.ToString("0.00");
+                data[10] = Instance._Data.totalAudible.ToString("0.00");
+                data[11] = Instance._Data.totalEnergy.ToString("0.00");
+                SaveManager.WriteTupleToCSV(filepath, data);
+                yield return wait;
+                time.Now();
+            }
         }
 
     }

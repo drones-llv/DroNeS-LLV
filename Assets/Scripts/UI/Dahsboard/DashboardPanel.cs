@@ -11,7 +11,7 @@ namespace Drones.UI
         protected static Dictionary<DashboardMode, Vector2> PanelSize = new Dictionary<DashboardMode, Vector2>
         {
             {DashboardMode.EditMode, new Vector2(550, 240)},
-            {DashboardMode.Simulation, new Vector2(550, 345)}
+            {DashboardMode.Simulation, new Vector2(550, 450)}
         };
         [SerializeField]
         private GameObject _SimulationInfo;

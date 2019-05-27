@@ -22,7 +22,7 @@ namespace Drones.Utils
             return (x < 0) ? -x : x;
         }
 
-        private float Exp(float x) => (float) Math.Pow(1.6, x);
+        private float Exp(float x) => x < 0 ? 0 : (float) Math.Pow(1.6, x);
 
         public BoxIdentifier(IClosestPoint point)
         {
@@ -52,16 +52,14 @@ namespace Drones.Utils
             XVector3 low = GetPoint(Directions.Down);
             volume *= high.y - low.y;
 
-            TooSmall = volume < 300;
+            TooSmall = volume < 70;
             return TooSmall;
         }
 
         private XVector3[] SetYZero(XVector3[] points)
         {
             for (int i = 0; i < points.Length; i++)
-            {
                 points[i].y = 0;
-            }
             return points;
         }
 
@@ -95,27 +93,28 @@ namespace Drones.Utils
         {
             bool assigned = false;
             float min = float.MaxValue;
-            for (int i = 0; i < _verts.Length; i++)
-            {
-                int j = (i + 1) % _verts.Length;
-                int k = (i + 2) % _verts.Length;
-                int l = (i + 3) % _verts.Length;
-                var ji = XVector3.Normalize(_verts[i] - _verts[j]);
-                var jk = XVector3.Normalize(_verts[k] - _verts[j]);
-                var ij = XVector3.Normalize(_verts[j] - _verts[i]);
-                var il = XVector3.Normalize(_verts[l] - _verts[i]);
-                var kj = XVector3.Normalize(_verts[j] - _verts[k]);
-                var kl = XVector3.Normalize(_verts[l] - _verts[k]);
 
-                float nextDot = XVector3.Dot(kj, kl);
-                float dot = XVector3.Dot(ji, jk);
-                float prevDot = XVector3.Dot(ij, il);
-                if (dot > -_Epsilon  && min > dot && (prevDot > -_Epsilon || nextDot > - _Epsilon))
+            var ji = XVector3.Normalize(_verts[0] - _verts[1]);
+            var jk = XVector3.Normalize(_verts[2] - _verts[1]);
+            var kl = XVector3.Normalize(_verts[3] - _verts[2]);
+            var il = XVector3.Normalize(_verts[3] - _verts[0]);
+            var ij = -ji;
+            var kj = -jk;
+            var lk = -kl;
+            var li = -il;
+
+            float[] dots = { XVector3.Dot(ij, il), XVector3.Dot(ji, jk),
+                                XVector3.Dot(kj, kl), XVector3.Dot(lk, li) };
+
+            for (int n = 0; n < dots.Length; n++)
+            {
+                if (dots[n] > -_Epsilon  && min > dots[n] && (dots[(n + 3) % dots.Length] > -_Epsilon ||
+                    dots[(n + 1) % dots.Length] > - _Epsilon))
                 {
                     assigned = true;
-                    Start = _verts[j];
-                    Corner = _verts[k];
-                    min = dot;
+                    Start = _verts[n];
+                    Corner = _verts[(n + 1) % dots.Length];
+                    min = dots[n];
                 }
             }
             if (!assigned)
@@ -178,7 +177,7 @@ namespace Drones.Utils
             /* refPoint -> lineEnd -> lineEnd2 ALWAYS clockwise; vertices[i++] ALWAYS clockwise */
         }
 
-        private int ExponentialSearch(XVector3 origin, XVector3 end, int step = 0)
+        private int ExponentialSearch(XVector3 origin, XVector3 end, int step = -1)
         {
             var newEnd = end + Exp(step) * XVector3.Normalize(end - origin);
             for (int i = 0; i < _verts.Length; i++)

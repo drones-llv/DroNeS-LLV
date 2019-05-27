@@ -170,7 +170,6 @@ namespace Drones
 
         public MovementInfo GetMovementInfo(MovementInfo info)
         {
-            info.speed = _Data.MaxSpeed;
             info.moveType = _Data.movement;
             info.height = _Data.targetAltitude;
             info.waypoint = _Data.currentWaypoint;
@@ -180,7 +179,6 @@ namespace Drones
         }
         public EnergyInfo GetEnergyInfo(EnergyInfo info)
         {
-            info.speed = _Data.MaxSpeed;
             info.moveType = _Data.movement;
             info.pkgXArea = (_Data.job == 0) ? 1 : GetJob().PackageXArea;
             info.pkgWgt = (_Data.job == 0) ? 0 : GetJob().PackageWeight;
@@ -189,7 +187,6 @@ namespace Drones
         }
 
         #region Fields
-        private AudioSensor _Sensor;
         private TrailRenderer _Trail;
         private DroneData _Data;
         #endregion
@@ -299,6 +296,7 @@ namespace Drones
             var dd = new RetiredDrone(this, other);
             SimManager.AllRetiredDrones.Add(dd.UID, dd);
             Delete();
+            SimManager.UpdateCrashCount();
         }
 
         public void DestroySelf()

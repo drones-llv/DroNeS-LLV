@@ -65,6 +65,11 @@ namespace Drones.Utils
             XVector3 a = new XVector3(b.x / divisor, b.y / divisor, b.z / divisor);
             return a;
         }
+        public static XVector3 operator -(XVector3 b)
+        {
+            XVector3 a = new XVector3(-b.x, -b.y, -b.z);
+            return a;
+        }
 
         public static bool operator ==(XVector3 b, XVector3 c)
         {

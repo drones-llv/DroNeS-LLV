@@ -86,6 +86,7 @@ namespace Drones
             _Data.completed = _EoT;
             _Data.earnings = -Loss;
             SimManager.UpdateRevenue(Earnings);
+            SimManager.UpdateFailedCount();
         }
         public void CompleteJob()
         {
@@ -98,6 +99,7 @@ namespace Drones
             _Data.earnings = _Data.costFunction.GetPaid(CompletedOn);
             SimManager.UpdateDelay(Deadline.Timer());
             SimManager.UpdateRevenue(Earnings);
+            if (Deadline.Timer() > 0) SimManager.UpdateDelayCount();
         }
 
         public void StartDelivery() => _Data.status = JobStatus.Delivering;

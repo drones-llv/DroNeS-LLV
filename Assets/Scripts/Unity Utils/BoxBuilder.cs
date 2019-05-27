@@ -10,10 +10,10 @@ namespace Drones
 
     public class BoxBuilder : IClosestPoint
     {
-        private Bounds bound;
-        private readonly Transform building;
         private BoxIdentifier boxID;
-        private Collider buildingCollider;
+        private readonly Transform building;
+        private Bounds bound;
+        private readonly Collider buildingCollider;
         private static Mesh _CubeMesh;
         private static GameObject _parent;
         private static GameObject Parent
@@ -47,7 +47,6 @@ namespace Drones
         public BoxBuilder(Transform building)
         {
             this.building = building;
-            //Debug.Log(building);
             bound = building.GetComponent<MeshRenderer>().bounds;
             buildingCollider = building.GetComponent<Collider>();
             boxID = new BoxIdentifier(this);
@@ -75,7 +74,7 @@ namespace Drones
             meshRenderer.receiveShadows = false;
 
             box.GetComponent<MeshFilter>().sharedMesh = CubeMesh;
-            box.transform.SetParent(building.parent.transform);
+            box.transform.SetParent(Parent.transform);
             meshRenderer.sharedMaterial = material;
             if (type == Building.Tall)
             {

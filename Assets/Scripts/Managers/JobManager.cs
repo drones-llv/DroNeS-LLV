@@ -21,6 +21,7 @@ namespace Drones.Managers
         public static string SchedulerURL { get; set; } = DEFAULT_URL;
 
         private Queue<Drone> _waitingList = new Queue<Drone>();
+        private Queue<Job> _jobQueue = new Queue<Job>();
 
         private void Awake()
         {
@@ -117,7 +118,9 @@ namespace Drones.Managers
             }
         }
 
-        public static void LoadQueue(List<uint> data)
+        public static int JobQueueLength => Instance._jobQueue.Count;
+
+        public static void LoadDroneQueue(List<uint> data)
         {
             Instance._waitingList = new Queue<Drone>();
             foreach (var i in data)
@@ -126,10 +129,29 @@ namespace Drones.Managers
             }
         }
 
-        public static List<uint> Serialize()
+        public static void LoadJobQueue(List<uint> data)
+        {
+            Instance._jobQueue = new Queue<Job>();
+            foreach (var i in data)
+            {
+                Instance._jobQueue.Enqueue((Job)SimManager.AllIncompleteJobs[i]);
+            }
+        }
+
+        public static List<uint> SerializeDrones()
         {
             var l = new List<uint>();
             foreach (var d in Instance._waitingList)
+            {
+                l.Add(d.UID);
+            }
+            return l;
+        }
+
+        public static List<uint> SerializeJobs()
+        {
+            var l = new List<uint>();
+            foreach (var d in Instance._jobQueue)
             {
                 l.Add(d.UID);
             }

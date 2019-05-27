@@ -14,7 +14,6 @@ namespace Drones.Serializable
         public DroneMovement movement;
         public FlightStatus status;
         public float targetAltitude;
-        public float maxSpeed;
         public List<SVector3> waypointsQueue;
         public SVector3 position;
         public SVector3 previousWaypoint;
@@ -34,7 +33,6 @@ namespace Drones.Serializable
             status = data.state;
             targetAltitude = data.targetAltitude;
             waypointsQueue = new List<SVector3>();
-            maxSpeed = data.MaxSpeed;
             position = drone.transform.position;
             previousWaypoint = data.previousWaypoint;
             waypoint = data.currentWaypoint;

@@ -10,8 +10,8 @@ namespace Drones.Utils.Router
     public class Raypath : Pathfinder
     {
         private List<List<Obstacle>> _SortedBuildings;
-        private const float _maxAlt = 250;
-        private const float _minAlt = 150;
+        private const float _maxAlt = 200;
+        private const float _minAlt = 30;
         private const int _altDiv = 10; // Altitude interval
         private const int _buildingDiv = 30; // Building bucket height interval
         private const int _Ra = 200; // Corridor width

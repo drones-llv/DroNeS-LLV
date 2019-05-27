@@ -163,6 +163,11 @@ namespace Drones.Utils
                 return (_Day - day) * 24 * 3600 + (Hour - hr) * 3600 + (Minute - min) * 60 + (Seconds - sec);
             }
 
+            public string ToCSVFormat()
+            {
+                return (day * 24 * 3600 + (hr - 9) * 3600 + min * 60 + sec).ToString("0.0");
+            }
+
             public STime Serialize()
             {
                 return new STime
@@ -179,6 +184,7 @@ namespace Drones.Utils
 
             public override int GetHashCode() => base.GetHashCode();
 
+            #region Operators
             public static bool operator <(Chronos t1, Chronos t2)
             {
                 if (t1.day < t2.day)
@@ -263,6 +269,7 @@ namespace Drones.Utils
             {
                 return (t1.day - t2.day) * 24f * 3600f + (t1.hr - t2.hr) * 3600 + (t1.min - t2.min) * 60 + (t1.sec - t1.sec);
             }
+            #endregion
         }
 
     }

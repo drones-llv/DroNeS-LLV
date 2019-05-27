@@ -34,7 +34,6 @@ namespace Drones.Serializable
         public float totalDistanceTravelled;
         public float totalEnergy;
         public float targetAltitude;
-        public float maxSpeed;
 
         public SDrone(DroneData data, Drone drone)
         {
@@ -56,7 +55,6 @@ namespace Drones.Serializable
             targetAltitude = data.targetAltitude;
             waypointsQueue = new List<SVector3>();
             completedJobs = new List<uint>(data.completedJobs.Keys);
-            maxSpeed = data.MaxSpeed;
             position = drone.transform.position;
             previousWaypoint = data.previousWaypoint;
             waypoint = data.currentWaypoint;

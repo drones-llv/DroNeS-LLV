@@ -10,7 +10,8 @@ namespace Drones.Serializable
     [Serializable]
     public class SSimulation
     {
-        public long timestamp = (long) DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+        public long timestamp;
+        public long simulation;
         public float revenue;
         public float totalDelay;
         public float totalAudible;
@@ -23,16 +24,24 @@ namespace Drones.Serializable
         public List<SJob> incompleteJobs;
         public List<SNoFlyZone> noFlyZones;
         public List<uint> routerQueue;
-        public List<uint> schedulerQueue;
+        public List<uint> schedulerDroneQueue;
+        public List<uint> schedulerJobQueue;
         public STime currentTime;
-
+        internal int failedJobs;
+        internal int delayedJobs;
+        internal int crashes;
 
         public SSimulation(SimulationData data)
         {
+            timestamp = (long)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+            simulation = data.simulation;
             revenue = data.revenue;
             totalDelay = data.totalDelay;
             totalAudible = data.totalAudible;
             totalEnergy = data.totalEnergy;
+            crashes = data.crashes;
+            delayedJobs = data.delayedJobs;
+            failedJobs = data.failedJobs;
             drones = new List<SDrone>();
             retiredDrones = new List<SRetiredDrone>();
             batteries = new List<SBattery>();
@@ -42,7 +51,8 @@ namespace Drones.Serializable
             noFlyZones = new List<SNoFlyZone>();
             currentTime = TimeKeeper.Chronos.Get().Serialize();
             routerQueue = RouteManager.Serialize();
-            schedulerQueue = JobManager.Serialize();
+            schedulerDroneQueue = JobManager.SerializeDrones();
+            schedulerJobQueue = JobManager.SerializeJobs();
 
             foreach (Drone drone in data.drones.Values)
                 drones.Add(drone.Serialize());

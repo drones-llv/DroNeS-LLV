@@ -2,22 +2,14 @@
 using UnityEngine;
 using UnityEditor;
 using Mapbox.Unity.Map;
-using Drones.LoadingTools;
 using Drones.Utils;
 using Drones;
 using System.Collections.Generic;
-using TMPro;
-using Drones.UI;
-using Drones.Utils.Extensions;
 using System.IO;
 using System;
-using System.Text;
 using Drones.Serializable;
-using System.Linq;
 using Drones.Managers;
-using UnityEngine.Networking;
-using System.Collections;
-using Newtonsoft.Json;
+using Mapbox.Unity.Map.TileProviders;
 
 public class EditorFunctions : EditorWindow
 {
@@ -29,11 +21,8 @@ public class EditorFunctions : EditorWindow
     [MenuItem("Window/Editor Functions")]
     static void Init()
     {
-        // Get existing open window or if none, make a new one:
-        EditorFunctions sizeWindow = new EditorFunctions
-        {
-            autoRepaintOnSceneChange = true
-        };
+        EditorFunctions sizeWindow = CreateInstance<EditorFunctions>();
+        sizeWindow.autoRepaintOnSceneChange = true;
         sizeWindow.Show();
     }
 
@@ -45,16 +34,12 @@ public class EditorFunctions : EditorWindow
         minHeight = EditorGUILayout.FloatField("Minimum Building Height:", minHeight);
         maxHeight = EditorGUILayout.FloatField("Maximum Building Height:", maxHeight);
 
-        if (GUILayout.Button("Test Router"))
-        {
-            TestRoute();
-        }
-
         if (GUILayout.Button("Edit Mode Build")) 
         {
-            if (abstractMap.MapVisualizer != null) { abstractMap.ResetMap(); }
-            abstractMap.MapVisualizer = ScriptableObject.CreateInstance<MapVisualizer>();
-            abstractMap.Initialize(new Mapbox.Utils.Vector2d(40.764170691358686f, -73.97670925665614f), 16);
+            //if (abstractMap.MapVisualizer != null) { abstractMap.ResetMap(); }
+            abstractMap.MapVisualizer = CreateInstance<MapVisualizer>();
+            //abstractMap.Initialize(new Mapbox.Utils.Vector2d(40.764170691358686f, -73.97670925665614f), 16);
+            abstractMap.Initialize(new Mapbox.Utils.Vector2d(-29.3151, 27.4869), 16);
         }
 
         if (GUILayout.Button("1. Setup Objects"))
@@ -68,7 +53,11 @@ public class EditorFunctions : EditorWindow
             GroupAllByBlocks(citySimulatorMap.transform);
             SplitAllBlocks(citySimulatorMap.transform);
             SortHeirarchy(citySimulatorMap.transform);
+            DestroyImmediate(citySimulatorMap.GetComponent<RangeTileProvider>());
+        }
 
+        if (GUILayout.Button("1.5. Combine"))
+        {
             Transform road = null;
             foreach (Transform tile in citySimulatorMap.transform)
             {

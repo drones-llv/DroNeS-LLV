@@ -25,9 +25,23 @@ namespace Drones.StartScreen
         [SerializeField]
         Slider _RenderLimit;
         [SerializeField]
+        Toggle _LogToggle;
+        [SerializeField]
         Button _Back;
         [SerializeField]
         Button _Reset;
+
+        public Toggle LogToggle
+        {
+            get
+            {
+                if (_LogToggle == null)
+                {
+                    _LogToggle = GetComponentInChildren<Toggle>(true);
+                }
+                return _LogToggle;
+            }
+        }
 
         public Slider RenderLimit
         {
@@ -65,7 +79,6 @@ namespace Drones.StartScreen
             }
         }
 
-
         private void Awake()
         {
             Instance = this;
@@ -75,6 +88,11 @@ namespace Drones.StartScreen
                 value = Mathf.Clamp(value * 5, 0, 600);
                 sliderDisplay.SetText(value.ToString());
                 CustomMap.FilterHeight = value;
+            });
+
+            LogToggle.onValueChanged.AddListener((bool value) =>
+            {
+                SimManager.IsLogging = value;
             });
 
             Back.onClick.AddListener(GoBack);
@@ -88,7 +106,6 @@ namespace Drones.StartScreen
 
         private void OnReset()
         {
-
         }
 
     }

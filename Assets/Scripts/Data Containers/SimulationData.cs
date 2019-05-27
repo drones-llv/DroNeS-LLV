@@ -1,4 +1,6 @@
-﻿namespace Drones.Data
+﻿using System;
+
+namespace Drones.Data
 {
     using Utils;
     using DataStreamer;
@@ -9,7 +11,7 @@
         public uint UID { get; } = 0;
 
         public bool IsDataStatic { get; } = false;
-
+        public long simulation;
         public SimulationStatus status;
         public SecureSortedSet<uint, IDataSource> drones;
         public SecureSortedSet<uint, IDataSource> hubs;
@@ -23,6 +25,9 @@
         public float totalDelay;
         public float totalAudible;
         public float totalEnergy;
+        public int crashes;
+        public int delayedJobs;
+        public int failedJobs;
 
         private void InitializeCollections()
         {
@@ -73,6 +78,7 @@
 
         public SimulationData()
         {
+            simulation = (long)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
             InitializeCollections();
             SetUpCallbacks();
         }
@@ -80,10 +86,14 @@
         public SimulationData(SSimulation data)
         {
             InitializeCollections();
+            simulation = data.simulation;
             revenue = data.revenue;
             totalDelay = data.totalDelay;
             totalAudible = data.totalAudible;
             totalEnergy = data.totalEnergy;
+            crashes = data.crashes;
+            delayedJobs = data.delayedJobs;
+            failedJobs = data.failedJobs;
             foreach (var job in data.completedJobs)
             {
                 var loaded = new Job(job);
