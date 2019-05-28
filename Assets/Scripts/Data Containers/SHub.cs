@@ -14,10 +14,20 @@ namespace Drones.Serializable
         public List<uint> drones;
         public List<uint> freeDrones;
         public List<uint> exitingDrones;
-        public List<uint> jobQueue;
+        public List<uint> incompleteJobs;
+        public List<uint> completedJobs;
+        public List<uint> routeQueue;
+        public List<uint> schedulerJobQueue;
+        public List<uint> schedulerDroneQueue;
         public SVector3 position;
         public uint uid;
+        public int crashes;
+        public int delayedJobs;
+        public int failedJobs;
         public float energy;
+        public float revenue;
+        public float delay;
+        public float audibility;
 
 
         public SHub(HubData data, Hub hub)
@@ -31,8 +41,18 @@ namespace Drones.Serializable
             freeDrones = new List<uint>();
             position = hub.transform.position;
             exitingDrones = new List<uint>();
-            jobQueue = new List<uint>(data.jobQueue);
+            completedJobs = new List<uint>();
+            incompleteJobs = new List<uint>();
+            schedulerJobQueue = hub.Scheduler.SerializeJobs();
+            schedulerDroneQueue = hub.Scheduler.SerializeDrones();
+            routeQueue = hub.Router.Serialize();
             energy = data.energyConsumption;
+            revenue = data.revenue;
+            delay = data.delay;
+            audibility = data.audibility;
+            crashes = data.crashes;
+            delayedJobs = data.delayedJobs;
+            failedJobs = data.failedJobs;
 
             foreach (var bat in data.batteries.Keys)
                 batteries.Add(bat);
@@ -42,6 +62,10 @@ namespace Drones.Serializable
                 chargingBatteries.Add(bat);
             foreach (var d in data.drones.Keys)
                 drones.Add(d);
+            foreach (var j in data.incompleteJobs.Keys)
+                incompleteJobs.Add(j);
+            foreach (var j in data.completedJobs.Keys)
+                completedJobs.Add(j);
             foreach (var d in data.freeDrones.Keys)
                 freeDrones.Add(d);
             foreach (var d in data.deploymentQueue)

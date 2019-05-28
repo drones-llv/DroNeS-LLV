@@ -50,15 +50,9 @@ namespace Drones.Managers
         }
         public static bool LoadComplete
         {
-
             get
             {
-                if (Manhattan == null || Brooklyn == null)
-                {
-                    return false;
-                }
-
-                return Manhattan.RedrawComplete && Brooklyn.RedrawComplete;
+                return !(Manhattan == null || Brooklyn == null) && Manhattan.RedrawComplete && Brooklyn.RedrawComplete;
             }
         }
         public static uint MapsLoaded => Instance._mapsLoaded;
@@ -68,7 +62,7 @@ namespace Drones.Managers
 
             set
             {
-                if (value == true)
+                if (value)
                 {
                     if (!OpenWindows.Transform.gameObject.activeSelf)
                         OpenWindows.Transform.gameObject.SetActive(true);
@@ -111,10 +105,9 @@ namespace Drones.Managers
             DontDestroyOnLoad(PoolController.Get(ListElementPool.Instance).PoolParent.gameObject);
             DontDestroyOnLoad(PoolController.Get(ObjectPool.Instance).PoolParent.gameObject);
             DontDestroyOnLoad(PoolController.Get(WindowPool.Instance).PoolParent.gameObject);
-            StartCoroutine(OnAwake());
         }
-        
-        private IEnumerator OnAwake()
+
+        private IEnumerator Start()
         {
             yield return new WaitUntil(() => SceneManager.GetActiveScene() == SceneManager.GetSceneByBuildIndex(1));
             Initialized = true;
@@ -152,16 +145,18 @@ namespace Drones.Managers
         }
 
         public static void UpdateRevenue(float value) => Instance._Data.revenue += value;
-
-        public static void UpdateDelay(float dt) => Instance._Data.totalDelay += dt;
-
-        public static void UpdateDelayCount() => Instance._Data.delayedJobs++;
+        public static void UpdateDelay(float dt)
+        {
+            Instance._Data.totalDelay += dt;
+            if (dt > 0) UpdateDelayCount();
+        }
+        private static void UpdateDelayCount() => Instance._Data.delayedJobs++;
         public static void UpdateFailedCount() => Instance._Data.failedJobs++;
         public static void UpdateCrashCount() => Instance._Data.crashes++;
-
         public static void UpdateAudible(float dt) => Instance._Data.totalAudible += dt;
-
         public static void UpdateEnergy(float dE) => Instance._Data.totalEnergy += dE;
+        public static void JobEnqueued() => Instance._Data.queuedJobs++;
+        public static void JobDequeued() => Instance._Data.queuedJobs--;
 
         private static IEnumerator StreamDataToDashboard()
         {
@@ -172,7 +167,7 @@ namespace Drones.Managers
                 DataFields[0].SetField(AllDrones.Count.ToString());
                 DataFields[1].SetField(Drone.ActiveDrones.childCount.ToString());
                 DataFields[2].SetField(Instance._Data.crashes.ToString());
-                DataFields[3].SetField(JobManager.JobQueueLength.ToString());
+                DataFields[3].SetField(Instance._Data.queuedJobs.ToString());
                 DataFields[4].SetField(AllCompleteJobs.Count.ToString());
                 DataFields[5].SetField(Instance._Data.delayedJobs.ToString());
                 DataFields[6].SetField(Instance._Data.failedJobs.ToString());
@@ -213,9 +208,6 @@ namespace Drones.Managers
             ClearObjects();
             Instance._Data = new SimulationData(data);
             TimeKeeper.SetTime(data.currentTime);
-            RouteManager.LoadQueue(data.routerQueue);
-            JobManager.LoadDroneQueue(data.schedulerDroneQueue);
-            JobManager.LoadJobQueue(data.schedulerJobQueue);
         }
 
         public static SchedulerPayload GetSchedulerPayload()
@@ -272,19 +264,19 @@ namespace Drones.Managers
             }
             var time = TimeKeeper.Chronos.Get();
             var wait = new WaitUntil(() => time.Timer() > 300);
-            string[] data = new string[6];
+            string[] data = new string[12];
             while (true)
             {
                 data[0] = time.ToCSVFormat();
                 data[1] = AllDrones.Count.ToString();
                 data[2] = Drone.ActiveDrones.childCount.ToString();
                 data[3] = Instance._Data.crashes.ToString();
-                data[4] = JobManager.JobQueueLength.ToString();
+                data[4] = Instance._Data.queuedJobs.ToString();
                 data[5] = AllCompleteJobs.Count.ToString();
                 data[6] = Instance._Data.delayedJobs.ToString();
                 data[7] = Instance._Data.failedJobs.ToString();
                 data[8] = Instance._Data.revenue.ToString("C", CultureInfo.CurrentCulture);
-                data[9] = Instance._Data.totalDelay.ToString("0.00");
+                data[9] = (Instance._Data.totalDelay/AllCompleteJobs.Count).ToString("0.00");
                 data[10] = Instance._Data.totalAudible.ToString("0.00");
                 data[11] = Instance._Data.totalEnergy.ToString("0.00");
                 SaveManager.WriteTupleToCSV(filepath, data);

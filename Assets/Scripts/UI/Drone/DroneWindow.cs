@@ -146,7 +146,7 @@ namespace Drones.UI
             Data[0].SetField(source.Name);
             Data[1].SetField(source.GetHub().Name);
             Data[2].SetField(drone.currentWaypoint.ToStringXZ());
-            Data[3].SetField(Convert(Length.m, transform.position.y));
+            Data[3].SetField(Convert(Length.m, source.transform.position.y));
 
             Battery battery = source.GetBattery();
             Data[4].SetField(battery?.Charge.ToString("0.000"));

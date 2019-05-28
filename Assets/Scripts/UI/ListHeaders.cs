@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 namespace Drones.UI
 {
+    using System.Linq;
     using Utils;
 
     public class ListHeaders : MonoBehaviour
@@ -73,33 +74,17 @@ namespace Drones.UI
         // index : data index in the tuple
         private void Sort(int index)
         {
-            AbstractBinaryTree<ObjectTuple> heap;
-            ObjectTuple[] tuples = TupleContainer.GetComponentsInChildren<ObjectTuple>();
+            var tuples = TupleContainer.GetComponentsInChildren<ObjectTuple>().ToList();
             int Comparer(ObjectTuple a, ObjectTuple b)
             {
                 return string.Compare(a.Data[index].text, b.Data[index].text);
             }
 
-            if (Order[index] == SortOrder.Ascending)
-            {
-                heap = new MinHeap<ObjectTuple>(Comparer);
-                Order[index] = SortOrder.Descending;
-            }
-            else
-            {
-                heap = new MaxHeap<ObjectTuple>(Comparer);
-                Order[index] = SortOrder.Ascending;
-            }
+            tuples.Sort(Comparer);
 
-            for (int i = 0; i < tuples.Length; i++)
+            for (int i =0; i < tuples.Count; i++)
             {
-                heap.Add(tuples[i]);
-            }
-
-            int n = 0;
-            while (!heap.IsEmpty())
-            {
-                heap.Remove().transform.SetSiblingIndex(n++);
+                tuples[i].transform.SetSiblingIndex(i);
             }
 
         }

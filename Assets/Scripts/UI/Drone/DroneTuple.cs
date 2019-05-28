@@ -1,6 +1,5 @@
 ﻿namespace Drones.UI
 {
-    using Data;
     using Utils.Extensions;
     using Utils;
     using Interface;
@@ -8,14 +7,19 @@
     {
         public override void SetData(IData data)
         {
-            var drone = (DroneData)data;
-            Data[0].SetField(((Drone)Source).Name);
-            Data[1].SetField(((Drone)Source).GetHub().Name);
-            if (drone.job != 0)
+            var drone = (Drone)Source;
+            Data[0].SetField(drone.Name);
+            Data[1].SetField(drone.GetHub().Name);
+            var job = drone.GetJob();
+            if (job != null)
             {
-                var job = ((Drone)Source).GetJob();
                 Data[2].SetField(job.Pickup.ToStringXZ());
                 Data[3].SetField(job.DropOff.ToStringXZ());
+            }
+            else
+            {
+                Data[2].SetField("");
+                Data[3].SetField("");
             }
         }
 

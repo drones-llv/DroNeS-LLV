@@ -50,18 +50,12 @@ namespace Drones
         #endregion
 
         private readonly JobData _Data;
-        public Drone GetDrone()
-        {
-            return (Drone)SimManager.AllDrones[_Data.drone];
-        }
-        public RetiredDrone GetRetiredDrone()
-        {
-            return (RetiredDrone)SimManager.AllRetiredDrones[_Data.drone];
-        }
+        public Drone GetDrone() => (Drone)SimManager.AllDrones[_Data.drone];
+        public RetiredDrone GetRetiredDrone() => (RetiredDrone)SimManager.AllRetiredDrones[_Data.drone];
 
         public JobStatus Status => _Data.status;
-        public Vector3 DropOff => _Data.pickup;
-        public Vector3 Pickup => _Data.dropoff;
+        public Vector3 DropOff => _Data.dropoff;
+        public Vector3 Pickup => _Data.pickup;
         public float Earnings => _Data.earnings;
         public TimeKeeper.Chronos Deadline => _Data.deadline;
         public TimeKeeper.Chronos CompletedOn => _Data.completed;
@@ -80,26 +74,29 @@ namespace Drones
         public void FailJob()
         {
             _Data.IsDataStatic = true;
-            GetDrone().AssignJob(null);
-            AssignDrone(null);
             _Data.status = JobStatus.Failed;
             _Data.completed = _EoT;
             _Data.earnings = -Loss;
-            SimManager.UpdateRevenue(Earnings);
-            SimManager.UpdateFailedCount();
+            var drone = GetDrone();
+            var hub = drone?.GetHub();
+            if (hub != null)
+            {
+                hub.UpdateRevenue(Earnings);
+                hub.UpdateFailedCount();
+            }
+            drone?.AssignJob(null);
+            AssignDrone(null);
         }
+
         public void CompleteJob()
         {
             _Data.completed = TimeKeeper.Chronos.Get().SetReadOnly();
             _Data.status = JobStatus.Complete;
             _Data.IsDataStatic = true;
-
-            GetDrone().CompleteJob();
-            AssignDrone(null);
             _Data.earnings = _Data.costFunction.GetPaid(CompletedOn);
-            SimManager.UpdateDelay(Deadline.Timer());
-            SimManager.UpdateRevenue(Earnings);
-            if (Deadline.Timer() > 0) SimManager.UpdateDelayCount();
+
+            GetDrone().CompleteJob(this);
+            AssignDrone(null);
         }
 
         public void StartDelivery() => _Data.status = JobStatus.Delivering;

@@ -18,7 +18,7 @@ namespace Drones.Data
         {
             _source = src;
             UID = ++Count;
-            completedJobs.ItemAdded += (obj) => AllCompleteJobs.Add(obj.UID, obj);
+            completedJobs.ItemAdded += (obj) => _source.GetHub().JobComplete((Job)obj);
             completedJobs.ItemAdded += (obj) => packageWeight += ((Job)obj).PackageWeight;
             movement = DroneMovement.Idle;
             state = FlightStatus.Idle;

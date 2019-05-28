@@ -23,13 +23,13 @@ namespace Drones.Serializable
         public List<SJob> completedJobs;
         public List<SJob> incompleteJobs;
         public List<SNoFlyZone> noFlyZones;
-        public List<uint> routerQueue;
         public List<uint> schedulerDroneQueue;
         public List<uint> schedulerJobQueue;
         public STime currentTime;
-        internal int failedJobs;
-        internal int delayedJobs;
-        internal int crashes;
+        public int failedJobs;
+        public int delayedJobs;
+        public int crashes;
+        public int queuedJobs;
 
         public SSimulation(SimulationData data)
         {
@@ -42,6 +42,7 @@ namespace Drones.Serializable
             crashes = data.crashes;
             delayedJobs = data.delayedJobs;
             failedJobs = data.failedJobs;
+            queuedJobs = data.queuedJobs;
             drones = new List<SDrone>();
             retiredDrones = new List<SRetiredDrone>();
             batteries = new List<SBattery>();
@@ -50,9 +51,6 @@ namespace Drones.Serializable
             incompleteJobs = new List<SJob>();
             noFlyZones = new List<SNoFlyZone>();
             currentTime = TimeKeeper.Chronos.Get().Serialize();
-            routerQueue = RouteManager.Serialize();
-            schedulerDroneQueue = JobManager.SerializeDrones();
-            schedulerJobQueue = JobManager.SerializeJobs();
 
             foreach (Drone drone in data.drones.Values)
                 drones.Add(drone.Serialize());

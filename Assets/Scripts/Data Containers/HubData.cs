@@ -22,14 +22,20 @@ namespace Drones.Data
         public Queue<Drone> deploymentQueue;
 
         public SecureSortedSet<uint, IDataSource> drones;
+        public SecureSortedSet<uint, IDataSource> incompleteJobs;
+        public SecureSortedSet<uint, IDataSource> completedJobs;
         public SecureSortedSet<uint, Drone> freeDrones;
         public SecureSortedSet<uint, Battery> batteries;
         public SecureSortedSet<uint, Battery> chargingBatteries;
         public SecureSortedSet<uint, Battery> freeBatteries;
         public Vector3 Position => _source.transform.position;
-        public Queue<uint> jobQueue;
-
+        public int crashes;
+        public int delayedJobs;
+        public int failedJobs;
+        public float revenue;
+        public float delay;
         public float energyConsumption;
+        public float audibility;
 
         public HubData() { }
 
@@ -39,17 +45,24 @@ namespace Drones.Data
             UID = ++Count;
             InitializeCollections();
             SetUpCollectionEvents();
-            jobQueue = new Queue<uint>();
         }
 
         public HubData(SHub data, Hub hub, List<SDrone> droneData, List<SBattery> batteryData)
         {
             _source = hub;
             UID = data.count;
-            jobQueue = new Queue<uint>(data.jobQueue);
             energyConsumption = data.energy;
+            revenue = data.revenue;
+            delay = data.delay;
+            audibility = data.audibility;
+            crashes = data.crashes;
+            delayedJobs = data.delayedJobs;
+            failedJobs = data.failedJobs;
             InitializeCollections();
             LoadAssignments(data, droneData, batteryData);
+            hub.Router.LoadQueue(data.routeQueue);
+            hub.Scheduler.LoadJobQueue(data.schedulerJobQueue);
+            hub.Scheduler.LoadDroneQueue(data.schedulerDroneQueue);
             SetUpCollectionEvents();
         }
 
@@ -58,6 +71,11 @@ namespace Drones.Data
             var fd = new HashSet<uint>(hubData.freeDrones);
             var fb = new HashSet<uint>(hubData.freeBatteries);
             var cb = new HashSet<uint>(hubData.chargingBatteries);
+            foreach (uint i in hubData.completedJobs)
+                completedJobs.Add(i, AllJobs[i]);
+            foreach (uint i in hubData.incompleteJobs)
+                incompleteJobs.Add(i, AllJobs[i]);
+
             for (int i = batteryData.Count - 1; i >= 0; i--)
             {
                 if (LoadBattery(batteryData[i], fb, cb)) 
@@ -142,6 +160,18 @@ namespace Drones.Data
             {
                 drone.transform.SetParent(Drone.ActiveDrones);
             };
+            completedJobs.ItemAdded += delegate (IDataSource job)
+            { 
+                incompleteJobs.Remove(job);
+                AllCompleteJobs.Add(job.UID, job);
+            };
+            completedJobs.ItemRemoved += (job) => AllCompleteJobs.Remove(job);
+            incompleteJobs.ItemAdded += delegate (IDataSource job)
+            {
+                AllJobs.Add(job.UID, (Job)job);
+                AllIncompleteJobs.Add(job.UID, job);
+            };
+            incompleteJobs.ItemRemoved += (job) => AllIncompleteJobs.Remove(job);
         }
 
         private void InitializeCollections()
@@ -164,6 +194,14 @@ namespace Drones.Data
             freeDrones = new SecureSortedSet<uint, Drone>
             {
                 MemberCondition = (drone) => { return drones.Contains(drone) && drone.GetJob() == null; }
+            };
+            incompleteJobs = new SecureSortedSet<uint, IDataSource>
+            {
+                MemberCondition = (item) => item is Job && ((Job)item).Status != JobStatus.Complete
+            };
+            completedJobs = new SecureSortedSet<uint, IDataSource>
+            {
+                MemberCondition = (item) => item is Job
             };
         }
 

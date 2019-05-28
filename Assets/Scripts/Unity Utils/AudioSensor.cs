@@ -62,7 +62,6 @@ namespace Drones.Utils
                 yield return _Wait;
                 float dt = _Time.Timer();
                 AssignedDrone.UpdateAudible(dt);
-                SimManager.UpdateAudible(dt);
             }
             yield break;
 

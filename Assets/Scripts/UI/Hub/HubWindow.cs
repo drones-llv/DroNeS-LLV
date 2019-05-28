@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System.Globalization;
 
 namespace Drones.UI
 {
@@ -99,7 +100,7 @@ namespace Drones.UI
         }
         #endregion
 
-        protected override Vector2 MaximizedSize { get; } = new Vector2(500, 290);
+        protected override Vector2 MaximizedSize { get; } = new Vector2(550, 570);
 
         protected override void Awake()
         {
@@ -141,12 +142,21 @@ namespace Drones.UI
         {
             var hub = (HubData)data;
 
-            Data[0].SetField(((Hub)Source).Name);
+            Data[0].SetField(Source.ToString());
             Data[1].SetField(hub.Position.ToStringXZ());
             Data[2].SetField(hub.drones.Count.ToString());
-            Data[3].SetField(hub.batteries.Count.ToString());
-            Data[4].SetField(Convert(Energy.kWh, hub.energyConsumption));
-
+            Data[3].SetField((hub.drones.Count - hub.freeDrones.Count).ToString());
+            Data[4].SetField(hub.crashes.ToString());
+            Data[5].SetField(hub.batteries.Count.ToString());
+            Data[6].SetField(hub.chargingBatteries.Count.ToString());
+            Data[7].SetField(((Hub)Source).Scheduler.JobQueueLength.ToString());
+            Data[8].SetField(hub.completedJobs.Count.ToString());
+            Data[9].SetField(hub.delayedJobs.ToString());
+            Data[10].SetField(hub.failedJobs.ToString());
+            Data[11].SetField(hub.revenue.ToString("C", CultureInfo.CurrentCulture));
+            Data[12].SetField(Convert(Chronos.min, hub.delay / hub.completedJobs.Count));
+            Data[13].SetField(Convert(Energy.kWh, hub.energyConsumption));
+            Data[14].SetField(Convert(Chronos.min, hub.audibility));
         }
     }
 

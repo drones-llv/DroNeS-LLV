@@ -6,7 +6,7 @@ namespace Drones.UI
 {
     using Drones.Utils.Extensions;
     using Utils;
-    public abstract class DashboardPanel : MonoBehaviour
+    public abstract class Dashboard : MonoBehaviour
     {
         protected static Dictionary<DashboardMode, Vector2> PanelSize = new Dictionary<DashboardMode, Vector2>
         {

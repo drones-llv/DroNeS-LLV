@@ -5,6 +5,7 @@ using static Drones.Utils.Constants;
 
 namespace Drones.LoadingTools
 {
+    using System.Linq;
     using UnityEngine;
     public static class MeshOptimizer
     {
@@ -105,19 +106,13 @@ namespace Drones.LoadingTools
         // Makes grouping buildings easier, typically similar names = same group
         public static void SortChildrenByName(Transform parent)
         {
-            MinHeap<Transform> sorter = new MinHeap<Transform>((Transform t1, Transform t2) => {
+            var children = parent.GetComponentsInChildren<Transform>().ToList();
+            children.Sort((Transform t1, Transform t2) => {
                 return string.Compare(t1.name, t2.name, System.StringComparison.Ordinal);
             });
 
-            foreach (Transform child in parent)
-            {
-                sorter.Add(child);
-            }
-
-            while (!sorter.IsEmpty())
-            {
-                sorter.Remove().SetAsLastSibling();
-            }
+            for (int i = 0; i < children.Count; i++)
+                children[i].SetSiblingIndex(i);
         }
 
         // Groups building structures into city blocks
@@ -407,16 +402,16 @@ namespace Drones.LoadingTools
                 if (val >= EPSILON) return 1;
                 return 0;
             }
-            MinHeap<Transform> sorter = new MinHeap<Transform>(HeightCompare);
-            sorter.Add(building);
-            foreach (Transform child in building) { sorter.Add(child); }
 
-            shortest = sorter.Remove();
+            var children = building.GetComponentsInChildren<Transform>().ToList();
+            children.Add(building);
+            children.Sort(HeightCompare);
+            shortest = children[0];
+            children.RemoveAt(0);
             shortest.SetParent(building.parent, true);
-            while (sorter.Size > 0)
-            {
-                sorter.Remove().SetParent(shortest, true);
-            }
+            for (int i = 0; i < children.Count; i++)
+                children[i].SetSiblingIndex(i);
+
             return shortest;
         }
 

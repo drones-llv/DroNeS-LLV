@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using TMPro;
+using Drones.Utils.Router;
 
 public class SingleObjectManipulator : EditorWindow
 {
@@ -14,10 +15,8 @@ public class SingleObjectManipulator : EditorWindow
     static void Init()
     {
         // Get existing open window or if none, make a new one:
-        SingleObjectManipulator sizeWindow = new SingleObjectManipulator
-        {
-            autoRepaintOnSceneChange = true
-        };
+        SingleObjectManipulator sizeWindow = CreateInstance<SingleObjectManipulator>();
+        sizeWindow.autoRepaintOnSceneChange = true;
         sizeWindow.Show();
     }
 

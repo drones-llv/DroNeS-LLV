@@ -21,7 +21,7 @@ namespace Drones.Managers
         private readonly TimeKeeper.Chronos _time = TimeKeeper.Chronos.Get();
         private SecureSortedSet<uint, IDataSource> Drones => SimManager.AllDrones;
         private TransformAccessArray _Transforms;
-        private NativeArray<MovementInfo> _JobInfoArray;
+        private NativeArray<MovementInfo> _MovementInfoArray;
         private NativeArray<EnergyInfo> _EnergyInfoArray;
         private NativeArray<Vector3> _PreviousPositions;
 
@@ -30,7 +30,7 @@ namespace Drones.Managers
             MovementJobHandle.Complete();
             EnergyJobHandle.Complete();
             if (_Transforms.isCreated) _Transforms.Dispose();
-            if (_JobInfoArray.IsCreated) _JobInfoArray.Dispose();
+            if (_MovementInfoArray.IsCreated) _MovementInfoArray.Dispose();
             if (_EnergyInfoArray.IsCreated) _EnergyInfoArray.Dispose();
             if (_PreviousPositions.IsCreated) _PreviousPositions.Dispose();
         }
@@ -38,7 +38,7 @@ namespace Drones.Managers
         private void Initialise()
         {
             _Transforms = new TransformAccessArray(0);
-            _JobInfoArray = new NativeArray<MovementInfo>(_Transforms.length, Allocator.Persistent);
+            _MovementInfoArray = new NativeArray<MovementInfo>(_Transforms.length, Allocator.Persistent);
             _EnergyInfoArray = new NativeArray<EnergyInfo>(_Transforms.length, Allocator.Persistent);
             _PreviousPositions = new NativeArray<Vector3>(_Transforms.length, Allocator.Persistent);
             _time.Now();
@@ -66,19 +66,17 @@ namespace Drones.Managers
                 {
                     var dE = _EnergyInfoArray[j].energy;
                     drone.UpdateEnergy(dE);
-                    drone.GetHub().UpdateEnergy(dE);
                     drone.GetBattery().DischargeBattery(dE);
-                    SimManager.UpdateEnergy(dE);
 
                     _PreviousPositions[j] = drone.PreviousPosition;
                     drone.PreviousPosition = drone.transform.position;
                    
-                    _JobInfoArray[j] = drone.GetMovementInfo(_JobInfoArray[j]);
+                    _MovementInfoArray[j] = drone.GetMovementInfo(_MovementInfoArray[j]);
                     _EnergyInfoArray[j] = drone.GetEnergyInfo(_EnergyInfoArray[j]);
                     j++;
                 }
 
-                _movementJob.nextMove = _JobInfoArray;
+                _movementJob.nextMove = _MovementInfoArray;
                 _movementJob.rt_dt = _PreviousPositions;
                 _movementJob.deltaTime = _time.Timer();
 
@@ -105,8 +103,8 @@ namespace Drones.Managers
             {
                 _Transforms.Add(drone.transform);
             }
-            _JobInfoArray.Dispose();
-            _JobInfoArray = new NativeArray<MovementInfo>(_Transforms.length, Allocator.Persistent);
+            _MovementInfoArray.Dispose();
+            _MovementInfoArray = new NativeArray<MovementInfo>(_Transforms.length, Allocator.Persistent);
             _EnergyInfoArray.Dispose();
             _EnergyInfoArray = new NativeArray<EnergyInfo>(_Transforms.length, Allocator.Persistent);
             _PreviousPositions.Dispose();
@@ -116,8 +114,8 @@ namespace Drones.Managers
             {
                 _PreviousPositions[j] = drone.PreviousPosition;
 
-                _JobInfoArray[j] = new MovementInfo();
-                _JobInfoArray[j] = drone.GetMovementInfo(_JobInfoArray[j]);
+                _MovementInfoArray[j] = new MovementInfo();
+                _MovementInfoArray[j] = drone.GetMovementInfo(_MovementInfoArray[j]);
                 _EnergyInfoArray[j] = new EnergyInfo();
                 _EnergyInfoArray[j] = drone.GetEnergyInfo(_EnergyInfoArray[j]);
                 j++;

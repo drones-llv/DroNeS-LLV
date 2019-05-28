@@ -11,7 +11,7 @@ namespace Drones.UI
     using System;
     using Drones.EventSystem;
 
-    public class EditPanel : DashboardPanel
+    public class EditPanel : Dashboard
     {
         public static EditPanel Instance { get; private set; }
         #region Fields
@@ -153,7 +153,7 @@ namespace Drones.UI
 
         private void OnEnable()
         {
-            AbstractCamera.ActiveCamera.BreakFollow();
+            AbstractCamera.ActiveCamera?.BreakFollow();
             transform.parent.ToRect().sizeDelta = PanelSize[DashboardMode.EditMode];
             SimulationPanel.Instance?.gameObject.SetActive(false);
             SimulationInfo.SetActive(false);

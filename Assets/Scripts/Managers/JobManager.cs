@@ -1,157 +1,114 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using UnityEngine;
-using UnityEngine.Networking;
-
 
 namespace Drones.Managers
 {
     using Utils;
-    using Serializable;
-    using Drones.EventSystem;
-    using Drones.UI;
 
     public class JobManager : MonoBehaviour
     {
-        private static JobManager Instance { get; set; }
 
-        public const string DEFAULT_URL = "http://127.0.0.1:5000/jobs";
+        [SerializeField]
+        private Hub _Owner;
+        private Hub Owner
+        {
+            get
+            {
+                if (_Owner == null) _Owner = GetComponent<Hub>();
+                return _Owner;
+            }
+        }
 
-        public static string SchedulerURL { get; set; } = DEFAULT_URL;
+        private JobGenerator _Generator;
+
 
         private Queue<Drone> _waitingList = new Queue<Drone>();
         private Queue<Job> _jobQueue = new Queue<Job>();
 
-        private void Awake()
+        private void OnDisable()
         {
-            Instance = this;
+            _Started = false;
+        }
+
+        private void OnEnable()
+        {
+            _Generator = new JobGenerator(Owner, Owner.JobGenerationRate);
+            StartCoroutine(_Generator.Generate());
         }
 
         private bool _Started;
 
-        private static bool Started
-        {
-            get => Instance._Started;
-            set
-            {
-                Instance._Started = value;
-            }
-        }
-
-        private void OnDestroy()
-        {
-            Instance = null;
-        }
-
         private IEnumerator ProcessQueue()
         {
-            Started = true;
+            _Started = true;
+            var wait = new WaitUntil(() => (_waitingList.Count > 0) && _jobQueue.Count > 0 && (TimeKeeper.TimeSpeed != TimeSpeed.Pause));
             while (true)
             {
-                yield return new WaitUntil(() => (_waitingList.Count > 0) && (TimeKeeper.TimeSpeed != TimeSpeed.Pause));
-                // we recheck the condition here in case of spurious wakeups
-                SchedulerPayload payload = SimManager.GetSchedulerPayload();
+                yield return wait;
 
-                while (_waitingList.Count > 0 && TimeKeeper.TimeSpeed != TimeSpeed.Pause)
+                while (_waitingList.Count > 0 && _jobQueue.Count > 0 && TimeKeeper.TimeSpeed != TimeSpeed.Pause)
                 {
                     Drone drone = _waitingList.Dequeue();
                     if (drone.InPool) continue;
-                    StartCoroutine(GetJob(drone, payload));
-                    if (TimeKeeper.DeltaFrame() > 18)
-                    {
-                        yield return null;
-                        payload = SimManager.GetSchedulerPayload();
-                    }
+                    drone.AssignJob(_jobQueue.Dequeue());
+                    SimManager.JobDequeued();
                 }
             }
         }
 
-        private IEnumerator GetJob(Drone drone, SchedulerPayload payload)
+        public void AddToQueue(Drone drone)
         {
-            payload.requester = drone.UID;
-            var request = new UnityWebRequest(SchedulerURL, "POST")
+            if (!_Started)
             {
-                uploadHandler = new UploadHandlerRaw(Encoding.UTF8.GetBytes(payload.ToJson())),
-                downloadHandler = new DownloadHandlerBuffer(),
-            };
-
-            request.SetRequestHeader("Content-Type", "application/json");
-            yield return request.SendWebRequest();
-
-            if (request.responseCode == 200 && request.downloadHandler.text != "{}")
-            {
-                SJob s_job = JsonUtility.FromJson<SJob>(request.downloadHandler.text);
-                if (!string.IsNullOrWhiteSpace(s_job.custom)) ConsoleLog.WriteToConsole(new CustomJob(s_job));
-                if (s_job.droneUID != drone.UID)
-                {
-                    yield return null;
-                    AddToQueue(drone);
-                    yield break;
-                }
-                var job = new Job(s_job);
-                SimManager.AllIncompleteJobs.Add(job.UID, job);
-                SimManager.AllJobs.Add(job.UID, job);
-
-                drone.AssignJob(job);
+                StartCoroutine(ProcessQueue());
             }
-            else// if (request.responseCode == 200)
+            if (!_waitingList.Contains(drone))
             {
-                yield return null;
-                AddToQueue(drone);
-            }
-            //else
-            //{
-            //    SimManager.SimStatus = SimulationStatus.Paused;
-            //}
-        }
-
-        public static void AddToQueue(Drone drone)
-        {
-            if (!Started)
-            {
-                Instance.StartCoroutine(Instance.ProcessQueue());
-            }
-            if (!Instance._waitingList.Contains(drone))
-            {
-                Instance._waitingList.Enqueue(drone);
+                _waitingList.Enqueue(drone);
             }
         }
 
-        public static int JobQueueLength => Instance._jobQueue.Count;
-
-        public static void LoadDroneQueue(List<uint> data)
+        public void AddToQueue(Job job)
         {
-            Instance._waitingList = new Queue<Drone>();
+            _jobQueue.Enqueue(job);
+            SimManager.JobEnqueued();
+        }
+
+        public int JobQueueLength => _jobQueue.Count;
+
+        public void LoadDroneQueue(List<uint> data)
+        {
+            _waitingList = new Queue<Drone>();
             foreach (var i in data)
             {
                 AddToQueue((Drone)SimManager.AllDrones[i]);
             }
         }
 
-        public static void LoadJobQueue(List<uint> data)
+        public void LoadJobQueue(List<uint> data)
         {
-            Instance._jobQueue = new Queue<Job>();
+            _jobQueue = new Queue<Job>();
             foreach (var i in data)
             {
-                Instance._jobQueue.Enqueue((Job)SimManager.AllIncompleteJobs[i]);
+                _jobQueue.Enqueue((Job)SimManager.AllIncompleteJobs[i]);
             }
         }
 
-        public static List<uint> SerializeDrones()
+        public List<uint> SerializeDrones()
         {
             var l = new List<uint>();
-            foreach (var d in Instance._waitingList)
+            foreach (var d in _waitingList)
             {
                 l.Add(d.UID);
             }
             return l;
         }
 
-        public static List<uint> SerializeJobs()
+        public List<uint> SerializeJobs()
         {
             var l = new List<uint>();
-            foreach (var d in Instance._jobQueue)
+            foreach (var d in _jobQueue)
             {
                 l.Add(d.UID);
             }

@@ -25,6 +25,7 @@ namespace Drones.Data
         public float totalDelay;
         public float totalAudible;
         public float totalEnergy;
+        public int queuedJobs;
         public int crashes;
         public int delayedJobs;
         public int failedJobs;
@@ -91,6 +92,7 @@ namespace Drones.Data
             totalDelay = data.totalDelay;
             totalAudible = data.totalAudible;
             totalEnergy = data.totalEnergy;
+            queuedJobs = data.queuedJobs;
             crashes = data.crashes;
             delayedJobs = data.delayedJobs;
             failedJobs = data.failedJobs;
@@ -98,13 +100,15 @@ namespace Drones.Data
             {
                 var loaded = new Job(job);
                 completeJobs.Add(loaded.UID, loaded);
+                jobs.Add(loaded.UID, loaded);
             }
-
             foreach (var job in data.incompleteJobs)
             {
                 var loaded = new Job(job);
                 incompleteJobs.Add(loaded.UID, loaded);
+                jobs.Add(loaded.UID, loaded);
             }
+
             foreach (var nfz in data.noFlyZones)
             {
                 NoFlyZone.Load(nfz);

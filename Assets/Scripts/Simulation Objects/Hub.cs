@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace Drones
@@ -11,7 +10,6 @@ namespace Drones
     using Interface;
     using Serializable;
     using Data;
-    using Utils.Router;
 
     public class Hub : MonoBehaviour, IDataSource, IPoolable
     {
@@ -46,13 +44,19 @@ namespace Drones
 
         #region Fields
         private HubData _Data;
-
         [SerializeField]
-        private PathClearer _DronePath;
+        private HubCollisionController _CollisionController;
+        [SerializeField]
+        private DeploymentPath _DronePath;
+        [SerializeField]
+        private Collider _Collider;
         [SerializeField]
         private float _jobGenerationRate = 0.1f;
         private JobGenerator _jobGenerator;
-        private int _rCount;
+        [SerializeField]
+        private RouteManager _Router;
+        [SerializeField]
+        private JobManager _Scheduler;
         #endregion
 
         #region IPoolable
@@ -70,16 +74,16 @@ namespace Drones
             {
                 _Data.drones.ReSort();
                 while (_Data.drones.Count > 0)
-                {
                     ((Drone)_Data.drones.GetMin(false)).DestroySelf();
-                }
             }
             _Data = null;
             SimManager.AllHubs.Remove(this);
             gameObject.SetActive(false);
             transform.SetParent(PC().PoolParent);
-            StopCoroutine(_jobGenerator.Generate());
+            if (!(_jobGenerator is null))
+                StopCoroutine(_jobGenerator.Generate());
             _jobGenerator = null;
+            _Router = null;
         }
 
         public void OnGet(Transform parent = null)
@@ -91,27 +95,93 @@ namespace Drones
             gameObject.SetActive(true);
             _jobGenerator = new JobGenerator(this, JobGenerationRate);
             StartCoroutine(_jobGenerator.Generate());
-            StartCoroutine(DeployDrone());
         }
         #endregion
 
-        public PathClearer DronePath
+        public Collider Collider
         {
             get
             {
-                if (_DronePath == null)
-                {
-                    _DronePath = transform.GetComponentInChildren<PathClearer>();
-                }
-                return _DronePath;
+                if (_Collider == null) _Collider = GetComponent<Collider>();
+                return _Collider;
             }
         }
-        public void AddToDeploymentQueue(Drone drone) => _Data.deploymentQueue.Enqueue(drone);
-        public Vector3 Position => transform.position;
-        public void UpdateEnergy(float dE) => _Data.energyConsumption += dE;
-        public SecureSortedSet<uint, IDataSource> Drones => _Data.drones;
-        public Pathfinder Router { get; } = new Raypath();
+        public HubCollisionController CollisionController
+        {
+            get
+            {
+                if (_CollisionController == null)
+                {
+                    _CollisionController = GetComponentInChildren<HubCollisionController>();
+                }
+                return _CollisionController;
+            }
+        }
+        public DeploymentPath DronePath
+        {
+            get
+            {
+                if (_DronePath == null) 
+                    _DronePath = transform.GetComponentInChildren<DeploymentPath>();
+                return _DronePath;
+            }
 
+        }
+        public RouteManager Router
+        {
+            get
+            {
+                if (_Router == null)
+                    _Router = transform.GetComponentInChildren<RouteManager>();
+                return _Router;
+            }
+        }
+        public JobManager Scheduler
+        {
+            get
+            {
+                if (_Scheduler == null)
+                    _Scheduler = transform.GetComponentInChildren<JobManager>();
+                return _Scheduler;
+            }
+        }
+
+        public void AddToDeploymentQueue(Drone drone) => DronePath.AddToDeploymentQueue(drone);
+        public Vector3 Position => transform.position;
+        public void UpdateEnergy(float dE)
+        {
+            _Data.energyConsumption += dE;
+            SimManager.UpdateEnergy(dE);
+        }
+        public void UpdateRevenue(float value)
+        {
+            _Data.revenue += value;
+            SimManager.UpdateRevenue(value);
+        }
+        public void UpdateDelay(float dt)
+        {
+            _Data.delay += dt;
+            if (dt > 0) UpdateDelayCount();
+            SimManager.UpdateDelay(dt);
+        }
+        private void UpdateDelayCount() => _Data.delayedJobs++;
+        public void UpdateFailedCount() 
+        { 
+            _Data.failedJobs++;
+            SimManager.UpdateFailedCount();
+        }
+        public void UpdateCrashCount() 
+        {
+            _Data.crashes++;
+            SimManager.UpdateCrashCount();
+        }
+        public void UpdateAudible(float dt)
+        {
+            _Data.audibility += dt;
+            SimManager.UpdateAudible(dt);
+        }
+        public void JobComplete(Job job) => _Data.completedJobs.Add(job.UID, job);
+        public SecureSortedSet<uint, IDataSource> Drones => _Data.drones;
         public float JobGenerationRate
         {
             get => _jobGenerationRate;
@@ -122,104 +192,24 @@ namespace Drones
                 _jobGenerator.SetLambda(value);
             }
         }
-
         public void OnJobCreate(params Job[] jobs)
         {
             foreach (Job job in jobs)
             {
-                SimManager.AllJobs.Add(job.UID, job);
-                SimManager.AllIncompleteJobs.Add(job.UID, job);
-                _Data.jobQueue.Enqueue(job.UID);
+                _Data.incompleteJobs.Add(job.UID, job);
+                Scheduler.AddToQueue(job);
             }
         }
-
-        void Awake()
-        {
-            _Data = new HubData();
-        }
-
-        private void OnTriggerEnter(Collider other)
-        {
-            if (other.gameObject.layer == LayerMask.NameToLayer("Hub") ||
-                other.gameObject.layer == LayerMask.NameToLayer("NoFlyZone"))
-            {
-                _rCount++;
-                transform.position += new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f));
-                StartCoroutine(Repulsion(other));
-            }
-        }
-
-        private void OnTriggerExit(Collider other)
-        {
-            if ((other.gameObject.layer == LayerMask.NameToLayer("Hub") ||
-                other.gameObject.layer == LayerMask.NameToLayer("NoFlyZone")) && _rCount > 0)
-            {
-                _rCount--;
-            }
-        }
-
-        public IEnumerator Repulsion(Collider other)
-        {
-            StopCoroutine(DeployDrone());
-            yield return null;
-            Vector3 acc;
-            Vector3 vel = Vector3.zero;
-            float dt = 0;
-            float dist;
-            do
-            {
-                transform.position += vel * dt;
-                dist = Vector3.Distance(transform.position, other.transform.position);
-                float k = 1e8f / Mathf.Pow(dist, 2);
-                if (other.CompareTag("NoFlyZone")) k *= 100;
-                k = Mathf.Clamp(k, 0, 1e5f);
-                acc = k * (transform.position - other.transform.position).normalized;
-                acc.y = 0;
-                dt = Time.deltaTime;
-                vel = acc * dt;
-                yield return null;
-            } while (_rCount > 0);
-            StartCoroutine(Reposition(vel.normalized));
-            yield break;
-        }
-
-        public IEnumerator Reposition(Vector3 inDirection)
-        {
-            StopCoroutine(DeployDrone());
-            Vector3.Normalize(inDirection);
-            while (!DronePath.IsClear) // Building
-            {
-                transform.position += 5 * DronePath.Direction + inDirection;
-                yield return null;
-            }
-            StartCoroutine(DeployDrone());
-            yield break;
-        }
-
-        IEnumerator DeployDrone()
-        {
-            var time = TimeKeeper.Chronos.Get();
-            WaitUntil _DroneReady = new WaitUntil(() => time.Timer() > HubData.deploymentPeriod);
-            Drone outgoing = null;
-            while (true)
-            {
-                if (!DronePath.IsClear) yield return null;
-                if (_Data.deploymentQueue.Count > 0)
-                {
-                    outgoing = _Data.deploymentQueue.Dequeue();
-                    if (outgoing.InPool) continue;
-                    _Data.freeDrones.Remove(outgoing);
-                    GetBatteryForDrone(outgoing);
-                    StopCharging(outgoing.GetBattery());
-                    outgoing.GetBattery().SetStatus(BatteryStatus.Discharge);
-                    outgoing.Deploy();
-                }
-                yield return _DroneReady;
-                time.Now();
-            }
-        }
+        void Awake() => _Data = new HubData();
 
         #region Drone/Battery Interface
+        public void DeployDrone(Drone drone)
+        {
+            _Data.freeDrones.Remove(drone);
+            GetBatteryForDrone(drone);
+            StopCharging(drone.GetBattery());
+        }
+
         public void OnDroneReturn(Drone drone)
         {
             if (drone != null && _Data.freeDrones.Add(drone.UID, drone))
@@ -268,9 +258,11 @@ namespace Drones
         public Drone BuyDrone()
         {
             Drone drone = Drone.New();
+            Scheduler.AddToQueue(drone);
             drone.transform.position = transform.position;
             GetBatteryForDrone(drone);
             _Data.drones.Add(drone.UID, drone);
+            _Data.freeDrones.Add(drone.UID, drone);
             return drone;
         }
 

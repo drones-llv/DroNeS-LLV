@@ -10,13 +10,14 @@ namespace Drones.Utils.Router
     public class Raypath : Pathfinder
     {
         private List<List<Obstacle>> _SortedBuildings;
+        private List<Obstacle> _Hubs;
         private const float _maxAlt = 200;
         private const float _minAlt = 30;
         private const int _altDiv = 10; // Altitude interval
         private const int _buildingDiv = 30; // Building bucket height interval
         private const int _Ra = 200; // Corridor width
-        private const float _epsilon = 0.001f;
-        private readonly int[] hubAlt = { 500, 510 }; // hub altitudes, 500 for northbound drones, 510 for south
+        private const float _epsilon = 0.01f;
+        private readonly int[] _hubAlt = { 450, 550 }; // hub altitudes, 450 for northbound drones, 550 for south
         private float DroneCount => SimManager.AllDrones.Count;
         private float[] _altitudes;
         private int[] _assigned;
@@ -60,16 +61,16 @@ namespace Drones.Utils.Router
                     int i = 0;
                     float lower, upper;
                     _SortedBuildings = new List<List<Obstacle>>();
-                    while (added < _Buildings.Count)
+                    while (added < Buildings.Count)
                     {
-                        SortedBuildings.Add(new List<Obstacle>());
-                        foreach (var building in _Buildings)
+                        _SortedBuildings.Add(new List<Obstacle>());
+                        foreach (var building in Buildings)
                         {
                             lower = i * _buildingDiv;
                             upper = (i + 1) * _buildingDiv;
                             if (building.size.y < upper && building.size.y >= lower)
                             {
-                                SortedBuildings[i].Add(building);
+                                _SortedBuildings[i].Add(building);
                                 added++;
                             }
                         }
@@ -79,11 +80,48 @@ namespace Drones.Utils.Router
                 return _SortedBuildings;
             }
         }
+
         int frame;
-        public static int HashVector(Vector3 v)
+
+        // The public interface to get the list of waypoints
+        public override Queue<Vector3> GetRoute(Vector3 start, Vector3 end, bool hubReturn)
         {
-            return (v.x.ToString("0.000") + v.z.ToString("0.000")).GetHashCode();
+            frame = 0;
+            UpdateGameState();
+            _origin = start;
+            _destination = end;
+            float alt = hubReturn ? _hubAlt[(end - start).z > 0 ? 0 : 1] : Altitudes[ChooseAltitude(start, end)];
+            _origin.y = 0;
+            _destination.y = 0;
+            try
+            {
+                var waypoints = Navigate(_origin, _destination, alt, hubReturn);
+
+                for (int i = 0; i < waypoints.Count; i++)
+                {
+                    var v = waypoints[i];
+                    v.y = alt;
+                    waypoints[i] = v;
+                }
+                if (hubReturn) 
+                {
+                    var v = _destination;
+                    v.y = 500;
+                    waypoints.Add(v);
+                }
+                return new Queue<Vector3>(waypoints);
+            }
+            catch (StackOverflowException)
+            {
+                var waypoints = new Queue<Vector3>();
+                waypoints.Enqueue(_origin);
+                waypoints.Enqueue(_destination);
+                return waypoints;
+            }
+
         }
+
+        public static int HashVector(Vector3 v) => (v.x.ToString("0.000") + v.z.ToString("0.000")).GetHashCode();
 
         private int CountAt(int i)
         {
@@ -100,11 +138,15 @@ namespace Drones.Utils.Router
         public void UpdateGameState()
         {
             _NoFlyZones = new List<Obstacle>();
+            _Hubs = new List<Obstacle>();
             foreach (NoFlyZone nfz in SimManager.AllNFZ.Values)
             {
                 _NoFlyZones.Add(new Obstacle(nfz.transform, _Rd));
             }
-
+            foreach (Hub hub in SimManager.AllHubs.Values)
+            {
+                _Hubs.Add(new Obstacle((BoxCollider)hub.Collider, _Rd));
+            }
             for (int i = 0; i < Altitudes.Length; i++)
             {
                 Assigned[i] = CountAt(i);
@@ -142,36 +184,6 @@ namespace Drones.Utils.Router
             Vector4 tmp2 = RotationY(90) * tmp1;
             tmp2.w = 0;
             return tmp2;
-        }
-        // The public interface to get the list of waypoints
-        public override Queue<Vector3> GetRoute(Vector3 start, Vector3 end, bool hubReturn)
-        {
-            frame = 0;
-            _origin = start;
-            _destination = end;
-            float alt = hubReturn ? hubAlt[(end - start).z > 0 ? 0 : 1] : Altitudes[ChooseAltitude(start, end)];
-            _origin.y = 0;
-            _destination.y = 0;
-            try
-            {
-                var waypoints = Navigate(_origin, _destination, alt);
-
-                for (int i = 0; i < waypoints.Count; i++)
-                {
-                    var v = waypoints[i];
-                    v.y = alt;
-                    waypoints[i] = v;
-                }
-                return new Queue<Vector3>(waypoints);
-            }
-            catch (StackOverflowException)
-            {
-                var waypoints = new Queue<Vector3>();
-                waypoints.Enqueue(_origin);
-                waypoints.Enqueue(_destination);
-                return waypoints;
-            }
-            
         }
         // Get a sorted list/heap of buildings in a corridor between start and end
         private MinHeap<Obstacle> Blockers(Vector3 start, Vector3 end, float alt)
@@ -319,14 +331,14 @@ namespace Drones.Utils.Router
             }
             foreach (var nf in _NoFlyZones)
             {
-                if (IsContained(nf, waypoint)) waypoint = FindOtherWaypoint(obs, start, waypoint);
+                if (nf.Contains(waypoint)) waypoint = FindOtherWaypoint(obs, start, waypoint);
             }
             return waypoint;
         }
 
-        private List<Vector3> Navigate(Vector3 start, Vector3 end, float alt)
+        private List<Vector3> Navigate(Vector3 start, Vector3 end, float alt, bool hubReturn = false)
         {
-            frame++;
+            if (frame++ > 1500) throw new StackOverflowException("Can't solve!");
             List<Vector3> waypoints = new List<Vector3> { start };
             var dir = end - start;
             if (dir.magnitude < _epsilon) { return waypoints; } // If start = end return start
@@ -359,6 +371,23 @@ namespace Drones.Utils.Router
                     if (i[1] == -1) errorPoints.Add(HashVector(v));
                 }
             }
+            if (hubReturn)
+            {
+                foreach (var obs in _Hubs)
+                {
+                    if (obs.Contains(_destination)) continue;
+                    //For each no fly zone find the number intersects and index of vertices/normals
+                    if (FindIntersect(obs, start, end, out int[] i) > 0)
+                    {
+                        intersected = true;
+                        // Find the corresponding waypoint for the given vertices/normal
+                        Vector3 v = FindWaypoint(obs, start, end, i);
+                        possibilities.Add(v);
+                        if (i[1] == -1) errorPoints.Add(HashVector(v));
+                    }
+                }
+            }
+
             int k = 0;
             while (!buildings.IsEmpty() && k < 5) 
             {

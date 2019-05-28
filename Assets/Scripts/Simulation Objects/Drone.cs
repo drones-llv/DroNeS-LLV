@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
-using System;
 using System.Collections.Generic;
-using System.Collections;
-using System.Globalization;
+
 namespace Drones
 {
     using Managers;
@@ -63,7 +61,6 @@ namespace Drones
             _Data = null;
             gameObject.SetActive(false);
             transform.SetParent(PC().PoolParent);
-            StopCoroutine(PollRoute());
         }
 
         public void OnGet(Transform parent = null)
@@ -73,9 +70,7 @@ namespace Drones
             Trail.enabled = true;
             transform.SetParent(parent);
             gameObject.SetActive(true);
-            JobManager.AddToQueue(this);
             InPool = false;
-            StartCoroutine(PollRoute());
         }
 
         public bool InPool { get; private set; }
@@ -114,20 +109,22 @@ namespace Drones
             {
                 _Data.job = job.UID;
                 job.AssignDrone(this);
-                if (InHub)
-                {
-                    var d = Vector3.Normalize(GetJob().DropOff - transform.position) * 4;
-                    d.y = 0;
-                    transform.position += d;
-                    job.StartDelivery();
-                }
-                else
-                {
-                    //TODO go back to hub
-                }
+                Pickup(job);
             }
-            RouteManager.AddToQueue(this);
+            GetHub()?.Router.AddToQueue(this);
         }
+
+        private void Pickup(Job job) 
+        {
+            if (InHub)
+            {
+                var d = Vector3.Normalize(GetJob().DropOff - transform.position) * 4;
+                d.y = 0;
+                transform.position += d;
+                job.StartDelivery();
+            }
+        }
+
         public void AssignBattery(Battery battery)
         {
             if (battery == null)
@@ -146,15 +143,12 @@ namespace Drones
             _Data.hub = hub.UID;
         }
 
-        public void CompleteJob()
+        public void CompleteJob(Job job)
         {
-            if (_Data.job != 0)
-            {
-                var job = GetJob();
-                _Data.completedJobs.Add(_Data.job, job);
-                UpdateDelay(job.Deadline.Timer());
-                AssignJob(null);
-            }
+            _Data.completedJobs.Add(_Data.job, job);
+            UpdateDelay(job.Deadline.Timer());
+            GetHub().UpdateRevenue(job.Earnings);
+            AssignJob(null);
         }
 
         public Job GetJob() => (Job)SimManager.AllIncompleteJobs[_Data.job];
@@ -164,9 +158,21 @@ namespace Drones
         public void WaitForDeployment() => _Data.isWaiting = true;
         public void Deploy() => _Data.isWaiting = false;
 
-        public void UpdateDelay(float dt) => _Data.totalDelay += dt;
-        public void UpdateEnergy(float dE) => _Data.totalEnergy += dE;
-        public void UpdateAudible(float dt) => _Data.audibleDuration += dt;
+        public void UpdateDelay(float dt)
+        {
+            _Data.totalDelay += dt;
+            GetHub().UpdateDelay(dt);
+        }
+        public void UpdateEnergy(float dE)
+        {
+            _Data.totalEnergy += dE;
+            GetHub().UpdateEnergy(dE);
+        }
+        public void UpdateAudible(float dt)
+        {
+            _Data.audibleDuration += dt;
+            GetHub().UpdateAudible(dt);
+        }
 
         public MovementInfo GetMovementInfo(MovementInfo info)
         {
@@ -289,6 +295,7 @@ namespace Drones
 
         private void DestroySelf(Collider other)
         {
+            GetHub().UpdateCrashCount();
             if (gameObject == AbstractCamera.Followee)
                 AbstractCamera.ActiveCamera.BreakFollow();
 
@@ -296,15 +303,13 @@ namespace Drones
             var dd = new RetiredDrone(this, other);
             SimManager.AllRetiredDrones.Add(dd.UID, dd);
             Delete();
-            SimManager.UpdateCrashCount();
         }
 
         public void DestroySelf()
         {
             if (gameObject == AbstractCamera.Followee)
-            {
                 AbstractCamera.ActiveCamera.BreakFollow();
-            }
+
             Explosion.New(transform.position);
             var dd = new RetiredDrone(this);
             SimManager.AllRetiredDrones.Add(dd.UID, dd);
@@ -321,13 +326,10 @@ namespace Drones
                     if (job != null && job.Status == JobStatus.Delivering && _Data.isGoingDown != _Data.wasGoingDown)
                     {
                         job.CompleteJob();
-                        JobManager.AddToQueue(this);
+                        GetHub().Scheduler.AddToQueue(this);
                     }
-                    else if (job != null && job.Status == JobStatus.Pickup && _Data.isGoingDown != _Data.wasGoingDown)
-                    {
-                        job.StartDelivery();
-                    }
-                    RouteManager.AddToQueue(this);
+
+                    GetHub().Router.AddToQueue(this);
                     return;
                 }
                 _Data.state = FlightStatus.AwaitingWaypoint;
@@ -357,7 +359,10 @@ namespace Drones
             if (job != null)
             {
                 if (job.Status != JobStatus.Pickup && job.Status != JobStatus.Delivering) return;
-
+                if (job.Status == JobStatus.Pickup)
+                {
+                    Pickup(job);
+                }
                 Vector3 destination =
                     job.Status == JobStatus.Pickup ? job.Pickup :
                     job.Status == JobStatus.Delivering ? job.DropOff :
@@ -374,7 +379,7 @@ namespace Drones
                 }
                 else
                 {
-                    RouteManager.AddToQueue(this);
+                    GetHub().Router.AddToQueue(this);
                 }
             }
         }
@@ -403,21 +408,6 @@ namespace Drones
                 AbstractCamera.ActiveCamera.BreakFollow();
         }
 
-        IEnumerator PollRoute()
-        {
-            TimeKeeper.Chronos time = TimeKeeper.Chronos.Get();
-            var wait1 = new WaitUntil(() => _Data.frequentRequests);
-            var wait2 = new WaitUntil(() => time.Timer() > 5);
-            while (true)
-            {
-                yield return wait1;
-                if (_Data.movement == DroneMovement.Hover || _Data.movement == DroneMovement.Horizontal)
-                    RouteManager.AddToQueue(this);
-                yield return wait2;
-                time.Now();
-            }
-        }
-
         public SDrone Serialize() => new SDrone(_Data, this);
 
         public StrippedDrone Strip() => new StrippedDrone(_Data, this);
@@ -427,7 +417,6 @@ namespace Drones
             _Data = new DroneData(data, this);
             InPool = false;
             transform.position = data.position;
-            StartCoroutine(PollRoute());
             if (_Data.battery != 0) GetBattery().AssignDrone(this);
 
             return this;

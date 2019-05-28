@@ -19,7 +19,7 @@
         {
             UID = ++Count;
             status = BatteryStatus.Idle;
-            charge = 1;
+            charge = designCapacity;
             capacity = designCapacity;
         }
 

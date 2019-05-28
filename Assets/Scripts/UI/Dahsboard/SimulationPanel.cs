@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace Drones.UI
 {
-    public class SimulationPanel : DashboardPanel
+    public class SimulationPanel : Dashboard
     {
         #region Fields
         [SerializeField]
