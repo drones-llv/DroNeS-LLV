@@ -8,6 +8,7 @@ namespace Drones.Utils
     using Serializable;
     using Managers;
     using UI;
+    using Drones.Utils.Scheduler;
 
     public class TimeKeeper : MonoBehaviour
     {
@@ -183,6 +184,11 @@ namespace Drones.Utils
             public override bool Equals(object obj) => obj is Chronos && this == ((Chronos)obj);
 
             public override int GetHashCode() => base.GetHashCode();
+
+            static public explicit operator ChronoWrapper(Chronos time)
+            {
+                return new ChronoWrapper(time.day, time.hr, time.min, time.sec);
+            }
 
             #region Operators
             public static bool operator <(Chronos t1, Chronos t2)

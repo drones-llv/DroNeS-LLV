@@ -54,7 +54,7 @@ namespace Drones.Data
         {
             status = JobStatus.Assigning;
             created = TimeKeeper.Chronos.Get().SetReadOnly();
-            deadline = created + 1800;
+            deadline = created + CostFunction.GUARANTEE;
             this.pickup = pickup.Position;
             this.dropoff = LandingZoneIdentifier.Reposition(dropoff);
             packageWeight = weight;

@@ -8,7 +8,6 @@ namespace Drones.Managers
 
     public class JobManager : MonoBehaviour
     {
-
         [SerializeField]
         private Hub _Owner;
         private Hub Owner
@@ -21,7 +20,6 @@ namespace Drones.Managers
         }
 
         private JobGenerator _Generator;
-
 
         private Queue<Drone> _waitingList = new Queue<Drone>();
         private Queue<Job> _jobQueue = new Queue<Job>();

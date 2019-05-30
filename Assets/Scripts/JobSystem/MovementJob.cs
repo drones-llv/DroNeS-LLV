@@ -15,8 +15,8 @@ namespace Drones.Utils.Jobs
     public struct MovementJob : IJobParallelForTransform
     {
         public const float g = 9.81f;
-        public const float vSpeed = 4.0f;
-        public const float hSpeed = 9.0f;
+        public const float VSPEED = 4.0f;
+        public const float HSPEED = 9.0f;
         public float deltaTime;
         [ReadOnly]
         public NativeArray<MovementInfo> nextMove;
@@ -29,7 +29,7 @@ namespace Drones.Utils.Jobs
 
             if (nextMove[k].moveType == DroneMovement.Ascend || nextMove[k].moveType == DroneMovement.Descend)
             {
-                float step = deltaTime * vSpeed;
+                float step = deltaTime * VSPEED;
                 Vector3 target = transform.position;
                 target.y = nextMove[k].height;
                 rt_dt[k] = transform.position;
@@ -37,7 +37,7 @@ namespace Drones.Utils.Jobs
             }
             else if (nextMove[k].moveType == DroneMovement.Horizontal)
             {
-                float step = deltaTime * hSpeed;
+                float step = deltaTime * HSPEED;
                 rt_dt[k] = transform.position;
                 transform.position = Vector3.MoveTowards(transform.position, nextMove[k].waypoint, step);
             }

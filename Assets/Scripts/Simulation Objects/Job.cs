@@ -10,6 +10,7 @@ namespace Drones
     using Serializable;
     using Managers;
     using Drones.Data;
+    using Drones.Utils.Scheduler;
 
     public class Job : IDataSource
     {
@@ -61,6 +62,7 @@ namespace Drones
         public TimeKeeper.Chronos CompletedOn => _Data.completed;
         public float PackageWeight => _Data.packageWeight;
         public float PackageXArea => _Data.packageXArea;
+        public float CostFunc(TimeKeeper.Chronos time) => _Data.costFunction.GetPaid(time);
         public float Loss => -_Data.costFunction.GetPaid(_EoT);
 
         public void AssignDrone(Drone drone)
@@ -112,5 +114,19 @@ namespace Drones
         }
 
         public SJob Serialize() => new SJob(_Data);
+
+        public static explicit operator StrippedJob(Job job)
+        {
+            var j = new StrippedJob
+            {
+                UID = job.UID,
+                pickup = job.Pickup,
+                dropoff = job.DropOff,
+                start = (ChronoWrapper)job._Data.created,
+                reward = job._Data.costFunction.Reward,
+                penalty = -job._Data.costFunction.Penalty
+            };
+            return j;
+        }
     };
 }

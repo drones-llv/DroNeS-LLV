@@ -1,5 +1,6 @@
 ﻿using System;
 using Drones.Serializable;
+using Drones.Utils.Scheduler;
 using UnityEngine;
 
 namespace Drones.Utils
@@ -30,7 +31,31 @@ namespace Drones.Utils
             float dt = Normalize(complete - Start);
             float reduction = 1 - Discretize(dt);
 
-            return (reduction > 0) ? Reward * reduction : -Penalty;
+            return (reduction > 0) ? Reward * reduction : Penalty;
+        }
+
+        public static float Evaluate(StrippedJob job, ChronoWrapper complete)
+        {
+            float dt = Normalize(complete - job.start);
+            float reduction = 1 - Discretize(dt);
+            job.penalty = -Mathf.Abs(job.penalty);
+            return (reduction > 0) ? job.reward * reduction : job.penalty;
+        }
+
+        public static ChronoWrapper Inverse(StrippedJob job, float value)
+        {
+            if (Mathf.Abs(value - job.penalty) < 0.01f) return job.start + GUARANTEE;
+
+            return job.start + (1 - Discretize(value / job.reward)) * GUARANTEE;
+        }
+
+        public static float Normalize(float dt) => dt / GUARANTEE;
+
+        public static float Discretize(float ndt, int division = 10)
+        {
+            if (division < 1) division = 1;
+
+            return ((int)(ndt * division)) / (float)division;
         }
 
         public SCostFunction Serialize()
@@ -41,18 +66,6 @@ namespace Drones.Utils
                 reward = Reward,
                 penalty = Penalty
             };
-        }
-
-        public float Normalize(float dt)
-        {
-            return dt / GUARANTEE;
-        }
-
-        public float Discretize(float ndt, int division = 10)
-        {
-            if (division < 1) division = 1;
-
-            return ((int)(ndt * division)) / (float)division;
         }
 
         public float Step(float x, float n, float yU = 1, float yD = -1) => (x <= n) ? yU : yD;

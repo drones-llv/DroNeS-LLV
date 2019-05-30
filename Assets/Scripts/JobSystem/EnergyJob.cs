@@ -22,8 +22,8 @@ namespace Drones.Utils.Jobs
         public const float Prop_D = 0.3f; // propeller radius
         public const float n_Prop = 4; // number of propellers
         public const float eff = 1f; // efficiency
-        public const float vSpeed = MovementJob.vSpeed;
-        public const float hSpeed = MovementJob.hSpeed;
+        public const float vSpeed = MovementJob.VSPEED;
+        public const float hSpeed = MovementJob.HSPEED;
         public float deltaTime;
         public NativeArray<EnergyInfo> energies;
 
