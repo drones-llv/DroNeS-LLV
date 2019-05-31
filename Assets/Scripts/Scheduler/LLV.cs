@@ -4,7 +4,7 @@ using Drones.Utils.Jobs;
 using UnityEngine;
 namespace Drones.Utils.Scheduler
 {
-    public class LLV : AbstractScheduler
+    public class LLV : Scheduler
     {
         public override List<StrippedJob> Sort(List<StrippedJob> jobs, ChronoWrapper time)
         {
@@ -50,19 +50,6 @@ namespace Drones.Utils.Scheduler
 
             return ExpectedValue(job, time) - ExpectedValue(job, time + mean);
         }
-
-        private static float ExpectedDuration(StrippedJob job)
-        {
-            var manhattan = ManhattanDist(job);
-            var euclidean = EuclideanDist(job);
-
-            var mean = (manhattan + euclidean) / 2;
-            // float sigmaDist = meanDist - euclidean;
-            // NOTE: Variance not necessary since normal dist symmetric around mean
-
-            return mean / MovementJob.HSPEED;
-        }
-
 
     }
 }

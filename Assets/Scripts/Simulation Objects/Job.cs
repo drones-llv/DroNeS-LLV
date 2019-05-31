@@ -98,7 +98,7 @@ namespace Drones
             _Data.earnings = _Data.costFunction.GetPaid(CompletedOn);
 
             GetDrone().CompleteJob(this);
-            AssignDrone(null);
+            _Data.drone = 0;
         }
 
         public void StartDelivery() => _Data.status = JobStatus.Delivering;

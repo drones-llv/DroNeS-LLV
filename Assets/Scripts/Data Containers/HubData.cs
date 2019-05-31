@@ -60,7 +60,6 @@ namespace Drones.Data
             failedJobs = data.failedJobs;
             InitializeCollections();
             LoadAssignments(data, droneData, batteryData);
-            hub.Router.LoadQueue(data.routeQueue);
             hub.Scheduler.LoadJobQueue(data.schedulerJobQueue);
             hub.Scheduler.LoadDroneQueue(data.schedulerDroneQueue);
             SetUpCollectionEvents();

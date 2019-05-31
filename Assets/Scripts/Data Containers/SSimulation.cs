@@ -4,7 +4,6 @@ using System.Collections.Generic;
 namespace Drones.Serializable
 {
     using Data;
-    using Managers;
     using Utils;
 
     [Serializable]

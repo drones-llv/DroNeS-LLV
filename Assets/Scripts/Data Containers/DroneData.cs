@@ -21,7 +21,6 @@ namespace Drones.Data
             completedJobs.ItemAdded += (obj) => _source.GetHub().JobComplete((Job)obj);
             completedJobs.ItemAdded += (obj) => packageWeight += ((Job)obj).PackageWeight;
             movement = DroneMovement.Idle;
-            state = FlightStatus.Idle;
             collisionOn = false;
             inHub = true;
             previousPosition = CurrentPosition;
@@ -40,7 +39,6 @@ namespace Drones.Data
             collisionOn = data.collisionOn;
             isWaiting = data.isWaiting;
             movement = data.movement;
-            state = data.status;
             totalDelay = data.totalDelay;
             audibleDuration = data.totalAudibleDuration;
             packageWeight = data.totalPackageWeight;
@@ -70,7 +68,6 @@ namespace Drones.Data
         {
             MemberCondition = (IDataSource obj) => { return obj is Job; }
         };
-        public FlightStatus state;
         public DroneMovement movement;
         public uint DeliveryCount => (uint)completedJobs.Count;
         public float packageWeight;

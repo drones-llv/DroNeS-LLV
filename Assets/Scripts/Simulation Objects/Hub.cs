@@ -10,6 +10,7 @@ namespace Drones
     using Interface;
     using Serializable;
     using Data;
+    using Utils.Router;
 
     public class Hub : MonoBehaviour, IDataSource, IPoolable
     {
@@ -54,7 +55,7 @@ namespace Drones
         private float _jobGenerationRate = 0.1f;
         private JobGenerator _jobGenerator;
         [SerializeField]
-        private RouteManager _Router;
+        private Pathfinder _Router;
         [SerializeField]
         private JobManager _Scheduler;
         #endregion
@@ -74,7 +75,7 @@ namespace Drones
             {
                 _Data.drones.ReSort();
                 while (_Data.drones.Count > 0)
-                    ((Drone)_Data.drones.GetMin(false)).DestroySelf();
+                    ((Drone)_Data.drones.GetMin(false)).SelfDestruct();
             }
             _Data = null;
             SimManager.AllHubs.Remove(this);
@@ -127,12 +128,12 @@ namespace Drones
             }
 
         }
-        public RouteManager Router
+        public Pathfinder Router
         {
             get
             {
                 if (_Router == null)
-                    _Router = transform.GetComponentInChildren<RouteManager>();
+                    _Router = new Raypath();
                 return _Router;
             }
         }
@@ -216,7 +217,8 @@ namespace Drones
             {
                 _Data.chargingBatteries.Add(drone.GetBattery().UID, drone.GetBattery());
             }
-            drone.WaitForDeployment();
+            drone?.WaitForDeployment();
+            Scheduler.AddToQueue(drone);
         }
 
         private void RemoveBatteryFromDrone(Drone drone)

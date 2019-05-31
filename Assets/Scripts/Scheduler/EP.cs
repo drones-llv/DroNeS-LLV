@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
 namespace Drones.Utils.Scheduler
 {
-    public class EP : AbstractScheduler
+    public class EP : Scheduler
     {
         public override List<StrippedJob> Sort(List<StrippedJob> jobs, ChronoWrapper time)
         {
@@ -17,7 +15,7 @@ namespace Drones.Utils.Scheduler
             return jobs;
         }
 
-        public float LeftTime(StrippedJob job, ChronoWrapper time)
+        public static float LeftTime(StrippedJob job, ChronoWrapper time)
         {
             var finishValue = ExpectedValue(job, time);
             ChronoWrapper finishTime = CostFunction.Inverse(job, finishValue);

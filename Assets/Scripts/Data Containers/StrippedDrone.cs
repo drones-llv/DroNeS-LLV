@@ -30,7 +30,6 @@ namespace Drones.Serializable
             isWaiting = data.isWaiting;
             inHub = data.inHub;
             movement = data.movement;
-            status = data.state;
             targetAltitude = data.targetAltitude;
             waypointsQueue = new List<SVector3>();
             position = drone.transform.position;

@@ -61,7 +61,7 @@ namespace Drones.Managers
             {
                 StartCoroutine(ProcessQueue());
             }
-            if (!_waitingList.Contains(drone))
+            if (drone != null && !_waitingList.Contains(drone))
             {
                 _waitingList.Enqueue(drone);
             }

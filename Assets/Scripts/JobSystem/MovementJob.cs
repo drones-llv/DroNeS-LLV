@@ -1,6 +1,8 @@
 ﻿using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Jobs;
+using Unity.Burst;
+using Unity.Mathematics;
 
 namespace Drones.Utils.Jobs
 {
@@ -8,45 +10,45 @@ namespace Drones.Utils.Jobs
     {
         public DroneMovement moveType;
         public float height;
-        public Vector3 waypoint;
         public int isWaiting;
+        public float3 waypoint;
+        public float3 prev_pos;
     }
-
+    [BurstCompile]
     public struct MovementJob : IJobParallelForTransform
     {
         public const float g = 9.81f;
         public const float VSPEED = 4.0f;
         public const float HSPEED = 9.0f;
         public float deltaTime;
-        [ReadOnly]
         public NativeArray<MovementInfo> nextMove;
-        public NativeArray<Vector3> rt_dt;
 
         public void Execute(int k, TransformAccess transform)
         {
             if (nextMove[k].isWaiting != 0) return;
 
-
-            if (nextMove[k].moveType == DroneMovement.Ascend || nextMove[k].moveType == DroneMovement.Descend)
+            var info = nextMove[k];
+            if (info.moveType == DroneMovement.Ascend || nextMove[k].moveType == DroneMovement.Descend)
             {
                 float step = deltaTime * VSPEED;
                 Vector3 target = transform.position;
                 target.y = nextMove[k].height;
-                rt_dt[k] = transform.position;
+                info.prev_pos = transform.position;
                 transform.position = Vector3.MoveTowards(transform.position, target, step);
             }
             else if (nextMove[k].moveType == DroneMovement.Horizontal)
             {
                 float step = deltaTime * HSPEED;
-                rt_dt[k] = transform.position;
+                info.prev_pos = transform.position;
                 transform.position = Vector3.MoveTowards(transform.position, nextMove[k].waypoint, step);
             }
             else if (nextMove[k].moveType == DroneMovement.Drop)
             {
-                var rt = transform.position;
-                transform.position = 2 * rt - rt_dt[k] + g * Vector3.down * deltaTime * deltaTime;
-                rt_dt[k] = rt;
+                var rt = (float3)transform.position;
+                transform.position = 2 * rt - info.prev_pos + new float3(0,-g,0) * deltaTime * deltaTime;
+                info.prev_pos = rt;
             }
+            nextMove[k] = info;
         }
     }
 }

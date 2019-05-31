@@ -84,13 +84,20 @@ namespace Drones.Utils.Router
         int frame;
 
         // The public interface to get the list of waypoints
-        public override Queue<Vector3> GetRoute(Vector3 start, Vector3 end, bool hubReturn)
+        public override Queue<Vector3> GetRoute(Drone drone)
         {
             frame = 0;
             UpdateGameState();
-            _origin = start;
-            _destination = end;
-            float alt = hubReturn ? _hubAlt[(end - start).z > 0 ? 0 : 1] : Altitudes[ChooseAltitude(start, end)];
+            var job = drone.GetJob();
+            _destination =
+                job == null ? drone.GetHub().Position :
+                job.Status == JobStatus.Pickup ? job.Pickup :
+                job.Status == JobStatus.Delivering ? job.DropOff :
+                drone.GetHub().Position;
+            _origin = drone.transform.position;
+            var hubReturn = job == null || job.Status == JobStatus.Pickup;
+            float alt = hubReturn ? _hubAlt[(_destination - _origin).z > 0 ? 0 : 1] : 
+                Altitudes[ChooseAltitude(_origin, _destination)];
             _origin.y = 0;
             _destination.y = 0;
             try
@@ -99,29 +106,34 @@ namespace Drones.Utils.Router
 
                 for (int i = 0; i < waypoints.Count; i++)
                 {
-                    var v = waypoints[i];
-                    v.y = alt;
-                    waypoints[i] = v;
+                    var u = waypoints[i];
+                    u.y = alt;
+                    waypoints[i] = u;
                 }
-                if (hubReturn) 
-                {
-                    var v = _destination;
-                    v.y = 500;
-                    waypoints.Add(v);
-                }
+
+                var v = _destination;
+                v.y = hubReturn ? 500 : 5;
+                waypoints.Add(v);
+
                 return new Queue<Vector3>(waypoints);
             }
             catch (StackOverflowException)
             {
-                var waypoints = new Queue<Vector3>();
-                waypoints.Enqueue(_origin);
-                waypoints.Enqueue(_destination);
+                var h = hubReturn ? _hubAlt[0] : _maxAlt;
+                _origin.y = h;
+                _destination.y = h;
+                var waypoints = new Queue<Vector3>(new[] { _origin, _destination });
+
+                var v = _destination;
+                v.y = hubReturn ? 500 : 5;
+                waypoints.Enqueue(v);
+
                 return waypoints;
             }
 
         }
 
-        public static int HashVector(Vector3 v) => (v.x.ToString("0.000") + v.z.ToString("0.000")).GetHashCode();
+        public static int HashVector(Vector3 v) => (v.x.ToString("0.000") + "," + v.z.ToString("0.000")).GetHashCode();
 
         private int CountAt(int i)
         {

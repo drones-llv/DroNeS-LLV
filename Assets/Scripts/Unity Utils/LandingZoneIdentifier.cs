@@ -90,7 +90,7 @@ namespace Drones.Utils
             v /= 4;
             v *= 0.2f;
             area += v;
-
+            area.y = 0;
             return area;
         }
 

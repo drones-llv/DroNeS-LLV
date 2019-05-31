@@ -1,5 +1,6 @@
 ﻿using Unity.Collections;
 using Unity.Jobs;
+using Unity.Burst;
 using UnityEngine;
 
 namespace Drones.Utils.Jobs
@@ -7,11 +8,11 @@ namespace Drones.Utils.Jobs
     public struct EnergyInfo
     {
         public float pkgWgt;
-        public float pkgXArea;
         public float energy;
         public DroneMovement moveType;
     }
 
+    [BurstCompile]
     public struct EnergyJob : IJobParallelFor
     {
         public const float mass = 22.5f;

@@ -31,7 +31,7 @@ namespace Drones.Utils.Router
 
         protected Pathfinder() { }
 
-        public abstract Queue<Vector3> GetRoute(Vector3 start, Vector3 end, bool hubReturn);
+        public abstract Queue<Vector3> GetRoute(Drone drone);
 
         ~Pathfinder()
         {

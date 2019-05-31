@@ -17,7 +17,7 @@ namespace Drones.Utils.Scheduler
         public float penalty;
     }
 
-    public abstract class AbstractScheduler
+    public abstract class Scheduler
     {
         public abstract List<StrippedJob> Sort(List<StrippedJob> jobs, ChronoWrapper time);
 
@@ -34,6 +34,7 @@ namespace Drones.Utils.Scheduler
             return 1 / (Mathf.Sqrt(2 * Mathf.PI) * stdev) * Mathf.Exp(-Mathf.Pow(z - mu, 2) / (2 * stdev * stdev));
         }
 
+        const int STEPS = 200;
         public static float ExpectedValue(StrippedJob j, ChronoWrapper time)
         {
             var man = ManhattanDist(j);
@@ -42,20 +43,21 @@ namespace Drones.Utils.Scheduler
             var mu = (man + euc) / 2 / MovementJob.HSPEED;
             var stdev = (mu - euc) / MovementJob.HSPEED;
 
-            // Approximate integral as a sum over 2 hours, assume probability trails off after 2 hours
-
-            int steps = 60;
-            var h = 7200 / steps;
-
+            var h = 4 * stdev / STEPS;
             float expected = CostFunction.Evaluate(j, time) * Normal(0, mu, stdev) / 2;
-            expected += CostFunction.Evaluate(j, time + 7200) * Normal(7200, mu, stdev) / 2;
-            for (int i = 0; i <= steps - 1; i++)
+            expected += CostFunction.Evaluate(j, time + 4 * stdev) * Normal(4 * stdev, mu, stdev) / 2;
+            for (int i = 1; i < STEPS; i++)
             {
-                expected += CostFunction.Evaluate(j, time + i * h) * Normal(i * h, mu, stdev) / 2;
+                expected += CostFunction.Evaluate(j, time + i * h) * Normal(i * h, mu, stdev);
             }
             expected *= h;
 
             return expected;
+        }
+
+        public static float ExpectedDuration(StrippedJob job)
+        {
+            return (ManhattanDist(job) + EuclideanDist(job)) / (2 * MovementJob.HSPEED);
         }
     }
 }

@@ -30,7 +30,8 @@ namespace Drones.Data
 
         public JobData(SJob data)
         {
-            UID = ++_Count;
+            UID = data.uid;
+            drone = data.droneUID;
             status = data.status;
             packageWeight = data.packageWeight;
             packageXArea = data.packageXarea;
@@ -39,19 +40,11 @@ namespace Drones.Data
             pickup = data.pickup;
             dropoff = data.destination;
             costFunction = new CostFunction(data.costFunction);
-
-            if (data.status != JobStatus.Assigning)
-            {
-                assignment = new TimeKeeper.Chronos(data.assignedTime).SetReadOnly();
-                if (data.status != JobStatus.Delivering)
-                {
-                    completed = new TimeKeeper.Chronos(data.completedOn).SetReadOnly();
-                }
-            }
         }
 
         public JobData(Hub pickup, Vector3 dropoff, float weight, float penalty) 
         {
+            UID = ++_Count;
             status = JobStatus.Assigning;
             created = TimeKeeper.Chronos.Get().SetReadOnly();
             deadline = created + CostFunction.GUARANTEE;

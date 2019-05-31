@@ -46,7 +46,6 @@ namespace Drones.Serializable
             isWaiting = data.isWaiting;
             inHub = data.inHub;
             movement = data.movement;
-            status = data.state;
             totalDelay = data.totalDelay;
             totalAudibleDuration = data.audibleDuration;
             totalPackageWeight = data.packageWeight;

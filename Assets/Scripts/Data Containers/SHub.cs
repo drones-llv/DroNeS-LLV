@@ -16,7 +16,6 @@ namespace Drones.Serializable
         public List<uint> exitingDrones;
         public List<uint> incompleteJobs;
         public List<uint> completedJobs;
-        public List<uint> routeQueue;
         public List<uint> schedulerJobQueue;
         public List<uint> schedulerDroneQueue;
         public SVector3 position;
@@ -45,7 +44,6 @@ namespace Drones.Serializable
             incompleteJobs = new List<uint>();
             schedulerJobQueue = hub.Scheduler.SerializeJobs();
             schedulerDroneQueue = hub.Scheduler.SerializeDrones();
-            routeQueue = hub.Router.Serialize();
             energy = data.energyConsumption;
             revenue = data.revenue;
             delay = data.delay;
