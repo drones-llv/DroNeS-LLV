@@ -131,7 +131,8 @@ namespace Drones.Utils.Router
             }
 
         }
-
+        // To test: -7.4, 500, 7.0 to -2640.1, 0.0, -5468.1
+        // To test: -7.4, 500, 7.0 to -1111.9, 0.0, -2228.0
         public Queue<Vector3> GetRouteTest(Vector3 origin, Vector3 dest)
         {
             frame = 0;

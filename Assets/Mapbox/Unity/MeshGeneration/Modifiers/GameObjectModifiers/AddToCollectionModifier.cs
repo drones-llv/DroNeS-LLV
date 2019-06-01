@@ -8,7 +8,7 @@
     public class AddToCollectionModifier : GameObjectModifier
     {
         [SerializeField]
-        private FeatureCollectionBase _collection;
+        public FeatureCollectionBase _collection;
 
 		public override void Initialize()
 		{

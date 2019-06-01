@@ -13,9 +13,9 @@ namespace Mapbox.Unity.MeshGeneration.Filters
 
 		public override string Key { get { return "height"; } }
 		[SerializeField]
-		private float _height;
+        public float _height;
 		[SerializeField]
-		private HeightFilterOptions _type;
+        public HeightFilterOptions _type;
 
 		public override bool Try(VectorFeatureUnity feature)
 		{

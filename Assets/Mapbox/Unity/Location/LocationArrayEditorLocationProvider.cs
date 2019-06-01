@@ -18,14 +18,14 @@
 		/// </summary>
 		[SerializeField]
 		[Geocode]
-		string[] _latitudeLongitude;
+        public string[] _latitudeLongitude;
 
 		/// <summary>
 		/// The mock heading value.
 		/// </summary>
 		[SerializeField]
 		[Range(0, 359)]
-		float _heading;
+        public float _heading;
 
 
 		private int idx = -1;

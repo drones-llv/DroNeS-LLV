@@ -12,16 +12,16 @@ namespace Mapbox.Unity.MeshGeneration.Modifiers
 	public class TextureMonoBehaviourModifier : GameObjectModifier
 	{
 		[SerializeField]
-		private bool _textureTop;
+        public bool _textureTop;
 		[SerializeField]
-		private bool _useSatelliteTexture;
+        public bool _useSatelliteTexture;
 		[SerializeField]
-		private Material[] _topMaterials;
+        public Material[] _topMaterials;
 
 		[SerializeField]
-		private bool _textureSides;
+        public bool _textureSides;
 		[SerializeField]
-		private Material[] _sideMaterials;
+        public Material[] _sideMaterials;
 
 		public override void Run(VectorEntity ve, UnityTile tile)
 		{

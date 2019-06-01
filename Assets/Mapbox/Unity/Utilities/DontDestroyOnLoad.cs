@@ -7,7 +7,7 @@
 		static DontDestroyOnLoad _instance;
 
 		[SerializeField]
-		bool _useSingleInstance;
+        public bool _useSingleInstance;
 
 		protected virtual void Awake()
 		{

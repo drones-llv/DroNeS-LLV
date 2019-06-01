@@ -9,13 +9,13 @@
 		protected int _accuracy;
 
 		[SerializeField]
-		bool _autoFireEvent;
+        public bool _autoFireEvent;
 
 		[SerializeField]
-		float _updateInterval;
+        public float _updateInterval;
 
 		[SerializeField]
-		bool _sendEvent;
+        public bool _sendEvent;
 
 		WaitForSeconds _wait = new WaitForSeconds(0);
 

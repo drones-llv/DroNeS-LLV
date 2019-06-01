@@ -11,13 +11,13 @@ namespace Mapbox.Unity.MeshGeneration.Modifiers
 	public class AddMonoBehavioursModifierType
 	{
 		[SerializeField]
-		string _typeString;
+        public string _typeString;
 
 		Type _type;
 
 #if UNITY_EDITOR
 		[SerializeField]
-		MonoScript _script;
+        public MonoScript _script;
 #endif
 
 		public Type Type

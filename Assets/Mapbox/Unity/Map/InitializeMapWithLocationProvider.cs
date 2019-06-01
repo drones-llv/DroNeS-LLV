@@ -7,9 +7,9 @@
 	public class InitializeMapWithLocationProvider : MonoBehaviour
 	{
 		[SerializeField]
-		AbstractMap _map;
+        public AbstractMap _map;
 
-		ILocationProvider _locationProvider;
+        public ILocationProvider _locationProvider;
     
 		private void Awake()
 		{

@@ -7,7 +7,7 @@
 	public class OpenUrlOnButtonClick : MonoBehaviour
 	{
 		[SerializeField]
-		string _url;
+        public string _url;
 
 		protected virtual void Awake()
 		{

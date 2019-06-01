@@ -19,20 +19,20 @@ namespace Mapbox.Unity.Location
 
 		[SerializeField]
 		[Tooltip("Provider using Unity's builtin 'Input.Location' service")]
-		AbstractLocationProvider _deviceLocationProviderUnity;
+        public AbstractLocationProvider _deviceLocationProviderUnity;
 
 		[SerializeField]
 		[Tooltip("Custom native Android location provider. If this is not set above provider is used")]
-		DeviceLocationProviderAndroidNative _deviceLocationProviderAndroid;
+        public DeviceLocationProviderAndroidNative _deviceLocationProviderAndroid;
 
 		[SerializeField]
-		AbstractLocationProvider _editorLocationProvider;
+        public AbstractLocationProvider _editorLocationProvider;
 
 		[SerializeField]
-		AbstractLocationProvider _transformLocationProvider;
+        public AbstractLocationProvider _transformLocationProvider;
 
 		[SerializeField]
-		bool _dontDestroyOnLoad;
+        public bool _dontDestroyOnLoad;
 
 
 		/// <summary>

@@ -23,7 +23,7 @@
 		/// This value can be changed at runtime in the inspector.
 		/// </summary>
 		[SerializeField]
-		private TextAsset _locationLogFile;
+        public TextAsset _locationLogFile;
 
 
 		private LocationLogReader _logReader;

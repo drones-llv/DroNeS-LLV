@@ -8,7 +8,7 @@
     public class TagModifier : GameObjectModifier
     {
         [SerializeField]
-        private string _tag;
+        public string _tag;
 
         public override void Run(VectorEntity ve, UnityTile tile)
         {

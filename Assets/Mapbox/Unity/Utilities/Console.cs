@@ -6,16 +6,16 @@ namespace Mapbox.Unity.Utilities
 	public class Console : MonoBehaviour
 	{
 		[SerializeField]
-		Button _toggleButton;
+        public Button _toggleButton;
 
 		[SerializeField]
-		GameObject _menu;
+        public GameObject _menu;
 
 		[SerializeField]
-		Text _logText;
+        public Text _logText;
 
 		[SerializeField]
-		ScrollRect _logScroll;
+        public ScrollRect _logScroll;
 
 		static Console _instance;
 		public static Console Instance { get { return _instance; } }

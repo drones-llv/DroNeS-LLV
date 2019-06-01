@@ -17,17 +17,17 @@ namespace Mapbox.Unity.MeshGeneration.Factories
 		AbstractMap _map;
 
 		[SerializeField]
-		MeshModifier[] MeshModifiers;
+        public MeshModifier[] MeshModifiers;
 		[SerializeField]
-		Material _material;
+        public Material _material;
 
 		[SerializeField]
-		Transform[] _waypoints;
+        public Transform[] _waypoints;
 		private List<Vector3> _cachedWaypoints;
 
 		[SerializeField]
 		[Range(1,10)]
-		private float UpdateFrequency = 2;
+        public float UpdateFrequency = 2;
 
 		
 

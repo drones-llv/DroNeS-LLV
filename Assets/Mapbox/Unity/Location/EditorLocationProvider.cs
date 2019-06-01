@@ -19,7 +19,7 @@ namespace Mapbox.Unity.Location
 		/// </summary>
 		[SerializeField]
 		[Geocode]
-		string _latitudeLongitude;
+        public string _latitudeLongitude;
 
 		/// <summary>
 		/// The transform that will be queried for location and heading data & ADDED to the mock latitude/longitude

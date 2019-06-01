@@ -150,14 +150,19 @@
 
 		IEnumerator ListStyles(string token)
 		{
-			// "https://api.mapbox.com/styles/v1/{username}?access_token=your-access-token"
-			var www = new WWW(Utils.Constants.BaseAPI + string.Format("styles/v1/{0}?access_token={1}", _username, token));
-            //var www = new UnityWebRequest(Utils.Constants.BaseAPI + string.Format("styles/v1/{0}?access_token={1}", _username, token));
+
+            // "https://api.mapbox.com/styles/v1/{username}?access_token=your-access-token"
+            //var www = new WWW(Utils.Constants.BaseAPI + string.Format("styles/v1/{0}?access_token={1}", _username, token));
+            var www = new UnityWebRequest(Utils.Constants.BaseAPI + string.Format("styles/v1/{0}?access_token={1}", _username, token))
+            {
+                downloadHandler = new DownloadHandlerBuffer()
+            };
 			while (!www.isDone)
 			{
 				yield return 0;
 			}
-			var json = www.text;
+
+			var json = www.downloadHandler.text;
 			if (!string.IsNullOrEmpty(json))
 			{
 				ParseResponse(json);

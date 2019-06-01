@@ -80,7 +80,7 @@ namespace Drones.Managers
                 _time.Now();
 
                 _movementJobHandle = _movementJob.Schedule(_Transforms);
-                _energyJobHandle = _energyJob.Schedule(_Transforms.length, 8);
+                _energyJobHandle = _energyJob.Schedule(_Transforms.length, 32);
 
                 yield return null;
                 MovementJobHandle.Complete();

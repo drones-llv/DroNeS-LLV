@@ -10,7 +10,7 @@
 	public class AddMonoBehavioursModifier : GameObjectModifier
 	{
 		[SerializeField]
-		AddMonoBehavioursModifierType[] _types;
+        public AddMonoBehavioursModifierType[] _types;
 		private HashSet<string> _scripts;
 		private string _tempId;
 

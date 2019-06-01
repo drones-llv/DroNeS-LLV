@@ -12,7 +12,7 @@ namespace Drones.Utils.Scheduler
         NativeArray<LLVStruct> jobs;
         NativeArray<float> loss;
         NativeArray<float> duration;
-        NativeArray<float> lossvalue;
+        NativeArray<float> netlossvalue;
         public LLVScheduler(Queue<Drone> drones, List<StrippedJob> jobs)
         {
             DroneQueue = drones;
@@ -39,20 +39,25 @@ namespace Drones.Utils.Scheduler
                     var initializer = new LLVInitializerJob
                     {
                         time = (ChronoWrapper)TimeKeeper.Chronos.Get(),
-                        results = jobs,
-                        totalLosses = loss,
-                        totalDuration = duration,
+                        results = jobs
                     };
                     var initJob = initializer.Schedule(jobs.Length, 4);
+                    var summer = new LLVSumJob
+                    {
+                        jobs = jobs,
+                        totalLosses = loss,
+                        totalDuration = duration
+                    };
+                    var sumJob = summer.Schedule(initJob);
                     var calculator = new LLVCalculatorJob
                     {
                         time = (ChronoWrapper)TimeKeeper.Chronos.Get(),
                         input = jobs,
                         totalLosses = loss,
                         totalDuration = duration,
-                        nlv = lossvalue
+                        nlv = netlossvalue
                     };
-                    var calcjob = calculator.Schedule(jobs.Length, 4, initJob);
+                    var calcjob = calculator.Schedule(jobs.Length, 4, sumJob);
                     yield return new WaitUntil(() => calcjob.IsCompleted);
                     calcjob.Complete();
                     var n = FindMin(ref calculator.nlv);
@@ -86,7 +91,7 @@ namespace Drones.Utils.Scheduler
             jobs.Dispose();
             loss.Dispose();
             duration.Dispose();
-            lossvalue.Dispose();
+            netlossvalue.Dispose();
         }
 
         public void Initialize()
@@ -101,7 +106,7 @@ namespace Drones.Utils.Scheduler
             }
             loss = new NativeArray<float>(1, Allocator.TempJob);
             duration = new NativeArray<float>(1, Allocator.TempJob);
-            lossvalue = new NativeArray<float>(JobQueue.Count, Allocator.TempJob);
+            netlossvalue = new NativeArray<float>(JobQueue.Count, Allocator.TempJob);
         }
 
         public void Complete()

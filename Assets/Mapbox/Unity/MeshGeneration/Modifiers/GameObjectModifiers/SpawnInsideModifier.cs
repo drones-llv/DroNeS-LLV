@@ -15,25 +15,25 @@ namespace Mapbox.Unity.MeshGeneration.Modifiers
 	public class SpawnInsideModifier : GameObjectModifier
 	{
 		[SerializeField]
-		int _spawnRateInSquareMeters;
+        public int _spawnRateInSquareMeters;
 
 		[SerializeField]
-		int _maxSpawn = 1000;
+        public int _maxSpawn = 1000;
 
 		[SerializeField]
-		GameObject[] _prefabs;
+        public GameObject[] _prefabs;
 
 		[SerializeField]
-		LayerMask _layerMask;
+        public LayerMask _layerMask;
 
 		[SerializeField]
-		bool _scaleDownWithWorld;
+        public bool _scaleDownWithWorld;
 
 		[SerializeField]
-		bool _randomizeScale;
+        public bool _randomizeScale;
 
 		[SerializeField]
-		bool _randomizeRotation;
+        public bool _randomizeRotation;
 
 		int _spawnedCount;
 

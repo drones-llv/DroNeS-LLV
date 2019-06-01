@@ -7,7 +7,7 @@
 	public class TelemetryConfigurationButton : MonoBehaviour
 	{
 		[SerializeField]
-		bool _booleanValue;
+        public bool _booleanValue;
 
 		protected virtual void Awake()
 		{

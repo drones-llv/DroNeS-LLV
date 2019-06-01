@@ -8,7 +8,7 @@ namespace Mapbox.Unity.MeshGeneration.Modifiers
     public class LayerModifier : GameObjectModifier
     {
         [SerializeField]
-        private int _layerId;
+        public int _layerId;
 
 		public override void Run(VectorEntity ve, UnityTile tile)
         {

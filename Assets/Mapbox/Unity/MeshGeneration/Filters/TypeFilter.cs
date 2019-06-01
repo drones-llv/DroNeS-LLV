@@ -11,9 +11,9 @@ namespace Mapbox.Unity.MeshGeneration.Filters
 	{
 		public override string Key { get { return "type"; } }
 		[SerializeField]
-		private string[] _types;
+        public string[] _types;
 		[SerializeField]
-		private TypeFilterType _behaviour;
+        public TypeFilterType _behaviour;
 
 		public override bool Try(VectorFeatureUnity feature)
 		{

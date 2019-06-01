@@ -10,7 +10,7 @@
 		private const int RAY_LENGTH = 50;
 
 		[SerializeField]
-		private LayerMask _terrainMask;
+        public LayerMask _terrainMask;
 		private double scaledX;
 		private double scaledY;
 
