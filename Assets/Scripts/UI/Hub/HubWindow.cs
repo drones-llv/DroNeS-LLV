@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Globalization;
+using System.Collections;
+using TMPro;
 
 namespace Drones.UI
 {
@@ -8,6 +10,8 @@ namespace Drones.UI
     using Data;
     using static Utils.UnitConverter;
     using Utils.Extensions;
+
+
     public class HubWindow : AbstractInfoWindow
     {
         public static HubWindow New() => PoolController.Get(WindowPool.Instance).Get<HubWindow>(null);
@@ -24,9 +28,12 @@ namespace Drones.UI
         private Button _AddBattery;
         [SerializeField]
         private Button _RemoveBattery;
+        [SerializeField]
+        private TMP_InputField _GenerationRate;
+        [SerializeField]
+        private Button _InputConfirm;
 
-        #region Buttons
-
+        #region Initializers
         private Button GoToLocation
         {
             get
@@ -98,9 +105,27 @@ namespace Drones.UI
                 return _RemoveBattery;
             }
         }
+
+        private TMP_InputField GenerationRate
+        {
+            get
+            {
+                if (_GenerationRate == null) _GenerationRate = GetComponentInChildren<TMP_InputField>();
+                return _GenerationRate;
+            }
+        }
+
+        private Button InputConfirm
+        {
+            get
+            {
+                if (_InputConfirm) _InputConfirm = GenerationRate.transform.parent.GetComponentInChildren<Button>();
+                return _InputConfirm;
+            }
+        }
         #endregion
 
-        protected override Vector2 MaximizedSize { get; } = new Vector2(550, 570);
+        protected override Vector2 MaximizedSize { get; } = new Vector2(550, 600);
 
         protected override void Awake()
         {
@@ -111,6 +136,16 @@ namespace Drones.UI
             RemoveDrone.onClick.AddListener(SellDrone);
             AddBattery.onClick.AddListener(BuyBattery);
             RemoveBattery.onClick.AddListener(SellBattery);
+            InputConfirm.onClick.AddListener(ChangeGenerationRate);
+        }
+
+        void OnEnable() => StartCoroutine(Clear());
+
+        IEnumerator Clear()
+        {
+            GenerationRate.text = null;
+            yield return new WaitUntil(() => Source != null);
+            ((TextMeshProUGUI)GenerationRate.placeholder).SetText(((Hub)Source).JobGenerationRate.ToString());
         }
 
         private void OpenDroneList()
@@ -124,6 +159,16 @@ namespace Drones.UI
             ShowDroneList.onClick.AddListener(dronelist.transform.SetAsLastSibling);
         }
 
+        private void ChangeGenerationRate()
+        {
+            if (string.IsNullOrWhiteSpace(GenerationRate.text)) return;
+            var val = float.Parse(GenerationRate.text);
+            if (val <= 0) return;
+            GenerationRate.text = null;
+            ((Hub)Source).JobGenerationRate = val;
+            ((TextMeshProUGUI)GenerationRate.placeholder).SetText(val.ToString());
+        }
+       
         private void GoToHub()
         {
             var position = ((Hub)Source).transform.position;

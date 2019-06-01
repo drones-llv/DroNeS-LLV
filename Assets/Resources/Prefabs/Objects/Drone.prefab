@@ -206,7 +206,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b6621c17dafc495bb08bd1f52aae1c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _Trail: {fileID: 9154689185247105066}
+  _CollisionController: {fileID: 1332466217295087735}
 --- !u!114 &1332466217295087735
 MonoBehaviour:
   m_ObjectHideFlags: 0

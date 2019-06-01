@@ -5,6 +5,7 @@ using UnityEngine.EventSystems;
 
 namespace Drones.UI
 {
+    using System;
     using Drones.Utils;
     using Drones.Utils.Extensions;
 
@@ -32,9 +33,17 @@ namespace Drones.UI
 
         public virtual void SetField(object v)
         {
-            if (v == null) return;
-            SetText(v.ToString());
-            ForceMeshUpdate();
+            try
+            {
+                SetText(v.ToString());
+                ForceMeshUpdate();
+            }
+            catch (NullReferenceException)
+            {
+                SetText((string)null);
+                ForceMeshUpdate();
+            }
+
         }
 
         public void OnPointerEnter(PointerEventData eventData)

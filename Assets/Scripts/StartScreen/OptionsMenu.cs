@@ -6,30 +6,37 @@ using TMPro;
 
 namespace Drones.StartScreen
 {
+    using System;
     using Drones.Managers;
     using Drones.Utils;
     using Drones.Utils.Extensions;
-
+    using Drones.Utils.Scheduler;
 
     public class OptionsMenu : MonoBehaviour
     {
         public static OptionsMenu Instance { get; private set; }
 
-        public TextMeshProUGUI sliderDisplay;
+        public TextMeshProUGUI RLDisplay;
+        public TextMeshProUGUI LPDisplay;
 
         private void OnDestroy()
         {
             Instance = null;
         }
-
+        [SerializeField]
+        Toggle _RenderToggle;
         [SerializeField]
         Slider _RenderLimit;
         [SerializeField]
         Toggle _LogToggle;
         [SerializeField]
+        Slider _LogPeriod;
+        [SerializeField]
         Button _Back;
         [SerializeField]
         Button _Reset;
+        [SerializeField]
+        TMP_Dropdown _Schdeuler;
 
         public Toggle LogToggle
         {
@@ -37,9 +44,30 @@ namespace Drones.StartScreen
             {
                 if (_LogToggle == null)
                 {
-                    _LogToggle = GetComponentInChildren<Toggle>(true);
+                    _LogToggle = GetComponentsInChildren<Toggle>(true)[0];
                 }
                 return _LogToggle;
+            }
+        }
+
+        public Slider LogPeriod
+        {
+            get
+            {
+                if (_LogPeriod == null) _LogPeriod = GetComponentsInChildren<Slider>(true)[0];
+                return _LogPeriod;
+            }
+        }
+
+        public Toggle RenderToggle
+        {
+            get
+            {
+                if (_RenderToggle == null)
+                {
+                    _RenderToggle = GetComponentsInChildren<Toggle>(true)[1];
+                }
+                return _RenderToggle;
             }
         }
 
@@ -47,10 +75,7 @@ namespace Drones.StartScreen
         {
             get
             {
-                if (_RenderLimit == null)
-                {
-                    _RenderLimit = GetComponentInChildren<Slider>(true);
-                }
+                if (_RenderLimit == null) _RenderLimit = GetComponentsInChildren<Slider>(true)[1];
                 return _RenderLimit;
             }
         }
@@ -79,6 +104,15 @@ namespace Drones.StartScreen
             }
         }
 
+        public TMP_Dropdown Scheduler
+        {
+            get
+            {
+                if (_Schdeuler) _Schdeuler = GetComponentInChildren<TMP_Dropdown>();
+                return _Schdeuler;
+            }
+        }
+
         private void Awake()
         {
             Instance = this;
@@ -86,26 +120,54 @@ namespace Drones.StartScreen
             RenderLimit.onValueChanged.AddListener((float value) =>
             {
                 value = Mathf.Clamp(value * 5, 0, 600);
-                sliderDisplay.SetText(value.ToString());
+                RLDisplay.SetText(value.ToString());
                 CustomMap.FilterHeight = value;
             });
 
             LogToggle.onValueChanged.AddListener((bool value) =>
             {
                 SimManager.IsLogging = value;
+                LogPeriod.enabled = value;
+            });
+
+            LogPeriod.onValueChanged.AddListener((float value) =>
+            {
+                LPDisplay.SetText(value.ToString());
+                SimManager.LoggingPeriod = value;
+            });
+
+            Scheduler.onValueChanged.AddListener((int arg0) =>
+            {
+                JobScheduler.ALGORITHM = (Scheduling)Enum.Parse(typeof(Scheduling), Scheduler.options[arg0].text);
             });
 
             Back.onClick.AddListener(GoBack);
             Reset.onClick.AddListener(OnReset);
         }
 
-        private void GoBack()
+        private void OnEnable()
         {
-            StartScreen.ShowMain();
+            RenderLimit.onValueChanged.Invoke(RenderLimit.value);
+            RenderToggle.onValueChanged.Invoke(RenderToggle.isOn);
+            LogToggle.onValueChanged.Invoke(LogToggle.isOn);
+            LogPeriod.onValueChanged.Invoke(LogPeriod.value);
+            Scheduler.onValueChanged.Invoke(Scheduler.value);
         }
+
+        private void GoBack() => StartScreen.ShowMain();
 
         private void OnReset()
         {
+            RenderLimit.value = 0;
+            RenderToggle.isOn = true;
+            LogToggle.isOn = true;
+            LogPeriod.value = 300;
+            Scheduler.value = (int)Scheduling.FCFS;
+            RenderLimit.onValueChanged.Invoke(RenderLimit.value);
+            RenderToggle.onValueChanged.Invoke(RenderToggle.isOn);
+            LogToggle.onValueChanged.Invoke(LogToggle.isOn);
+            LogPeriod.onValueChanged.Invoke(LogPeriod.value);
+            Scheduler.onValueChanged.Invoke(Scheduler.value);
         }
 
     }

@@ -21,8 +21,6 @@ namespace Drones.Data
             completedJobs.ItemAdded += (obj) => _source.GetHub().JobComplete((Job)obj);
             completedJobs.ItemAdded += (obj) => packageWeight += ((Job)obj).PackageWeight;
             movement = DroneMovement.Idle;
-            collisionOn = false;
-            inHub = true;
             previousPosition = CurrentPosition;
         }
 
@@ -36,7 +34,6 @@ namespace Drones.Data
             hub = data.hub;
             batterySwaps = data.totalBatterySwaps;
             hubsAssigned = data.totalHubHandovers;
-            collisionOn = data.collisionOn;
             isWaiting = data.isWaiting;
             movement = data.movement;
             totalDelay = data.totalDelay;
@@ -96,8 +93,6 @@ namespace Drones.Data
         }
         public bool wasGoingDown;
         public bool isGoingDown;
-        public bool inHub;
-        public bool collisionOn;
         public bool isWaiting;
         public float targetAltitude;
         public Queue<Vector3> waypoints = new Queue<Vector3>();

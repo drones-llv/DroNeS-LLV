@@ -48,6 +48,7 @@ namespace Drones.Utils.Router
             verts[1] = position - dz + dx; // jk
             verts[2] = position - dz - dx; // kl
             verts[3] = position + dz - dx; // li
+
         }
 
         public Vector3 truePosition;

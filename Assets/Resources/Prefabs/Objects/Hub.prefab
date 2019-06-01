@@ -100,7 +100,7 @@ GameObject:
   - component: {fileID: 5413018589618694653}
   - component: {fileID: 3541644756125382526}
   - component: {fileID: 34011538573002244}
-  - component: {fileID: 2944728874947806131}
+  - component: {fileID: 7329582529736437015}
   m_Layer: 14
   m_Name: Hub
   m_TagString: Hub
@@ -182,7 +182,6 @@ MonoBehaviour:
   _DronePath: {fileID: 4229716372336963008}
   _Collider: {fileID: 8869563552237939882}
   _jobGenerationRate: 0.1
-  _Scheduler: {fileID: 2944728874947806131}
 --- !u!114 &34011538573002244
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -197,7 +196,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _Owner: {fileID: 3541644756125382526}
   _DronePath: {fileID: 4229716372336963008}
---- !u!114 &2944728874947806131
+--- !u!114 &7329582529736437015
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -206,7 +205,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1563700628764231572}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6c5d16008505d794ab23c9734c75090e, type: 3}
+  m_Script: {fileID: 11500000, guid: 90d4f08a553c54f23ac3512967956a71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _Owner: {fileID: 3541644756125382526}

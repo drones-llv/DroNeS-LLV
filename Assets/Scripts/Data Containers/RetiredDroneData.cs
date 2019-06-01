@@ -26,7 +26,8 @@ namespace Drones.Data
         public RetiredDroneData(Drone drone, Collider other)
         {
             UID = drone.UID;
-            job = drone.GetJob().UID;
+            var j = drone.GetJob();
+            job = j == null ? 0 : j.UID;
             hub = drone.GetHub()?.Name;
             completedJobs = drone.JobHistory;
             drone.StopCoroutine(drone.GetBattery().ChargeBattery());
@@ -41,7 +42,7 @@ namespace Drones.Data
             waypoint = drone.Waypoint;
             destroyedTime = TimeKeeper.Chronos.Get();
             collisionLocation = drone.transform.position;
-            packageWorth = job == 0 ? 0 : -drone.GetJob().Loss;
+            packageWorth = job == 0 ? 0 : -j.Loss;
 
         }
 
@@ -49,7 +50,8 @@ namespace Drones.Data
         {
             isDroneCollision = false;
             UID = drone.UID;
-            job = drone.GetJob().UID;
+            var j = drone.GetJob();
+            job = j == null ? 0 : j.UID;
             hub = drone.GetHub()?.Name;
             completedJobs = drone.JobHistory;
             drone.StopCoroutine(drone.GetBattery().ChargeBattery());
@@ -57,7 +59,7 @@ namespace Drones.Data
             waypoint = drone.Waypoint;
             destroyedTime = TimeKeeper.Chronos.Get();
             collisionLocation = drone.transform.position;
-            packageWorth = job == 0 ? 0 : -drone.GetJob().Loss;
+            packageWorth = job == 0 ? 0 : -j.Loss;
             otherDrone = "Retired";
         }
 

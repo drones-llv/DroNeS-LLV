@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
 
@@ -46,10 +45,9 @@ namespace Drones.Utils
                         watch.Restart();
                     }
                 }
-
                 d.y = 0;
-
                 Job job = new Job(_Owner, d, Random.Range(0.1f, 2.5f), 5);
+
                 _Owner.OnJobCreate(job);
             }
 

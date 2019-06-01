@@ -64,6 +64,7 @@ namespace Drones.UI
             IsOpen = false;
         }
 
+        private void OnDestroy() => OnRelease();
         #region IListWindow
         public ListTupleContainer TupleContainer
         {

@@ -13,7 +13,6 @@ namespace Drones.Serializable
         public uint totalDeliveryCount;
         public uint totalBatterySwaps;
         public uint totalHubHandovers;
-        public bool collisionOn;
         public bool isWaiting;
         public bool inHub;
         public DroneMovement movement;
@@ -42,9 +41,8 @@ namespace Drones.Serializable
             totalDeliveryCount = data.DeliveryCount;
             totalBatterySwaps = data.batterySwaps;
             totalHubHandovers = data.hubsAssigned;
-            collisionOn = data.collisionOn;
             isWaiting = data.isWaiting;
-            inHub = data.inHub;
+            inHub = drone.InHub;
             movement = data.movement;
             totalDelay = data.totalDelay;
             totalAudibleDuration = data.audibleDuration;

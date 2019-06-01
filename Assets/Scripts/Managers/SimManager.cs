@@ -21,7 +21,6 @@ namespace Drones.Managers
         #region Fields
         private SimulationData _Data;
         private uint _mapsLoaded;
-        public GameObject _PositionHighlight;
         private DataField[] _DataFields;
         private bool _Initialized;
         #endregion
@@ -42,19 +41,11 @@ namespace Drones.Managers
             get
             {
                 if (Instance._DataFields == null)
-                {
                     Instance._DataFields = OpenWindows.Transform.FindDescendent("Drone Network", 1).GetComponentsInChildren<DataField>();
-                }
                 return Instance._DataFields;
             }
         }
-        public static bool LoadComplete
-        {
-            get
-            {
-                return !(Manhattan == null || Brooklyn == null) && Manhattan.RedrawComplete && Brooklyn.RedrawComplete;
-            }
-        }
+        public static bool LoadComplete => !(Manhattan == null || Brooklyn == null) && Manhattan.RedrawComplete && Brooklyn.RedrawComplete;
         public static uint MapsLoaded => Instance._mapsLoaded;
         public static bool Initialized
         {
@@ -72,6 +63,32 @@ namespace Drones.Managers
             }
         }
         public static bool IsLogging { get; set; } = true;
+        public static float LoggingPeriod { get; set; } = 300;
+        #endregion
+
+        private void OnDestroy()
+        {
+            StopAllCoroutines();
+            ResetSingletons();
+            Instance = null;
+        }
+
+        #region Initializers
+        private void Awake()
+        {
+            Instance = this;
+            _Data = new SimulationData();
+            if (Drone.ActiveDrones == null) { }
+            DontDestroyOnLoad(PoolController.Get(ListElementPool.Instance).PoolParent.gameObject);
+            DontDestroyOnLoad(PoolController.Get(ObjectPool.Instance).PoolParent.gameObject);
+            DontDestroyOnLoad(PoolController.Get(WindowPool.Instance).PoolParent.gameObject);
+        }
+        private IEnumerator Start()
+        {
+            yield return new WaitUntil(() => SceneManager.GetActiveScene() == SceneManager.GetSceneByBuildIndex(1));
+            Initialized = true;
+            Instance.StartCoroutine(StreamDataToDashboard());
+        }
         #endregion
 
         public static void OnMapLoaded() => Instance._mapsLoaded++;
@@ -90,30 +107,6 @@ namespace Drones.Managers
                 EditPanel.Instance.gameObject.SetActive(true);
         }
 
-        private void OnDestroy()
-        {
-            StopAllCoroutines();
-            ResetSingletons();
-            Instance = null;
-        }
-
-        private void Awake()
-        {
-            Instance = this;
-            _Data = new SimulationData();
-            if (Drone.ActiveDrones == null) { }
-            DontDestroyOnLoad(PoolController.Get(ListElementPool.Instance).PoolParent.gameObject);
-            DontDestroyOnLoad(PoolController.Get(ObjectPool.Instance).PoolParent.gameObject);
-            DontDestroyOnLoad(PoolController.Get(WindowPool.Instance).PoolParent.gameObject);
-        }
-
-        private IEnumerator Start()
-        {
-            yield return new WaitUntil(() => SceneManager.GetActiveScene() == SceneManager.GetSceneByBuildIndex(1));
-            Initialized = true;
-            Instance.StartCoroutine(StreamDataToDashboard());
-        }
-
         public static void OnPlay()
         {
             Selectable.Deselect();
@@ -124,24 +117,6 @@ namespace Drones.Managers
         {
             Instance.StopCoroutine(StreamDataToDashboard());
             TimeKeeper.TimeSpeed = TimeSpeed.Pause;
-        }
-
-        public static void HighlightPosition(Vector3 position)
-        {
-            if (Instance._PositionHighlight != null)
-            {
-                Instance._PositionHighlight.GetComponent<Animation>().Stop();
-                Instance._PositionHighlight.GetComponent<Animation>().Play();
-                Instance._PositionHighlight.transform.GetChild(0).GetComponent<Animation>().Stop();
-                Instance._PositionHighlight.transform.GetChild(0).GetComponent<Animation>().Play();
-            }
-            else
-            {
-                Instance._PositionHighlight = Instantiate(PositionHighlightTemplate);
-                Instance._PositionHighlight.name = "Current Position";
-            }
-            Instance._PositionHighlight.transform.position = position;
-            Instance._PositionHighlight.transform.position += Vector3.up * (Instance._PositionHighlight.transform.lossyScale.y + 0.5f);
         }
 
         public static void UpdateRevenue(float value) => Instance._Data.revenue += value;
@@ -178,7 +153,6 @@ namespace Drones.Managers
                 DataFields[11].SetField(UnitConverter.Convert(Chronos.min, Instance._Data.totalAudible));
                 yield return wait;
             }
-
         }
 
         public static SSimulation SerializeSimulation() => new SSimulation(Instance._Data);
@@ -210,40 +184,10 @@ namespace Drones.Managers
             TimeKeeper.SetTime(data.currentTime);
         }
 
-        public static SchedulerPayload GetSchedulerPayload()
-        {
-            SchedulerPayload output = new SchedulerPayload
-            {
-                revenue = Instance._Data.revenue,
-                delay = Instance._Data.totalDelay,
-                audible = Instance._Data.totalAudible,
-                energy = Instance._Data.totalEnergy,
-                drones = new Dictionary<uint, StrippedDrone>(),
-                batteries = new Dictionary<uint, SBattery>(),
-                hubs = new Dictionary<uint, SHub>(),
-                incompleteJobs = new Dictionary<uint, SJob>(),
-                noFlyZones = new Dictionary<uint, StaticObstacle>(),
-                currentTime = TimeKeeper.Chronos.Get().Serialize(),
-            };
-            foreach (Drone d in AllDrones.Values)
-                output.drones.Add(d.UID, d.Strip());
-            foreach (Hub hub in AllHubs.Values)
-                output.hubs.Add(hub.UID, hub.Serialize());
-            foreach (Battery bat in AllBatteries.Values)
-                output.batteries.Add(bat.UID, bat.Serialize());
-            foreach (Job job in AllIncompleteJobs.Values)
-                output.incompleteJobs.Add(job.UID, job.Serialize());
-
-            foreach (NoFlyZone nfz in AllNFZ.Values)
-                output.noFlyZones.Add(nfz.UID, new StaticObstacle(nfz.transform));
-
-            return output;
-        }
-
         private static IEnumerator DataLogger()
         {
             if (!IsLogging) yield break;
-            string filename = Instance._Data.simulation.ToString();
+            string filename = Instance._Data.simulation.ToString().Replace("/","-");
             filename = Path.ChangeExtension(filename, ".csv");
             string filepath = Path.Combine(SaveManager.ExportPath, filename);
             if (!File.Exists(filepath))
@@ -263,7 +207,7 @@ namespace Drones.Managers
                 SaveManager.WriteTupleToCSV(filepath, headers);
             }
             var time = TimeKeeper.Chronos.Get();
-            var wait = new WaitUntil(() => time.Timer() > 300);
+            var wait = new WaitUntil(() => time.Timer() > LoggingPeriod);
             string[] data = new string[12];
             while (true)
             {

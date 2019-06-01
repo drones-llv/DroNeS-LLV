@@ -28,7 +28,7 @@ namespace Drones.Serializable
         {
             uid = data.UID;
             isWaiting = data.isWaiting;
-            inHub = data.inHub;
+            inHub = drone.InHub;
             movement = data.movement;
             targetAltitude = data.targetAltitude;
             waypointsQueue = new List<SVector3>();

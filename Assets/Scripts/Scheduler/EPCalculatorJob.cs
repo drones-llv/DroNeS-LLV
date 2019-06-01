@@ -4,31 +4,26 @@ using Unity.Burst;
 
 namespace Drones.Utils.Scheduler
 {
-    using static Scheduler;
+    using static JobScheduler;
     [BurstCompile]
     public struct EPCalculatorJob : IJobParallelFor
     {
-        ChronoWrapper time;
+        public ChronoWrapper time;
         [ReadOnly]
-        NativeArray<StrippedJob> allJobs;
-        [ReadOnly]
-        NativeArray<float> expectedNow;
+        public NativeArray<EPStruct> input;
         [WriteOnly]
-        NativeArray<float> ep;
+        public NativeArray<float> ep;
 
         public void Execute(int i)
         {
-            int n = allJobs.Length;
+            int n = input.Length;
             int r = i / n;
             int c = i % n;
-            if (r == c) return;
 
-            ep[r * n + c] = expectedNow[r] + ExpectedValue(allJobs[c], FinishTime(allJobs[r]));
+            if (r != c) ep[r * n + c] = input[r].value + ExpectedValue(input[c].job, FinishTime(input[r].job));
+            else ep[r * n + c] = input[r].value;
         }
 
-        public ChronoWrapper FinishTime(StrippedJob job)
-        {
-            return CostFunction.Inverse(job, ExpectedValue(job, time));
-        }
+        ChronoWrapper FinishTime(StrippedJob job) => CostFunction.Inverse(job, ExpectedValue(job, time));
     }
 }

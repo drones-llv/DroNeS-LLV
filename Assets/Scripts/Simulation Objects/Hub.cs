@@ -10,6 +10,7 @@ namespace Drones
     using Interface;
     using Serializable;
     using Data;
+    using Utils.Scheduler;
     using Utils.Router;
 
     public class Hub : MonoBehaviour, IDataSource, IPoolable
@@ -56,8 +57,7 @@ namespace Drones
         private JobGenerator _jobGenerator;
         [SerializeField]
         private Pathfinder _Router;
-        [SerializeField]
-        private JobManager _Scheduler;
+        private JobScheduler _Scheduler;
         #endregion
 
         #region IPoolable
@@ -137,12 +137,11 @@ namespace Drones
                 return _Router;
             }
         }
-        public JobManager Scheduler
+        public JobScheduler Scheduler
         {
             get
             {
-                if (_Scheduler == null)
-                    _Scheduler = transform.GetComponentInChildren<JobManager>();
+                if (_Scheduler == null) _Scheduler = transform.GetComponentInChildren<JobScheduler>();
                 return _Scheduler;
             }
         }

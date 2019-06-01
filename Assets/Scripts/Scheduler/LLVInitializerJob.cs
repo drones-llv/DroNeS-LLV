@@ -4,25 +4,22 @@ using Unity.Burst;
 
 namespace Drones.Utils.Scheduler
 {
-    using static Scheduler;
+    using static JobScheduler;
     [BurstCompile]
     public struct LLVInitializerJob : IJobParallelFor
     {
-        ChronoWrapper time;
-        [ReadOnly]
-        NativeArray<StrippedJob> allJobs;
-        [WriteOnly]
-        NativeArray<float> totalLosses;
-        [WriteOnly]
-        NativeArray<float> totalDuration;
-        [WriteOnly]
-        NativeArray<float> potentialLosses;
+        public ChronoWrapper time;
+        public NativeArray<LLVStruct> results;
+        public NativeArray<float> totalLosses;
+        public NativeArray<float> totalDuration;
 
         public void Execute(int i)
         {
-            potentialLosses[i] = ExpectedValue(allJobs[i], time) - ExpectedValue(allJobs[i], time + ExpectedDuration(allJobs[i]));
-            totalLosses[0] += potentialLosses[i];
-            totalDuration[0] += ExpectedDuration(allJobs[i]);
+            var tmp = results[i];
+            tmp.loss = ExpectedValue(tmp.job, time) - ExpectedValue(tmp.job, time + ExpectedDuration(tmp.job));
+            totalLosses[0] += tmp.loss;
+            totalDuration[0] += ExpectedDuration(tmp.job);
+            results[i] = tmp;
         }
 
     }

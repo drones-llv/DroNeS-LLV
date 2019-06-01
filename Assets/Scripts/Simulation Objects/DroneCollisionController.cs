@@ -31,7 +31,7 @@ namespace Drones.Utils
             var battery = _Owner.GetBattery();
             while (true)
             {
-                if (_Owner.Movement != DroneMovement.Idle && battery.Status == BatteryStatus.Dead)
+                if (_Owner.Movement != DroneMovement.Idle && battery != null && battery.Status == BatteryStatus.Dead)
                 {
                     _Trail.enabled = false;
                     _Owner.Drop();

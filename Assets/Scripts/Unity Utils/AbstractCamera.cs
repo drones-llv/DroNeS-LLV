@@ -3,12 +3,84 @@ using System.Collections;
 
 namespace Drones
 {
-    using Managers;
     using Interface;
+
     public abstract class AbstractCamera : MonoBehaviour, ICameraMovement
     {
         private CameraController _Controller;
+        private Camera _CameraComponent;
+        protected bool _Following;
+        public static GameObject _PositionHighlight;
 
+        #region Statics
+        public static GameObject Followee { get; set; }
+
+        public static bool Controlling { get; private set; }
+
+        public static AbstractCamera ActiveCamera { get; protected set; }
+
+        public static Transform CameraTransform => ActiveCamera.transform.GetChild(0);
+
+        public static IEnumerator ControlListener()
+        {
+            Controlling = true;
+            do
+            {
+                yield return null;
+            } while (!Input.GetMouseButtonUp(0));
+            Controlling = false;
+            yield break;
+        }
+
+        public static void LookHere(Vector3 position)
+        {
+            position.y = 0;
+            HighlightPosition(position);
+            var back = -CameraTransform.forward;
+            position += back * ActiveCamera.transform.position.y / back.y;
+            ActiveCamera.StopCoroutine(FlyTowards(position));
+            ActiveCamera.StartCoroutine(FlyTowards(position));
+        }
+
+        private static IEnumerator FlyTowards(Vector3 position)
+        {
+            Vector3 origin = ActiveCamera.transform.position;
+            float start = Time.unscaledTime;
+            float speed = Vector3.Distance(origin, position) * 2;
+            float covered;
+            float frac = 0;
+
+            while (frac < 1 - 1e-5f)
+            {
+                covered = (Time.unscaledTime - start) * speed;
+                frac = covered / Vector3.Distance(origin, position);
+
+                ActiveCamera.transform.position = Vector3.Lerp(origin, position, frac);
+                yield return null;
+            }
+            yield break;
+        }
+
+        public static void HighlightPosition(Vector3 position)
+        {
+            if (_PositionHighlight != null)
+            {
+                _PositionHighlight.GetComponent<Animation>().Stop();
+                _PositionHighlight.GetComponent<Animation>().Play();
+                _PositionHighlight.transform.GetChild(0).GetComponent<Animation>().Stop();
+                _PositionHighlight.transform.GetChild(0).GetComponent<Animation>().Play();
+            }
+            else
+            {
+                _PositionHighlight = Instantiate(Singletons.PositionHighlightTemplate);
+                _PositionHighlight.name = "Current Position";
+            }
+            _PositionHighlight.transform.position = position;
+            _PositionHighlight.transform.position += Vector3.up * (_PositionHighlight.transform.lossyScale.y + 0.5f);
+        }
+        #endregion
+
+        #region Properties
         public CameraController Controller
         {
             get
@@ -25,64 +97,20 @@ namespace Drones
             }
         }
 
-        protected float SpeedScale
-        {
-            get
-            {
-                return Controller.SpeedToHeightGradient * transform.position.y + 1;
-            }
-        }
-
-        private Camera _CameraComponent;
-
-        public abstract void BreakFollow();
-
-        public static GameObject Followee { get; set; }
-
-        public static bool Controlling { get; private set; }
-
-        public static AbstractCamera ActiveCamera { get; protected set; }
-
-        public static Transform CameraTransform
-        {
-            get
-            {
-                return ActiveCamera.transform.GetChild(0);
-            }
-        }
+        protected float SpeedScale => Controller.SpeedToHeightGradient * transform.position.y + 1;
 
         public Camera CameraComponent
         {
             get
             {
-                if (_CameraComponent == null)
-                {
-                    _CameraComponent = GetComponentInChildren<Camera>();
-                }
+                if (_CameraComponent == null) _CameraComponent = GetComponentInChildren<Camera>();
+
                 return _CameraComponent;
             }
         }
 
-        public bool IsActive
-        {
-            get
-            {
-                return ActiveCamera == this;
-            }
-        } 
-
-        public static IEnumerator ControlListener()
-        {
-            Controlling = true;
-            do
-            {
-                yield return null;
-            } while (!Input.GetMouseButtonUp(0));
-            Controlling = false;
-            yield break;
-        }
-
-        protected bool _Following;
+        public bool IsActive => ActiveCamera == this;
+        #endregion
 
         protected virtual void OnDisable()
         {
@@ -97,6 +125,8 @@ namespace Drones
             ActiveCamera = null;
             _Controller = null;
         }
+
+        public abstract void BreakFollow();
 
         protected abstract IEnumerator FollowObject();
 
@@ -123,44 +153,9 @@ namespace Drones
             }
         }
 
-        private void OnCollisionEnter(Collision collision)
-        {
-            StartCoroutine(Collide(collision));
-        }
+        private void OnCollisionEnter(Collision collision) => StartCoroutine(Collide(collision));
 
-        private void OnCollisionExit(Collision collision)
-        {
-            StopCoroutine(Collide(collision));
-        }
-
-        public static void LookHere(Vector3 position)
-        {
-            position.y = 0;
-            SimManager.HighlightPosition(position);
-            var back = -CameraTransform.forward;
-            position += back * ActiveCamera.transform.position.y / back.y;
-            ActiveCamera.StopCoroutine(FlyTowards(position));
-            ActiveCamera.StartCoroutine(FlyTowards(position));
-        }
-
-        private static IEnumerator FlyTowards(Vector3 position)
-        {
-            Vector3 origin = ActiveCamera.transform.position;
-            float start = Time.unscaledTime;
-            float speed = Vector3.Distance(origin, position) * 2;
-            float covered;
-            float frac = 0;
-
-            while (frac < 1 - 1e-5f)
-            {
-                covered = (Time.unscaledTime - start) * speed;
-                frac = covered / Vector3.Distance(origin, position);
-
-                ActiveCamera.transform.position = Vector3.Lerp(origin, position, frac);
-                yield return null;
-            }
-            yield break;
-        }
+        private void OnCollisionExit(Collision collision) => StopCoroutine(Collide(collision));
 
         #region ICameraMovement Implementation
 

@@ -10,7 +10,7 @@ namespace Drones.Serializable
     public class SSimulation
     {
         public long timestamp;
-        public long simulation;
+        public DateTime simulation;
         public float revenue;
         public float totalDelay;
         public float totalAudible;

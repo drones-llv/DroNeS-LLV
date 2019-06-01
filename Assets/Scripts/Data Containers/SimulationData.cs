@@ -11,7 +11,7 @@ namespace Drones.Data
         public uint UID { get; } = 0;
 
         public bool IsDataStatic { get; } = false;
-        public long simulation;
+        public DateTime simulation;
         public SimulationStatus status;
         public SecureSortedSet<uint, IDataSource> drones;
         public SecureSortedSet<uint, IDataSource> hubs;
@@ -79,7 +79,7 @@ namespace Drones.Data
 
         public SimulationData()
         {
-            simulation = (long)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
+            simulation = DateTime.Now;
             InitializeCollections();
             SetUpCallbacks();
         }

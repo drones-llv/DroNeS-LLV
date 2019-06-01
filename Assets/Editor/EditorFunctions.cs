@@ -10,7 +10,7 @@ using System;
 using Drones.Serializable;
 using Drones.Managers;
 using Mapbox.Unity.Map.TileProviders;
-
+using Drones.Utils.Router;
 public class EditorFunctions : EditorWindow
 {
     AbstractMap abstractMap;
@@ -106,9 +106,9 @@ public class EditorFunctions : EditorWindow
             }
         }
 
-        if (GUILayout.Button("Build bitmap"))
+        if (GUILayout.Button("Test Router"))
         {
-            Debug.Log(JsonUtility.ToJson(new Buildings()));
+            TestRoute();
         }
 
 
@@ -186,7 +186,15 @@ public class EditorFunctions : EditorWindow
 
     public static void TestRoute()
     {
+        Raypath pathfinder = new Raypath();
 
+        var q = pathfinder.GetRouteTest(GameObject.Find("Start").transform.position, GameObject.Find("End").transform.position);
+        while (q.Count > 0)
+        {
+            var qb = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            qb.transform.position = q.Dequeue();
+            qb.transform.localScale = Vector3.one * 25;
+        }
     }
 
     public static void BuildTorus()

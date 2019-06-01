@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
 namespace Drones.Utils.Router
 {
     using Utils;
@@ -11,7 +10,7 @@ namespace Drones.Utils.Router
     {
         private List<List<Obstacle>> _SortedBuildings;
         private List<Obstacle> _Hubs;
-        private const float _maxAlt = 200;
+        private const float _maxAlt = 250;
         private const float _minAlt = 30;
         private const int _altDiv = 10; // Altitude interval
         private const int _buildingDiv = 30; // Building bucket height interval
@@ -90,8 +89,7 @@ namespace Drones.Utils.Router
             UpdateGameState();
             var job = drone.GetJob();
             _destination =
-                job == null ? drone.GetHub().Position :
-                job.Status == JobStatus.Pickup ? job.Pickup :
+                job == null || job.Status == JobStatus.Pickup ? drone.GetHub().Position :
                 job.Status == JobStatus.Delivering ? job.DropOff :
                 drone.GetHub().Position;
             _origin = drone.transform.position;
@@ -119,6 +117,7 @@ namespace Drones.Utils.Router
             }
             catch (StackOverflowException)
             {
+                Debug.Log(job.Pickup + " to " + job.DropOff);
                 var h = hubReturn ? _hubAlt[0] : _maxAlt;
                 _origin.y = h;
                 _destination.y = h;
@@ -129,6 +128,47 @@ namespace Drones.Utils.Router
                 waypoints.Enqueue(v);
 
                 return waypoints;
+            }
+
+        }
+
+        public Queue<Vector3> GetRouteTest(Vector3 origin, Vector3 dest)
+        {
+            frame = 0;
+            var tmp = GameObject.FindGameObjectsWithTag("NoFlyZone");
+            _NoFlyZones = new List<Obstacle>();
+            foreach (var i in tmp)
+            {
+                _NoFlyZones.Add(new Obstacle(i.transform, _Rd));
+            }
+            _destination = dest;
+            _origin = origin;
+            var hubReturn = false;
+
+            float alt = 250;
+            _origin.y = 0;
+            _destination.y = 0;
+            try
+            {
+                var waypoints = Navigate(_origin, _destination, alt, hubReturn);
+
+                for (int i = 0; i < waypoints.Count; i++)
+                {
+                    var u = waypoints[i];
+                    u.y = alt;
+                    waypoints[i] = u;
+                }
+
+                var v = _destination;
+                v.y = hubReturn ? 500 : 5;
+                waypoints.Add(v);
+
+                return new Queue<Vector3>(waypoints);
+            }
+            catch (StackOverflowException)
+            {
+                Debug.Log("Failed");
+                return new Queue<Vector3>();
             }
 
         }
@@ -213,7 +253,6 @@ namespace Drones.Utils.Router
             Vector3 perp = GetPerp(direction).normalized * _Ra;
 
             int startIndex = (int)(alt / _buildingDiv); // i.e. the building list index where we should start
-
             for (int i = startIndex; i < SortedBuildings.Count; i++)
             {
                 for (int j = 0; j < SortedBuildings[i].Count; j++)
@@ -281,7 +320,7 @@ namespace Drones.Utils.Router
         {
             foreach (var vert in obs.verts)
             {
-                var point = vert + _Rd * Vector3.Normalize(vert - obs.position);
+                var point = vert + 0.25f * Vector3.Normalize(vert - obs.position);
                 if ((point - start).magnitude > _epsilon && (point - not).magnitude > _epsilon && (point - not).magnitude < obs.diag)
                 {
                     return point;
@@ -321,15 +360,15 @@ namespace Drones.Utils.Router
                 int j;
                 if (Mathf.Abs(indices[1] - indices[0]) == 1) j = indices[1] < indices[0] ? indices[1] : indices[0];
                 else j = 3;
-                a = obs.verts[j];
-                b = obs.verts[(j + 1) % 4];
+                a = obs.verts[j] + 0.25f * Vector3.Normalize(obs.verts[j] - obs.position);
+                b = obs.verts[(j + 1) % 4] + 0.25f * Vector3.Normalize(obs.verts[(j + 1) % 4] - obs.position);
                 waypoint = ((a - start).magnitude > _epsilon) ? a : b;
             }
             else
             {
                 // opposite faces interseciton
-                a = obs.verts[indices[0]];
-                b = obs.verts[(indices[1] + 1) % 4];
+                a = obs.verts[indices[0]] + 0.25f * Vector3.Normalize(obs.verts[indices[0]] - obs.position);
+                b = obs.verts[(indices[1] + 1) % 4] + 0.25f * Vector3.Normalize(obs.verts[(indices[1] + 1) % 4] - obs.position);
                 if ((a - start).magnitude > _epsilon && (b - start).magnitude > _epsilon)
                 {
                     // Gets the waypoint with the smallest deviation angle from the path
@@ -350,8 +389,9 @@ namespace Drones.Utils.Router
 
         private List<Vector3> Navigate(Vector3 start, Vector3 end, float alt, bool hubReturn = false)
         {
-            if (frame++ > 1500) throw new StackOverflowException("Can't solve!");
+            frame++;
             List<Vector3> waypoints = new List<Vector3> { start };
+
             var dir = end - start;
             if (dir.magnitude < _epsilon) { return waypoints; } // If start = end return start
             // Finds all the buildings sorted by distance from the startpoint in a 200m wide corridor
@@ -414,6 +454,7 @@ namespace Drones.Utils.Router
                     if (j[1] == -1) errorPoints.Add(HashVector(v));
                 }
             }
+
             if (intersected)
             {
                 var next = possibilities.Remove();

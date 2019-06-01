@@ -4,19 +4,19 @@ using Unity.Burst;
 
 namespace Drones.Utils.Scheduler
 {
-    using static Scheduler;
+    using static JobScheduler;
     [BurstCompile]
     public struct EPInitializerJob : IJobParallelFor
     {
-        ChronoWrapper time;
-        [ReadOnly]
-        NativeArray<StrippedJob> allJobs;
-        [WriteOnly]
-        NativeArray<float> expectedNow;
+        public ChronoWrapper time;
+
+        public NativeArray<EPStruct> results;
 
         public void Execute(int i)
         {
-            expectedNow[i] = ExpectedValue(allJobs[i], time);
+            var tmp = results[i];
+            tmp.value = ExpectedValue(tmp.job, time);
+            results[i] = tmp;
         }
     }
 }

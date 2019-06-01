@@ -184,10 +184,23 @@ namespace Drones
 
         #region Fields
         private DroneData _Data;
+        [SerializeField]
+        private DroneCollisionController _CollisionController;
         #endregion
 
         #region Drone Properties
-        public bool InHub => _Data.inHub;
+        public DroneCollisionController CollisionController
+        {
+            get
+            {
+                if (_CollisionController == null)
+                {
+                    _CollisionController = GetComponent<DroneCollisionController>();
+                }
+                return _CollisionController;
+            }
+        }
+        public bool InHub => CollisionController.InHub;
         public DroneMovement Movement => _Data.movement;
         public Vector3 Direction => _Data.Direction;
         public float JobProgress => _Data.JobProgress;
@@ -272,7 +285,6 @@ namespace Drones
                 _Data.movement = DroneMovement.Idle;
                 GetHub().OnDroneReturn(this);
             }
-
         }
 
         IEnumerator Vertical()
