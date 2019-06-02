@@ -88,6 +88,7 @@ namespace Drones.Managers
             yield return new WaitUntil(() => SceneManager.GetActiveScene() == SceneManager.GetSceneByBuildIndex(1));
             Initialized = true;
             Instance.StartCoroutine(StreamDataToDashboard());
+            Instance.StartCoroutine(DataLogger());
         }
         #endregion
 
@@ -135,7 +136,6 @@ namespace Drones.Managers
 
         private static IEnumerator StreamDataToDashboard()
         {
-            Instance.StartCoroutine(DataLogger());
             var wait = new WaitForSeconds(0.75f);
             while (true)
             {

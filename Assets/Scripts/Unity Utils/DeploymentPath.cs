@@ -82,7 +82,7 @@ namespace Drones.Utils
         public IEnumerator DeployDrone()
         {
             var time = TimeKeeper.Chronos.Get();
-            WaitUntil _DroneReady = new WaitUntil(() => time.Timer() > PERIOD);
+            WaitUntil ready = new WaitUntil(() => time.Timer() > PERIOD);
             Drone outgoing = null;
             while (true)
             {
@@ -96,7 +96,7 @@ namespace Drones.Utils
                     outgoing.GetBattery().SetStatus(BatteryStatus.Discharge);
                     outgoing.Deploy();
                 }
-                yield return _DroneReady;
+                yield return ready;
                 time.Now();
             }
         }

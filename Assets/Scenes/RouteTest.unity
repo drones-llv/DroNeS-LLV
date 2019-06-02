@@ -403,7 +403,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!23 &218791305
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -491,7 +491,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &285779035
 Transform:
   m_ObjectHideFlags: 0
@@ -526,7 +526,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!64 &543037962
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -616,7 +616,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &656706953
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1014,231 +1014,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1088097175}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1001 &1135659717
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 5660184131458989646, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: m_Name
-      value: CitySimulatorMap
-      objectReference: {fileID: 0}
-    - target: {fileID: 5660184131458989646, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5658621795295691800, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5658621795295691800, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5658621795295691800, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5658621795295691800, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5658621795295691800, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5658621795295691800, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5658621795295691800, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5658621795295691800, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 7
-      objectReference: {fileID: 0}
-    - target: {fileID: 5658621795295691800, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5658621795295691800, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5658621795295691800, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _tileProvider
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[2].coreOptions.isActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[3].coreOptions.isActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[1].coreOptions.isActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[0].coreOptions.isActive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[4].coreOptions.isActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[4].coreOptions.combineMeshes
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[4].colliderOptions.colliderType
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty._sourceType
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.sourceOptions.layerSource.Id
-      value: mapbox.mapbox-streets-v7
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[4].honorBuildingIdSetting
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _initializeOnStart
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _options.extentOptions.extentType
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _options.extentOptions.defaultExtents.rangeAroundCenterOptions.west
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _options.extentOptions.defaultExtents.rangeAroundCenterOptions.north
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _options.extentOptions.defaultExtents.rangeAroundCenterOptions.east
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _options.extentOptions.defaultExtents.rangeAroundCenterOptions.south
-      value: 5
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[2].materialOptions.materials.Array.data[0].Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 1314971420}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[2].materialOptions.materials.Array.data[1].Materials.Array.data[0]
-      value: 
-      objectReference: {fileID: 1934601795}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[2].materialOptions.atlasInfo
-      value: 
-      objectReference: {fileID: 11400000, guid: 817b646f06c8845628ba7acf4819a67d,
-        type: 2}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[1].honorBuildingIdSetting
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[0].honorBuildingIdSetting
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[3].honorBuildingIdSetting
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[3].filterOptions.filters.Array.data[0].Min
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[3].filterOptions.filters.Array.data[0].Max
-      value: 20
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[3].filterOptions.filters.Array.data[1].Min
-      value: 20
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[1].filterOptions.filters.Array.data[0].Min
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[1].filterOptions.filters.Array.data[1].Min
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _vectorData._layerProperty.vectorSubLayers.Array.data[0].filterOptions.filters.Array.data[0].Min
-      value: 20
-      objectReference: {fileID: 0}
-    - target: {fileID: 5700469791135430162, guid: d0b08a9ec9fc142468a1cf2a2cd8c859,
-        type: 3}
-      propertyPath: _options.locationOptions.latitudeLongitude
-      value: -29.3151,27.4869
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: d0b08a9ec9fc142468a1cf2a2cd8c859, type: 3}
 --- !u!1 &1213783136
 GameObject:
   m_ObjectHideFlags: 0
@@ -1413,7 +1188,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1307051850}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!21 &1314971420
+--- !u!21 &1558878702
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
@@ -1499,7 +1274,7 @@ Material:
     - _Glossiness: 0
     - _GlossyReflections: 1
     - _Metallic: 0
-    - _Mode: 0
+    - _Mode: 2
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _SmoothnessTextureChannel: 0
@@ -1712,7 +1487,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1702108629
 Transform:
   m_ObjectHideFlags: 0
@@ -1728,7 +1503,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!21 &1934601795
+--- !u!21 &1815491666
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
@@ -1814,7 +1589,7 @@ Material:
     - _Glossiness: 0
     - _GlossyReflections: 1
     - _Metallic: 0
-    - _Mode: 0
+    - _Mode: 3
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _SmoothnessTextureChannel: 0
@@ -1914,3 +1689,518 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8742839df730e46c8bfb62ae7e9dda7e, type: 3}
+--- !u!4 &5658621794195787485
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5660184132506530955}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -1358.5701, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5659219372322550169
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5660184132506530955}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f57d3893ecac4fd89f90ce988c3d263, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!1 &5660184132506530955
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5658621794195787485}
+  - component: {fileID: 5700469792231144663}
+  - component: {fileID: 5659219372322550169}
+  - component: {fileID: 5660184132506530956}
+  m_Layer: 0
+  m_Name: CitySimulatorMap
+  m_TagString: Manhattan
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &5660184132506530956
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5660184132506530955}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d7ff8ed3b76a4ee5a451d64a5393e3f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &5700469792231144663
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5660184132506530955}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd961b1c9541a4cee99686069ecce852, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _options:
+    locationOptions:
+      latitudeLongitude: -29.3151,27.4869
+      zoom: 16
+    extentOptions:
+      extentType: 1
+      defaultExtents:
+        cameraBoundsOptions:
+          camera: {fileID: 0}
+          visibleBuffer: 0
+          disposeBuffer: 0
+        rangeAroundCenterOptions:
+          west: 5
+          north: 6
+          east: 10
+          south: 10
+        rangeAroundTransformOptions:
+          targetTransform: {fileID: 0}
+          visibleBuffer: 0
+          disposeBuffer: 0
+    placementOptions:
+      placementType: 0
+      snapMapToZero: 1
+    scalingOptions:
+      scalingType: 0
+      unityTileSize: 150
+    loadingTexture: {fileID: 0}
+    tileMaterial: {fileID: 2100000, guid: 5758739745d3b46279a470b8559105f6, type: 2}
+  _initializeOnStart: 0
+  _imagery:
+    _layerProperty:
+      sourceType: 6
+      sourceOptions:
+        isActive: 1
+        layerSource:
+          Name: Streets
+          Id: mapbox://styles/jw5514/cjr5l685g4u4z2sjxfdupnl8b
+          Modified: 
+          UserName: 
+      rasterOptions:
+        useRetina: 0
+        useCompression: 1
+        useMipMap: 0
+  _terrain:
+    _layerProperty:
+      sourceType: 0
+      sourceOptions:
+        isActive: 1
+        layerSource:
+          Name: 
+          Id: mapbox.terrain-rgb
+          Modified: 
+          UserName: 
+      elevationLayerType: 1
+      requiredOptions:
+        exaggerationFactor: 1
+      colliderOptions:
+        addCollider: 1
+      modificationOptions:
+        sampleCount: 15
+        useRelativeHeight: 0
+        earthRadius: 1942761
+      unityLayerOptions:
+        addToLayer: 1
+        layerId: 13
+      sideWallOptions:
+        isActive: 0
+        wallHeight: 10
+        wallMaterial: {fileID: 0}
+  _vectorData:
+    _layerProperty:
+      tileJsonData:
+        tileJSONLoaded: 0
+        LayerDisplayNames:
+        - admin
+        - aeroway
+        - airport_label
+        - barrier_line
+        - building
+        - country_label
+        - housenum_label
+        - landuse
+        - landuse_overlay
+        - marine_label
+        - motorway_junction
+        - mountain_peak_label
+        - place_label
+        - poi_label
+        - rail_station_label
+        - road
+        - road_label
+        - state_label
+        - water
+        - water_label
+        - waterway
+        - waterway_label
+      _sourceType: 1
+      sourceOptions:
+        isActive: 1
+        layerSource:
+          Name: Mapbox Terrain
+          Id: mapbox.mapbox-streets-v7
+          Modified: 
+          UserName: 
+      useOptimizedStyle: 0
+      optimizedStyle:
+        Name: Manhattan
+        Id: mapbox://styles/jw5514/cjr7loico0my12rnrzcm9qk2p
+        Modified: 2019-01-22T11:04:49.598Z
+        UserName: jw5514
+      performanceOptions:
+        isEnabled: 1
+        entityPerCoroutine: 40
+      vectorSubLayers:
+      - coreOptions:
+          sourceId: 
+          isActive: 0
+          sublayerName: Tall
+          geometryType: 2
+          layerName: building
+          snapToTerrain: 1
+          combineMeshes: 0
+        lineGeometryOptions:
+          Width: 1
+        filterOptions:
+          _selectedLayerName: building
+          filters:
+          - Key: height
+            KeyDescription: Number. Height of building or part of building.
+            PropertyValue: 
+            Min: 20
+            Max: 500
+            filterOperator: 2
+          combinerType: 0
+        extrusionOptions:
+          _selectedLayerName: building
+          extrusionType: 1
+          extrusionGeometryType: 0
+          propertyName: height
+          propertyDescription: Number. Height of building or part of building.
+          minimumHeight: 0
+          maximumHeight: 1
+          extrusionScaleFactor: 1.3203
+        colliderOptions:
+          colliderType: 2
+        materialOptions:
+          style: 0
+          texturingType: 2
+          materials:
+          - Materials:
+            - {fileID: 0}
+          - Materials:
+            - {fileID: 0}
+          atlasInfo: {fileID: 0}
+          lightStyleOpacity: 1
+          darkStyleOpacity: 1
+          colorStyleColor: {r: 0, g: 0, b: 0, a: 0}
+          samplePalettes: 0
+          colorPalette: {fileID: 0}
+          customStyleOptions:
+            texturingType: 2
+            materials:
+            - Materials:
+              - {fileID: 2100000, guid: 44c06a0f232d44b7c8bf6243de55ea99, type: 2}
+            - Materials:
+              - {fileID: 2100000, guid: 44c06a0f232d44b7c8bf6243de55ea99, type: 2}
+            atlasInfo: {fileID: 11400000, guid: 733b2da1fe66841d5a53c7d268ebc1ca,
+              type: 2}
+            colorPalette: {fileID: 0}
+        performanceOptions:
+          isEnabled: 0
+          entityPerCoroutine: 0
+        honorBuildingIdSetting: 0
+        buildingsWithUniqueIds: 1
+        moveFeaturePositionTo: 2
+        MeshModifiers: []
+        GoModifiers: []
+        presetFeatureType: 0
+        _maskValue: 0
+        selectedTypes: 
+      - coreOptions:
+          sourceId: 
+          isActive: 0
+          sublayerName: ShortA
+          geometryType: 2
+          layerName: building
+          snapToTerrain: 1
+          combineMeshes: 0
+        lineGeometryOptions:
+          Width: 1
+        filterOptions:
+          _selectedLayerName: building
+          filters:
+          - Key: height
+            KeyDescription: Number. Height of building or part of building.
+            PropertyValue: 
+            Min: 10
+            Max: 0
+            filterOperator: 3
+          - Key: height
+            KeyDescription: Number. Height of building or part of building.
+            PropertyValue: 
+            Min: 10
+            Max: 0
+            filterOperator: 1
+          combinerType: 0
+        extrusionOptions:
+          _selectedLayerName: building
+          extrusionType: 1
+          extrusionGeometryType: 0
+          propertyName: height
+          propertyDescription: Number. Height of building or part of building.
+          minimumHeight: 0
+          maximumHeight: 1
+          extrusionScaleFactor: 1.3203
+        colliderOptions:
+          colliderType: 2
+        materialOptions:
+          style: 0
+          texturingType: 2
+          materials:
+          - Materials:
+            - {fileID: 0}
+          - Materials:
+            - {fileID: 0}
+          atlasInfo: {fileID: 0}
+          lightStyleOpacity: 1
+          darkStyleOpacity: 1
+          colorStyleColor: {r: 0, g: 0, b: 0, a: 0}
+          samplePalettes: 0
+          colorPalette: {fileID: 0}
+          customStyleOptions:
+            texturingType: 2
+            materials:
+            - Materials:
+              - {fileID: 2100000, guid: 44c06a0f232d44b7c8bf6243de55ea99, type: 2}
+            - Materials:
+              - {fileID: 2100000, guid: 44c06a0f232d44b7c8bf6243de55ea99, type: 2}
+            atlasInfo: {fileID: 11400000, guid: 733b2da1fe66841d5a53c7d268ebc1ca,
+              type: 2}
+            colorPalette: {fileID: 0}
+        performanceOptions:
+          isEnabled: 0
+          entityPerCoroutine: 0
+        honorBuildingIdSetting: 0
+        buildingsWithUniqueIds: 1
+        moveFeaturePositionTo: 2
+        MeshModifiers: []
+        GoModifiers: []
+        presetFeatureType: 0
+        _maskValue: 0
+        selectedTypes: 
+      - coreOptions:
+          sourceId: 
+          isActive: 0
+          sublayerName: Road
+          geometryType: 1
+          layerName: road
+          snapToTerrain: 1
+          combineMeshes: 1
+        lineGeometryOptions:
+          Width: 1
+        filterOptions:
+          _selectedLayerName: road
+          filters: []
+          combinerType: 0
+        extrusionOptions:
+          _selectedLayerName: road
+          extrusionType: 5
+          extrusionGeometryType: 0
+          propertyName: height
+          propertyDescription: 
+          minimumHeight: 0
+          maximumHeight: 24
+          extrusionScaleFactor: 1
+        colliderOptions:
+          colliderType: 2
+        materialOptions:
+          style: 2
+          texturingType: 2
+          materials:
+          - Materials:
+            - {fileID: 1558878702}
+          - Materials:
+            - {fileID: 1815491666}
+          atlasInfo: {fileID: 11400000, guid: 817b646f06c8845628ba7acf4819a67d, type: 2}
+          lightStyleOpacity: 1
+          darkStyleOpacity: 1
+          colorStyleColor: {r: 0, g: 0, b: 0, a: 0}
+          samplePalettes: 0
+          colorPalette: {fileID: 0}
+          customStyleOptions:
+            texturingType: 0
+            materials:
+            - Materials:
+              - {fileID: 0}
+            - Materials:
+              - {fileID: 0}
+            atlasInfo: {fileID: 0}
+            colorPalette: {fileID: 0}
+        performanceOptions:
+          isEnabled: 0
+          entityPerCoroutine: 0
+        honorBuildingIdSetting: 0
+        buildingsWithUniqueIds: 1
+        moveFeaturePositionTo: 0
+        MeshModifiers: []
+        GoModifiers: []
+        presetFeatureType: 1
+        _maskValue: 0
+        selectedTypes: 
+      - coreOptions:
+          sourceId: 
+          isActive: 0
+          sublayerName: ShortB
+          geometryType: 2
+          layerName: building
+          snapToTerrain: 1
+          combineMeshes: 0
+        lineGeometryOptions:
+          Width: 1
+        filterOptions:
+          _selectedLayerName: building
+          filters:
+          - Key: height
+            KeyDescription: Number. Height of building or part of building.
+            PropertyValue: 
+            Min: 10
+            Max: 20
+            filterOperator: 4
+          - Key: height
+            KeyDescription: Number. Height of building or part of building.
+            PropertyValue: 
+            Min: 20
+            Max: 0
+            filterOperator: 1
+          combinerType: 0
+        extrusionOptions:
+          _selectedLayerName: building
+          extrusionType: 1
+          extrusionGeometryType: 0
+          propertyName: height
+          propertyDescription: Number. Height of building or part of building.
+          minimumHeight: 0
+          maximumHeight: 1
+          extrusionScaleFactor: 1.3203
+        colliderOptions:
+          colliderType: 2
+        materialOptions:
+          style: 0
+          texturingType: 2
+          materials:
+          - Materials:
+            - {fileID: 0}
+          - Materials:
+            - {fileID: 0}
+          atlasInfo: {fileID: 0}
+          lightStyleOpacity: 1
+          darkStyleOpacity: 1
+          colorStyleColor: {r: 0, g: 0, b: 0, a: 0}
+          samplePalettes: 0
+          colorPalette: {fileID: 0}
+          customStyleOptions:
+            texturingType: 2
+            materials:
+            - Materials:
+              - {fileID: 2100000, guid: 44c06a0f232d44b7c8bf6243de55ea99, type: 2}
+            - Materials:
+              - {fileID: 2100000, guid: 44c06a0f232d44b7c8bf6243de55ea99, type: 2}
+            atlasInfo: {fileID: 11400000, guid: 733b2da1fe66841d5a53c7d268ebc1ca,
+              type: 2}
+            colorPalette: {fileID: 0}
+        performanceOptions:
+          isEnabled: 0
+          entityPerCoroutine: 0
+        honorBuildingIdSetting: 0
+        buildingsWithUniqueIds: 1
+        moveFeaturePositionTo: 2
+        MeshModifiers: []
+        GoModifiers: []
+        presetFeatureType: 0
+        _maskValue: 0
+        selectedTypes: 
+      - coreOptions:
+          sourceId: 
+          isActive: 0
+          sublayerName: All
+          geometryType: 2
+          layerName: building
+          snapToTerrain: 1
+          combineMeshes: 0
+        lineGeometryOptions:
+          Width: 1
+        filterOptions:
+          _selectedLayerName: building
+          filters: []
+          combinerType: 0
+        extrusionOptions:
+          _selectedLayerName: building
+          extrusionType: 1
+          extrusionGeometryType: 0
+          propertyName: height
+          propertyDescription: Number. Height of building or part of building.
+          minimumHeight: 0
+          maximumHeight: 1
+          extrusionScaleFactor: 1.3203
+        colliderOptions:
+          colliderType: 2
+        materialOptions:
+          style: 0
+          texturingType: 2
+          materials:
+          - Materials:
+            - {fileID: 0}
+          - Materials:
+            - {fileID: 0}
+          atlasInfo: {fileID: 0}
+          lightStyleOpacity: 1
+          darkStyleOpacity: 1
+          colorStyleColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+          samplePalettes: 0
+          colorPalette: {fileID: 0}
+          customStyleOptions:
+            texturingType: 2
+            materials:
+            - Materials:
+              - {fileID: 2100000, guid: 44c06a0f232d44b7c8bf6243de55ea99, type: 2}
+            - Materials:
+              - {fileID: 2100000, guid: 44c06a0f232d44b7c8bf6243de55ea99, type: 2}
+            atlasInfo: {fileID: 11400000, guid: 733b2da1fe66841d5a53c7d268ebc1ca,
+              type: 2}
+            colorPalette: {fileID: 0}
+        performanceOptions:
+          isEnabled: 0
+          entityPerCoroutine: 0
+        honorBuildingIdSetting: 0
+        buildingsWithUniqueIds: 1
+        moveFeaturePositionTo: 2
+        MeshModifiers: []
+        GoModifiers:
+        - {fileID: 11400000, guid: 18d45a995d3c341469b25321395ce040, type: 2}
+        presetFeatureType: 0
+        _maskValue: 0
+        selectedTypes: 
+      locationPrefabList: []
+  _tileProvider: {fileID: 5660184132506530956}

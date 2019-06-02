@@ -107,6 +107,7 @@ namespace Drones
                 return _Collider;
             }
         }
+
         public HubCollisionController CollisionController
         {
             get
@@ -118,6 +119,7 @@ namespace Drones
                 return _CollisionController;
             }
         }
+
         public DeploymentPath DronePath
         {
             get

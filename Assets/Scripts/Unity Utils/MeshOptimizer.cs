@@ -96,7 +96,7 @@ namespace Drones.LoadingTools
                     else
                     {
                         i.GetComponent<MeshCollider>().convex = true;
-                        i.gameObject.layer = 11; // Set layer to buildings
+                        i.gameObject.layer = LayerMask.NameToLayer("BuildingCollider"); // Set layer to buildings
                         meshRenderer.materials = materials;
                     }
                 }
@@ -268,7 +268,7 @@ namespace Drones.LoadingTools
             // Horizontal distance between centres
             float dist = (iBounds.center - oBounds.center).magnitude;
 
-            return dist < 2.0f || !roadMesh.Raycast(new Ray(oBounds.center, dir), out RaycastHit hit, dist);
+            return dist < 4.0f || !roadMesh.Raycast(new Ray(oBounds.center, dir), out RaycastHit hit, dist);
         }
 
         // Groups buildings in the list by city blocks
@@ -328,8 +328,8 @@ namespace Drones.LoadingTools
         private static void SplitBlock(Transform block)
         {
             float dist;
-            if (IsTall(block)) { dist = 1.0f; }
-            else if (IsShort(block)) { dist = 4.0f; }
+            if (IsTall(block)) { dist = 2.0f; }
+            else if (IsShort(block)) { dist = 5.0f; }
             else { return; }
 
             // A group represents a set of objects which potentially belong to the same building
@@ -399,8 +399,7 @@ namespace Drones.LoadingTools
                 float val = t1.GetComponent<MeshRenderer>().bounds.center.y;
                 val -= t2.GetComponent<MeshRenderer>().bounds.center.y;
                 if (val < EPSILON) return -1;
-                if (val >= EPSILON) return 1;
-                return 0;
+                return 1;
             }
 
             var children = building.GetComponentsInChildren<Transform>().ToList();

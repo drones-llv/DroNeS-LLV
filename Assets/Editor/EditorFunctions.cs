@@ -87,11 +87,11 @@ public class EditorFunctions : EditorWindow
                     if (building.childCount > 0) { continue; }
                     if (IsTall(building))
                     {
-                        new BoxBuilder(building).Build(material, Building.Tall);
+                        new BoundingBox(building).Build(material, Building.Tall);
                     }
                     else
                     {
-                        new BoxBuilder(building).Build(material, Building.Short);
+                        new BoundingBox(building).Build(material, Building.Short);
                     }
                     //DestroyImmediate(building.GetComponent<MeshCollider>());
                 }
@@ -106,14 +106,45 @@ public class EditorFunctions : EditorWindow
             }
         }
 
-        if (GUILayout.Button("Test Router"))
+        if (GUILayout.Button("Count Buildings"))
         {
-            TestRoute();
+            int c = 0;
+            foreach (Transform tile in citySimulatorMap.transform)
+            {
+                foreach (Transform building in tile)
+                {
+                    c++;
+                }
+            }
+            Debug.Log(c);
         }
+
+        if (GUILayout.Button("HEIGHT!"))
+        {
+            GenerateHeightBitMap(3000,3000, 2);
+        }
+
 
 
     }
 
+    void FindTallest()
+    {
+        float c = 0;
+        foreach (Transform tile in citySimulatorMap.transform)
+        {
+            foreach (Transform building in tile)
+            {
+                var d = building.GetComponent<MeshRenderer>().bounds.size.y;
+                if (c < d)
+                {
+                    c = d;
+                }
+
+            }
+        }
+        Debug.Log(c);
+    }
 
     [Serializable]
     public class Buildings
@@ -128,11 +159,46 @@ public class EditorFunctions : EditorWindow
         public List<StaticObstacle> NFZs;
     }
 
-    public static void GenerateHeightBitMap()
+    public static void GenerateHeightBitMap(int x, int y, int metre)
+    {
+        Texture2D data = new Texture2D(x, y);
+        try
+        {
+            float tallest = 40;
+            for (int i = 0; i < x * 2; i += metre)
+            {
+                for (int j = 0; j < y * 2; j += metre)
+                {
+                    var v = new Vector3(i - x, 1000, j - y);
+                    var c = Color.black;
+                    if (Physics.BoxCast(v, new Vector3(metre/2f, 1, metre/2f), Vector3.down, out RaycastHit info, Quaternion.identity, 1000, 1 << 12))
+                    {
+                        c += Color.white * info.point.y / tallest;
+                        c.a = 1;
+                    }
+                    else if (!Physics.BoxCast(v, new Vector3(metre / 2f, 1, metre / 2f), Vector3.down, Quaternion.identity, 1001, 1 << 13))
+                    {
+                        c = Color.white;
+                    }
+                    data.SetPixel(i / metre, j / metre, c);
+                }
+            }
+            var path = Path.Combine(SaveManager.ExportPath, "height_bitmap.png");
+            File.WriteAllBytes(path, data.EncodeToPNG());
+        }
+        catch (IndexOutOfRangeException)
+        {
+            Debug.Log("Error");
+        }
+    }
+
+
+    public static void GenerateHeightBitMapNY()
     {
         Texture2D data = new Texture2D(2160, 3750);
         try
         {
+            float tallest = 600;
             for (int i = 0; i < 4320 * 2; i += 4)
             {
                 for (int j = 0; j < 7500 * 2; j += 4)
@@ -141,7 +207,7 @@ public class EditorFunctions : EditorWindow
                     var c = Color.black;
                     if (Physics.BoxCast(v, new Vector3(2, 1, 2), Vector3.down, out RaycastHit info, Quaternion.identity, 1000, 1 << 12))
                     {
-                        c += Color.white * info.point.y / 600f;
+                        c += Color.white * info.point.y / tallest;
                         c.a = 1;
                     }
                     else if (!Physics.BoxCast(v, new Vector3(2, 1, 2), Vector3.down, Quaternion.identity, 1000, 1 << 13))
