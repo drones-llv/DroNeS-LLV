@@ -10,16 +10,18 @@ namespace Drones.Utils.Scheduler
 
     public class EPScheduler : IScheduler
     {
-        public EPScheduler(Queue<Drone> drones, List<StrippedJob> jobs)
+        public EPScheduler(Queue<Drone> drones)
         {
             DroneQueue = drones;
-            JobQueue = jobs;
+            JobQueue = new List<Job>();
+            jobs = new NativeList<EPStruct>(Allocator.Persistent);
+            precedence = new NativeList<float>(Allocator.Persistent);
         }
-        NativeArray<EPStruct> jobs;
-        NativeArray<float> precedence;
+        NativeList<EPStruct> jobs;
+        NativeList<float> precedence;
         public bool Started { get; private set; }
         public Queue<Drone> DroneQueue { get; }
-        public List<StrippedJob> JobQueue { get; }
+        public List<Job> JobQueue { get; set; }
         public JobHandle Scheduling { get; private set; }
 
         public IEnumerator ProcessQueue()
@@ -34,28 +36,46 @@ namespace Drones.Utils.Scheduler
                     Drone drone = DroneQueue.Dequeue();
                     if (drone.InPool) continue;
 
-                    Initialize();
+                    Scheduling.Complete();
+                    for (int i = jobs.Length; i < JobQueue.Count; i++)
+                    {
+                        jobs.Add(new EPStruct { job = (StrippedJob)JobQueue[i] });
+                    }
+                    for (int i = precedence.Length; i < JobQueue.Count * JobQueue.Count; i++)
+                    {
+                        precedence.Add(0);
+                    }
+                    var num = jobs.Length;
                     var initializer = new EPInitializerJob
                     {
                         time = (ChronoWrapper)TimeKeeper.Chronos.Get(),
                         results = jobs
                     };
-                    var initJob = initializer.Schedule(JobQueue.Count, 4);
+                    var initJob = initializer.Schedule(num, 4);
                     var calculator = new EPCalculatorJob
                     {
                         time = (ChronoWrapper)TimeKeeper.Chronos.Get(),
                         input = jobs,
                         ep = precedence
                     };
-                    Scheduling = calculator.Schedule(JobQueue.Count, 1, initJob);
+                    Scheduling = calculator.Schedule(num, 1, initJob);
                     yield return new WaitUntil(() => Scheduling.IsCompleted);
                     Scheduling.Complete();
                     var n = FindMax(ref calculator.ep);
-                    Dispose();
+                    var end = jobs.Length - 1;
 
-                    drone.AssignJob((Job)JobQueue[n]);
-                    JobQueue.RemoveAt(n);
-                    SimManager.JobDequeued();
+                    if (drone.AssignJob((Job)jobs[n].job))
+                    {
+                        jobs.RemoveAtSwapBack(n);
+                        JobQueue[n] = JobQueue[end];
+                        JobQueue.RemoveAt(end);
+
+                        var sq = end * end;
+                        while (precedence.Length != sq) precedence.RemoveAtSwapBack(0);
+
+                        SimManager.JobDequeued();
+                    }
+
                     yield return null;
                 }
             }
@@ -80,20 +100,6 @@ namespace Drones.Utils.Scheduler
         {
             jobs.Dispose();
             precedence.Dispose();
-        }
-
-        public void Initialize()
-        {
-            jobs = new NativeArray<EPStruct>(JobQueue.Count, Allocator.TempJob);
-            for (int i = 0; i < JobQueue.Count; i++) 
-            {
-                jobs[i] = new EPStruct
-                {
-                    job = JobQueue[i]
-                };
-            }
-
-            precedence = new NativeArray<float>(JobQueue.Count * JobQueue.Count, Allocator.TempJob);
         }
 
         public void Complete()

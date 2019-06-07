@@ -21,6 +21,8 @@ namespace Drones.Serializable
         public float chargeRate;
         public float chargeTarget;
         public float chargeVoltage;
+        public float totalCharge;
+        public float totalDischarge;
 
         public SBattery(BatteryData data)
         {
@@ -38,6 +40,8 @@ namespace Drones.Serializable
             chargeRate = data.chargeRate;
             chargeVoltage = data.chargeVoltage;
             dischargeVoltage = data.dischargeVoltage;
+            totalCharge = data.totalCharge;
+            totalDischarge = data.totalDischarge;
 
         }
     }

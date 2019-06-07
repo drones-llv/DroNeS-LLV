@@ -4,20 +4,13 @@ namespace Drones.Managers
 {
     using Utils;
     using UI;
-    using static Utils.Constants;
     public class ShortcutManager : MonoBehaviour
     {
         private static ShortcutManager _Instance;
-        public static ShortcutManager Instance
+        public static ShortcutManager New()
         {
-            get
-            {
-                if (Instance == null)
-                {
-                    _Instance = ((GameObject)Instantiate(Resources.Load(ShortcutManagerPath))).GetComponent<ShortcutManager>();
-                }
-                return _Instance;
-            }
+            _Instance = new GameObject("ShortcutManager").AddComponent<ShortcutManager>();
+            return _Instance;
         }
 
         private void OnDestroy()

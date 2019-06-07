@@ -2,22 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Unity.Jobs;
+using Unity.Collections;
 
 namespace Drones.Utils.Scheduler
 {
     using Managers;
 
+
     public class FCFSScheduler : IScheduler
     {
-        public FCFSScheduler(Queue<Drone> drones, List<StrippedJob> jobs)
+        public FCFSScheduler(Queue<Drone> drones)
         {
             DroneQueue = drones;
-            JobQueue = jobs;
+            JobQueue = new List<Job>();
         }
-
         public bool Started { get; private set; }
         public Queue<Drone> DroneQueue { get; }
-        public List<StrippedJob> JobQueue { get; }
+        public List<Job> JobQueue { get; set; }
         public JobHandle Scheduling { get; private set; }
         public IEnumerator ProcessQueue()
         {
@@ -31,9 +32,11 @@ namespace Drones.Utils.Scheduler
                     Drone drone = DroneQueue.Dequeue();
                     if (drone.InPool) continue;
 
-                    drone.AssignJob(SimManager.AllJobs[JobQueue[0].UID]);
-                    JobQueue.RemoveAt(0);
-                    SimManager.JobDequeued();
+                    if (drone.AssignJob(JobQueue[0]))
+                    {
+                        JobQueue.RemoveAt(0);
+                        SimManager.JobDequeued();
+                    }
                 }
             }
         }
@@ -52,5 +55,6 @@ namespace Drones.Utils.Scheduler
         {
             return;
         }
+
     }
 }

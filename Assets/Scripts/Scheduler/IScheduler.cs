@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Unity.Jobs;
+using Unity.Collections;
 
 namespace Drones.Utils.Scheduler
 {
@@ -10,8 +11,6 @@ namespace Drones.Utils.Scheduler
 
         void Dispose();
 
-        void Initialize();
-
         bool Started { get; }
 
         JobHandle Scheduling { get; }
@@ -20,7 +19,7 @@ namespace Drones.Utils.Scheduler
 
         Queue<Drone> DroneQueue { get; }
 
-        List<StrippedJob> JobQueue { get; }
+        List<Job> JobQueue { get; set; }
 
     }
 }

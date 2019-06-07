@@ -12,6 +12,7 @@ namespace Drones
     using Utils;
     using Data;
     using Utils.Jobs;
+    using Drones.Utils.Scheduler;
 
     public class Drone : MonoBehaviour, IDataSource, IPoolable
     {
@@ -98,7 +99,7 @@ namespace Drones
         public uint UID => _Data.UID;
         public string Name => "D" + _Data.UID.ToString("000000");
 
-        public void AssignJob(Job job)
+        public bool AssignJob(Job job)
         {
             if (job == null)
             {
@@ -106,6 +107,14 @@ namespace Drones
             }
             else
             {
+                var j = (StrippedJob)job;
+                var t = (JobScheduler.EuclideanDist(j) + JobScheduler.ManhattanDist(j))/MovementJob.HSPEED;
+                if (t > GetBattery().Charge * CostFunction.GUARANTEE)
+                {
+                    GetHub().Scheduler.AddToQueue(this);
+                    return false;
+                }
+
                 _Data.job = job.UID;
                 job.AssignDrone(this);
                 if (InHub)
@@ -117,6 +126,7 @@ namespace Drones
                 }
             }
             if (_Data.hub != 0) LoadWaypoints(GetHub().Router.GetRoute(this));
+            return true;
         }
 
         public void AssignBattery(Battery battery)
@@ -174,7 +184,7 @@ namespace Drones
 
             return info;
         }
-        public EnergyInfo GetEnergyInfo(EnergyInfo info)
+        public EnergyInfo GetEnergyInfo(ref EnergyInfo info)
         {
             info.moveType = _Data.movement;
             info.pkgWgt = (_Data.job == 0) ? 0 : GetJob().PackageWeight;

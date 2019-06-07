@@ -79,7 +79,6 @@ namespace Drones.Utils.Router
                 return _SortedBuildings;
             }
         }
-
         int frame;
 
         // The public interface to get the list of waypoints
@@ -96,8 +95,13 @@ namespace Drones.Utils.Router
             var hubReturn = job == null || job.Status == JobStatus.Pickup;
             float alt = hubReturn ? _hubAlt[(_destination - _origin).z > 0 ? 0 : 1] : 
                 Altitudes[ChooseAltitude(_origin, _destination)];
+
             _origin.y = 0;
             _destination.y = 0;
+            if (hubReturn)
+            {
+                _destination -= Vector3.Normalize(_destination - _origin) * 4;
+            }
             try
             {
                 var waypoints = Navigate(_origin, _destination, alt, hubReturn);

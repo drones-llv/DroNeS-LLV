@@ -128,17 +128,16 @@ namespace Drones.Data
             {
                 chargingBatteries.Remove(bat.UID);
                 freeBatteries.Remove(bat.UID);
-                AllBatteries.Remove(bat);
+                AllBatteries.Remove(bat.UID);
             };
             chargingBatteries.ItemAdded += delegate (Battery bat)
             {
                 bat.SetStatus(BatteryStatus.Charge);
-                _source.StartCoroutine(bat.ChargeBattery());
             };
             chargingBatteries.ItemRemoved += delegate (Battery bat)
             {
-                bat.SetStatus(BatteryStatus.Idle);
-                _source.StopCoroutine(bat.ChargeBattery());
+                if (bat.Status == BatteryStatus.Charge)
+                    bat.SetStatus(BatteryStatus.Idle);
             };
             drones.ItemAdded += delegate (IDataSource drone)
             {

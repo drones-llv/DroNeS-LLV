@@ -19,7 +19,7 @@ namespace Drones.Utils.Jobs
     {
         public const float g = 9.81f;
         public const float VSPEED = 4.0f;
-        public const float HSPEED = 9.0f;
+        public const float HSPEED = 12f;
         public float deltaTime;
         public NativeArray<MovementInfo> nextMove;
 

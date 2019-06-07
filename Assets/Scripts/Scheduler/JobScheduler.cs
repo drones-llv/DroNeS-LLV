@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Collections;
 
 namespace Drones.Utils.Scheduler
 {
@@ -24,28 +25,32 @@ namespace Drones.Utils.Scheduler
         }
         private JobGenerator _Generator;
         private Queue<Drone> _droneQueue = new Queue<Drone>();
-        private List<StrippedJob> _jobQueue = new List<StrippedJob>();
         private IScheduler _algorithm;
 
         private void OnDisable()
         {
-            _algorithm.Scheduling.Complete();
+            _algorithm.Complete();
         }
 
         private void OnEnable()
         {
             _Generator = new JobGenerator(Owner, Owner.JobGenerationRate);
             StartCoroutine(_Generator.Generate());
+            NewAlgorithm();
+        }
+
+        private void NewAlgorithm()
+        {
             switch (ALGORITHM)
             {
                 case Scheduling.EP:
-                    _algorithm = new EPScheduler(_droneQueue, _jobQueue);
+                    _algorithm = new EPScheduler(_droneQueue);
                     break;
                 case Scheduling.LLV:
-                    _algorithm = new LLVScheduler(_droneQueue, _jobQueue);
+                    _algorithm = new LLVScheduler(_droneQueue);
                     break;
                 default:
-                    _algorithm = new FCFSScheduler(_droneQueue, _jobQueue);
+                    _algorithm = new FCFSScheduler(_droneQueue);
                     break;
             }
         }
@@ -64,7 +69,7 @@ namespace Drones.Utils.Scheduler
 
         public void AddToQueue(Job job)
         {
-            _jobQueue.Add((StrippedJob)job);
+            _algorithm.JobQueue.Add(job);
             SimManager.JobEnqueued();
         }
 
@@ -76,13 +81,6 @@ namespace Drones.Utils.Scheduler
             foreach (var i in data) AddToQueue((Drone)SimManager.AllDrones[i]);
         }
 
-        public void LoadJobQueue(List<uint> data)
-        {
-            _jobQueue = new List<StrippedJob>();
-            foreach (var i in data)
-                _jobQueue.Add((StrippedJob)SimManager.AllJobs[i]);
-        }
-
         public List<uint> SerializeDrones()
         {
             var l = new List<uint>();
@@ -91,11 +89,23 @@ namespace Drones.Utils.Scheduler
             return l;
         }
 
+        public void LoadJobQueue(List<uint> data)
+        {
+            _algorithm.Complete();
+            NewAlgorithm();
+            foreach (var i in data)
+                _algorithm.JobQueue.Add(SimManager.AllJobs[i]);
+            StartCoroutine(_algorithm.ProcessQueue());
+        }
+
         public List<uint> SerializeJobs()
         {
             var l = new List<uint>();
-            foreach (var d in _jobQueue)
-                l.Add(d.UID);
+            for (int i =0; i < _algorithm.JobQueue.Count; i++)
+            {
+                l.Add(_algorithm.JobQueue[i].UID);
+            }
+
             return l;
         }
 

@@ -30,7 +30,6 @@ namespace Drones.Data
             job = j == null ? 0 : j.UID;
             hub = drone.GetHub()?.Name;
             completedJobs = drone.JobHistory;
-            drone.StopCoroutine(drone.GetBattery().ChargeBattery());
             batteryCharge = drone.GetBattery().Charge;
             if (other.CompareTag("Drone"))
             {
@@ -54,7 +53,6 @@ namespace Drones.Data
             job = j == null ? 0 : j.UID;
             hub = drone.GetHub()?.Name;
             completedJobs = drone.JobHistory;
-            drone.StopCoroutine(drone.GetBattery().ChargeBattery());
             batteryCharge = drone.GetBattery().Charge;
             waypoint = drone.Waypoint;
             destroyedTime = TimeKeeper.Chronos.Get();

@@ -8,13 +8,17 @@ namespace Drones
     using Drones.Managers;
     using Drones.Serializable;
     using Drones.Utils;
+    using Drones.Utils.Jobs;
 
     [Serializable]
     public class Battery
     {
         private readonly static WaitForSeconds _Wait = new WaitForSeconds(1 / 30f);
-        public static bool IsInfinite;
-
+        public static uint Count { get; private set; }
+        public static void Reset() => Count = 0;
+        public static int designCycles = 500;
+        public static float designCapacity = 576000f; // 576,000 Coulombs = 160,000 mAh
+        public static float chargeTarget = 1;
 
         public Battery(Drone drone, Hub hub)
         {
@@ -40,68 +44,52 @@ namespace Drones
 
         public uint UID => _Data.UID;
         private readonly BatteryData _Data;
+
         public Hub GetHub() => (Hub)SimManager.AllHubs[_Data.hub];
         public Drone GetDrone() => (Drone)SimManager.AllDrones[_Data.drone];
         public void AssignHub(Hub hub) => _Data.hub = hub.UID;
-        public void AssignDrone(Drone drone) => _Data.drone = drone.UID;
-        public void SetStatus(BatteryStatus status) => _Data.status = status;
+        public void AssignDrone(Drone drone) => _Data.drone = (drone == null) ? 0 : drone.UID;
         public void Destroy() => GetHub()?.DestroyBattery(this);
+        public void SetStatus(BatteryStatus status) => _Data.status = status;
 
-        public void DischargeBattery(float dE)
+        public EnergyInfo GetEnergyInfo(EnergyInfo info)
         {
-            if (!IsInfinite)
+            var d = GetDrone();
+            if (d != null) d.GetEnergyInfo(ref info);
+            else 
             {
-                // TODO Non constant volage
-                var dQ = dE / _Data.dischargeVoltage;
-                _Data.charge -= dQ;
-                if (_Data.charge > 0.1f) 
-                { 
-                    _Data.totalDischarge += dQ; 
-                }
-                else
-                {
-                    _Data.status = BatteryStatus.Dead;
-                }
+                info.pkgWgt = 0;
+                info.moveType = DroneMovement.Idle;
             }
+            info.charge = _Data.charge;
+            info.capacity = _Data.capacity;
+            info.totalCharge = _Data.totalCharge;
+            info.totalDischarge = _Data.totalDischarge;
+            info.cycles = _Data.cycles;
+            info.status = _Data.status;
+            info.chargeRate = designCapacity/3600f;
+            info.dischargeVoltage = 23f;
+            info.chargeVoltage = 3.7f;
+            info.designCycles = BatteryData.designCycles;
+            info.designCapacity = BatteryData.designCapacity;
+            info.chargeTarget = BatteryData.chargeTarget;
+
+            return info;
         }
 
-        public IEnumerator ChargeBattery()
+        public void SetEnergyInfo(EnergyInfo info)
         {
-            var time = TimeKeeper.Chronos.Get();
-            float dt;
-            float dQ;
-            yield return _Wait;
-            if (IsInfinite) yield break;
-            while (true)
+            _Data.charge = info.charge;
+            _Data.capacity = info.capacity;
+            _Data.totalCharge = info.totalCharge;
+            _Data.totalDischarge = info.totalDischarge;
+            _Data.cycles = info.cycles;
+            _Data.dischargeVoltage = info.dischargeVoltage;
+            _Data.chargeVoltage = info.chargeVoltage;
+            if (info.stopCharge == 1)
             {
-                dt = time.Timer(); 
-                time.Now(); 
-                // TODO Non constant charge rate
-                dQ = _Data.chargeRate * dt;
-                if (_Data.charge < _Data.capacity) { _Data.totalCharge += dQ; }
-
-                if (Mathf.Abs(BatteryData.chargeTarget * _Data.capacity - _Data.charge) < Constants.EPSILON)
-                {
-                    GetHub().StopCharging(this);
-                }
-
-                _Data.charge += dQ;
-                _Data.charge = Mathf.Clamp(_Data.charge, 0, _Data.capacity);
-
-                if ((int)(_Data.totalDischarge / _Data.capacity) > _Data.cycles && (int)(_Data.totalCharge / _Data.capacity) > _Data.cycles)
-                {
-                    _Data.cycles++;
-                    SetCap();
-                }
-                yield return _Wait;
+                GetHub()?.StopCharging(this);
             }
-        }
-
-        private void SetCap()
-        {
-            float x = _Data.cycles / BatteryData.designCycles;
-
-            _Data.capacity = (-0.7199f * Mathf.Pow(x, 3) + 0.7894f * Mathf.Pow(x, 2) - 0.3007f * x + 1) * BatteryData.designCapacity;
         }
 
         public SBattery Serialize() => new SBattery(_Data);

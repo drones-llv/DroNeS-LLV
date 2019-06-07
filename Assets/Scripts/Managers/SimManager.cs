@@ -89,6 +89,9 @@ namespace Drones.Managers
             Initialized = true;
             Instance.StartCoroutine(StreamDataToDashboard());
             Instance.StartCoroutine(DataLogger());
+            DroneManager.New();
+            BatteryManager.New();
+            ShortcutManager.New();
         }
         #endregion
 

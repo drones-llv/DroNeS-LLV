@@ -67,7 +67,7 @@
 
     public enum FlightStatus { Idle, PreparingHeight, AwaitingWaypoint, Cruising };
 
-    public enum BatteryStatus { Discharge, Charge, Idle, Dead };
+    public enum BatteryStatus { Idle, Discharge, Charge, Dead };
 
     public enum SimulationStatus { EditMode, Running, Paused, Stopped };
 
