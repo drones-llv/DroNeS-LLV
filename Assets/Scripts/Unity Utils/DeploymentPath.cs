@@ -57,6 +57,7 @@ namespace Drones.Utils
 
         public void AddToDeploymentQueue(Drone drone)
         {
+            if (!_Started) StartCoroutine(DeployDrone());
             if (!_inQueue.Contains(drone.UID))
             {
                 _deploymentQueue.Add(drone);
@@ -119,10 +120,10 @@ namespace Drones.Utils
             {
                 time.Now();
                 while (time.Timer() < PERIOD) yield return null;
-                Debug.Log(time.Timer() + " Dp");
                 if (IsClear && _deploymentQueue.Count > 0)
                 {
                     outgoing = _deploymentQueue.Remove();
+                    _inQueue.Remove(outgoing.UID);
                     if (outgoing.InPool) continue;
 
                     Owner.DeployDrone(outgoing);

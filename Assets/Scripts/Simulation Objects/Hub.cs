@@ -207,7 +207,6 @@ namespace Drones
         #region Drone/Battery Interface
         public void DeployDrone(Drone drone)
         {
-            Debug.Log(TimeKeeper.Chronos.Get().ToCSVFormat());
             _Data.freeDrones.Remove(drone);
             GetBatteryForDrone(drone);
             var bat = drone.GetBattery();
@@ -222,7 +221,7 @@ namespace Drones
             {
                 _Data.chargingBatteries.Add(drone.GetBattery().UID, drone.GetBattery());
             }
-            drone?.WaitForDeployment();
+            drone.WaitForDeployment();
             Scheduler.AddToQueue(drone);
         }
 
