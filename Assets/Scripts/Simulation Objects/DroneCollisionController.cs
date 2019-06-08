@@ -10,9 +10,19 @@ namespace Drones.Utils
         private Drone _Owner;
         [SerializeField]
         private TrailRenderer _Trail;
+        private DeploymentPath Descent => DroneHub.DronePath;
+        private Hub _hub;
+        private Hub DroneHub
+        {
+            get
+            {
+                if (_hub == null) _hub = _Owner.GetHub();
+                return _hub;
+            }
+        }
 
-        private bool CollisionOn => !InHub;
-        public bool InHub => _Owner.GetHub().Collider.bounds.Contains(transform.position);
+        private bool CollisionOn => !InHub && Descent.Collider.bounds.Contains(transform.position);
+        public bool InHub => DroneHub.Collider.bounds.Contains(transform.position);
 
         void Awake()
         {
@@ -45,7 +55,7 @@ namespace Drones.Utils
         {
             if (other.gameObject.layer == LayerMask.NameToLayer("IgnoreCollision")) return;
 
-            if (CollisionOn)
+            if (CollisionOn && other.GetInstanceID() != DroneHub.Collider.GetInstanceID())
             {
                 DroneManager.MovementJobHandle.Complete();
                 Collide(other);

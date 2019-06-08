@@ -10,6 +10,16 @@ namespace Drones.Utils
         private HubCollisionController _controller;
         [SerializeField]
         private Hub _Owner;
+        [SerializeField]
+        private Collider _Collider;
+        public Collider Collider
+        {
+            get
+            {
+                if (_Collider == null) _Collider = GetComponent<Collider>();
+                return _Collider;
+            }
+        }
 
         private HubCollisionController Controller
         {
@@ -35,10 +45,30 @@ namespace Drones.Utils
             }
         }
 
-        public const float PERIOD = 0.75f;
-        private readonly Queue<Drone> _deploymentQueue = new Queue<Drone>();
+        public float PERIOD = 3.0f;
+        private static int AltitudeCompare(Drone a, Drone b)
+        {
+            if (a.Waypoint.y < b.Waypoint.y) return -1;
+            return 1;
+        }
 
-        public void AddToDeploymentQueue(Drone drone) => _deploymentQueue.Enqueue(drone);
+        private readonly MinHeap<Drone> _deploymentQueue = new MinHeap<Drone>(AltitudeCompare);
+        private readonly HashSet<uint> _inQueue = new HashSet<uint>();
+
+        public void AddToDeploymentQueue(Drone drone)
+        {
+            if (!_inQueue.Contains(drone.UID))
+            {
+                _deploymentQueue.Add(drone);
+                _inQueue.Add(drone.UID);
+            }
+        }
+        private bool _Started;
+        public void Stop()
+        {
+            _Started = false;
+            StopCoroutine(DeployDrone());
+        }
 
         private void OnEnable() => StartCoroutine(DeployDrone());
 
@@ -81,23 +111,22 @@ namespace Drones.Utils
 
         public IEnumerator DeployDrone()
         {
+            if (_Started) yield break;
             var time = TimeKeeper.Chronos.Get();
-            WaitUntil ready = new WaitUntil(() => time.Timer() > PERIOD);
-            Drone outgoing = null;
+            Drone outgoing;
+            _Started = true;
             while (true)
             {
-                if (!IsClear) yield return null;
-                if (_deploymentQueue.Count > 0)
+                time.Now();
+                while (time.Timer() < PERIOD) yield return null;
+                Debug.Log(time.Timer() + " Dp");
+                if (IsClear && _deploymentQueue.Count > 0)
                 {
-                    outgoing = _deploymentQueue.Dequeue();
+                    outgoing = _deploymentQueue.Remove();
                     if (outgoing.InPool) continue;
 
                     Owner.DeployDrone(outgoing);
-                    outgoing.GetBattery().SetStatus(BatteryStatus.Discharge);
-                    outgoing.Deploy();
                 }
-                yield return ready;
-                time.Now();
             }
         }
 

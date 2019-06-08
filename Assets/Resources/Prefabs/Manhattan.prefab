@@ -191,7 +191,7 @@ MonoBehaviour:
             - {fileID: 0}
           - Materials:
             - {fileID: 0}
-          atlasInfo: {fileID: 11400000, guid: c422f39ca8fe566479230c87805b3301, type: 2}
+          atlasInfo: {fileID: 0}
           lightStyleOpacity: 1
           darkStyleOpacity: 1
           colorStyleColor: {r: 0, g: 0, b: 0, a: 0}
@@ -206,8 +206,7 @@ MonoBehaviour:
               - {fileID: 2100000, guid: 44c06a0f232d44b7c8bf6243de55ea99, type: 2}
             atlasInfo: {fileID: 11400000, guid: 733b2da1fe66841d5a53c7d268ebc1ca,
               type: 2}
-            colorPalette: {fileID: 11400000, guid: 57bdfa37edf7a4f7f999d19443497554,
-              type: 2}
+            colorPalette: {fileID: 0}
         performanceOptions:
           isEnabled: 0
           entityPerCoroutine: 0

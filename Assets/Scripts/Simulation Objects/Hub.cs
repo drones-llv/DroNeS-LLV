@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+
 using UnityEngine;
 
 namespace Drones
@@ -98,7 +99,6 @@ namespace Drones
             StartCoroutine(_jobGenerator.Generate());
         }
         #endregion
-
         public Collider Collider
         {
             get
@@ -207,9 +207,13 @@ namespace Drones
         #region Drone/Battery Interface
         public void DeployDrone(Drone drone)
         {
+            Debug.Log(TimeKeeper.Chronos.Get().ToCSVFormat());
             _Data.freeDrones.Remove(drone);
             GetBatteryForDrone(drone);
-            StopCharging(drone.GetBattery());
+            var bat = drone.GetBattery();
+            StopCharging(bat);
+            bat.SetStatus(BatteryStatus.Discharge);
+            drone.Deploy();
         }
 
         public void OnDroneReturn(Drone drone)

@@ -175,7 +175,11 @@ namespace Drones.UI
             AbstractCamera.LookHere(position);
         }
 
-        private void GetDrone() => ((Hub)Source).BuyDrone();
+        private void GetDrone()
+        {
+            for (int i = 0; i < 10; i++)
+                ((Hub)Source).BuyDrone(); 
+        }
 
         private void SellDrone() => ((Hub)Source).SellDrone();
 
@@ -203,6 +207,7 @@ namespace Drones.UI
             Data[13].SetField(Convert(Energy.kWh, hub.energyConsumption));
             Data[14].SetField(Convert(Chronos.min, hub.audibility));
         }
+
     }
 
 }

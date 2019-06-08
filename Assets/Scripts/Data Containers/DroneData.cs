@@ -22,6 +22,7 @@ namespace Drones.Data
             completedJobs.ItemAdded += (obj) => packageWeight += ((Job)obj).PackageWeight;
             movement = DroneMovement.Idle;
             previousPosition = CurrentPosition;
+            isWaiting = true;
         }
 
         public DroneData(SDrone data, Drone src)

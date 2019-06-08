@@ -71,7 +71,7 @@ MonoBehaviour:
       scalingType: 0
       unityTileSize: 100
     loadingTexture: {fileID: 0}
-    tileMaterial: {fileID: 0}
+    tileMaterial: {fileID: 2100000, guid: 5758739745d3b46279a470b8559105f6, type: 2}
   _initializeOnStart: 1
   _imagery:
     _layerProperty:
@@ -105,7 +105,7 @@ MonoBehaviour:
       modificationOptions:
         sampleCount: 2
         useRelativeHeight: 0
-        earthRadius: 1000
+        earthRadius: 1942761
       unityLayerOptions:
         addToLayer: 0
         layerId: 0
@@ -117,7 +117,29 @@ MonoBehaviour:
     _layerProperty:
       tileJsonData:
         tileJSONLoaded: 0
-        LayerDisplayNames: []
+        LayerDisplayNames:
+        - admin
+        - aeroway
+        - airport_label
+        - barrier_line
+        - building
+        - country_label
+        - housenum_label
+        - landuse
+        - landuse_overlay
+        - marine_label
+        - motorway_junction
+        - mountain_peak_label
+        - place_label
+        - poi_label
+        - rail_station_label
+        - road
+        - road_label
+        - state_label
+        - water
+        - water_label
+        - waterway
+        - waterway_label
       _sourceType: 0
       sourceOptions:
         isActive: 1

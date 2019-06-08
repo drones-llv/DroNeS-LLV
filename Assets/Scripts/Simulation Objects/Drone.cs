@@ -59,7 +59,6 @@ namespace Drones
             InfoWindow?.Close.onClick.Invoke();
             GetJob()?.FailJob();
             GetBattery()?.Destroy();
-            _Data = null;
             gameObject.SetActive(false);
             transform.SetParent(PC().PoolParent);
         }
@@ -114,13 +113,13 @@ namespace Drones
                     GetHub().Scheduler.AddToQueue(this);
                     return false;
                 }
-
                 _Data.job = job.UID;
                 job.AssignDrone(this);
                 if (InHub)
                 {
-                    var d = Vector3.Normalize(GetJob().DropOff - transform.position) * 4;
+                    var d = GetJob().DropOff - GetHub().Position;
                     d.y = 0;
+                    d = d.normalized * 4;
                     transform.position += d;
                     job.StartDelivery();
                 }

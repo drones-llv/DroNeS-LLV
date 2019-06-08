@@ -91,7 +91,6 @@ namespace Drones.Utils
         public IPoolable ManualBuild(Type type)
         {
             GameObject go = Object.Instantiate(_Pool.Templates[type], PoolParent);
-            Debug.Log(go);
             return go.GetComponent<IPoolable>();
         }
 

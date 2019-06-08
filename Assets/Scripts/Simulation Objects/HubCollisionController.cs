@@ -40,7 +40,7 @@ namespace Drones.Utils
 
         public IEnumerator Repulsion(Collider other)
         {
-            StopCoroutine(_DronePath.DeployDrone());
+            _DronePath.Stop();
             yield return null;
             Vector3 acc;
             Vector3 vel = Vector3.zero;
@@ -59,19 +59,19 @@ namespace Drones.Utils
                 vel = acc * dt;
                 yield return null;
             } while (_intersects > 0);
-            StartCoroutine(_DronePath.DeployDrone());
+            _DronePath.StartCoroutine(_DronePath.DeployDrone());
         }
 
         public IEnumerator Reposition(Vector3 inDirection)
         {
-            StopCoroutine(_DronePath.DeployDrone());
+            _DronePath.Stop();
             Vector3.Normalize(inDirection);
             while (!_DronePath.IsClear) // Building
             {
                 transform.position += 5 * _DronePath.Direction + inDirection;
                 yield return null;
             }
-            StartCoroutine(_DronePath.DeployDrone());
+            _DronePath.StartCoroutine(_DronePath.DeployDrone());
             yield break;
         }
     }

@@ -58,7 +58,7 @@ namespace Drones.Utils
                         { typeof(Drone), 700 },
                         { typeof(Hub), 20 },
                         { typeof(NoFlyZone), 20 },
-                        { typeof(Explosion), 20 }
+                        { typeof(Explosion), 350 }
                     };
                 }
 

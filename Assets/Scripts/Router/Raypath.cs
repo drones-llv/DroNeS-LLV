@@ -16,7 +16,7 @@ namespace Drones.Utils.Router
         private const int _buildingDiv = 30; // Building bucket height interval
         private const int _Ra = 200; // Corridor width
         private const float _epsilon = 0.01f;
-        private readonly int[] _hubAlt = { 450, 550 }; // hub altitudes, 450 for northbound drones, 550 for south
+        private readonly int[] _hubAlt = { 475, 525 }; // hub altitudes, 450 for northbound drones, 550 for south
         private float DroneCount => SimManager.AllDrones.Count;
         private float[] _altitudes;
         private int[] _assigned;
@@ -100,7 +100,7 @@ namespace Drones.Utils.Router
             _destination.y = 0;
             if (hubReturn)
             {
-                _destination -= Vector3.Normalize(_destination - _origin) * 4;
+                _destination -= Vector3.Normalize(_destination - _origin) * 6;
             }
             try
             {

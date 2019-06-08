@@ -67,7 +67,7 @@ namespace Drones.Managers
             }
             if (Input.GetKeyDown(KeyCode.Backslash))
             {
-                SimManager.SetStatus(SimulationStatus.Running);
+                SimManager.SetStatus(SimulationStatus.EditMode);
                 return;
             }
         }

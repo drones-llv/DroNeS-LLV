@@ -206,7 +206,7 @@ namespace Drones.Managers
                                     "Revenue", 
                                     "Delay (s)", 
                                     "Audibility (s)", 
-                                    "Energy (J)" };
+                                    "Energy (kWh)" };
                 SaveManager.WriteTupleToCSV(filepath, headers);
             }
             var time = TimeKeeper.Chronos.Get();
@@ -222,10 +222,10 @@ namespace Drones.Managers
                 data[5] = AllCompleteJobs.Count.ToString();
                 data[6] = Instance._Data.delayedJobs.ToString();
                 data[7] = Instance._Data.failedJobs.ToString();
-                data[8] = Instance._Data.revenue.ToString("C", CultureInfo.CurrentCulture);
+                data[8] = Instance._Data.revenue.ToString("C", CultureInfo.CurrentCulture).Replace(",","");
                 data[9] = (Instance._Data.totalDelay/AllCompleteJobs.Count).ToString("0.00");
                 data[10] = Instance._Data.totalAudible.ToString("0.00");
-                data[11] = Instance._Data.totalEnergy.ToString("0.00");
+                data[11] = UnitConverter.Convert(Energy.kWh, Instance._Data.totalEnergy);
                 SaveManager.WriteTupleToCSV(filepath, data);
                 yield return wait;
                 time.Now();

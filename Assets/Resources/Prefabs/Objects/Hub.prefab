@@ -86,6 +86,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _controller: {fileID: 34011538573002244}
   _Owner: {fileID: 3541644756125382526}
+  _Collider: {fileID: 1894888684}
 --- !u!1 &1563700628764231572
 GameObject:
   m_ObjectHideFlags: 0
