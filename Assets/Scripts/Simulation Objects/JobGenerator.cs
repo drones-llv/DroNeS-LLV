@@ -20,6 +20,7 @@ namespace Drones.Utils
         public IEnumerator Generate()
         {
             var wait = new WaitForFixedUpdate();
+            var wait2 = new WaitUntil(() => _Owner.Scheduler.JobQueueLength < 1.5f * _Owner.Drones.Count);
             var time = TimeKeeper.Chronos.Get();
             var watch = Stopwatch.StartNew();
             while (true)
@@ -49,6 +50,8 @@ namespace Drones.Utils
                 Job job = new Job(_Owner, d, Random.Range(0.1f, 2.5f), 5);
 
                 _Owner.OnJobCreate(job);
+                yield return wait2;
+                watch.Restart();
             }
 
         }

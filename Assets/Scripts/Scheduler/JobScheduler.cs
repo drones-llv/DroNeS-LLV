@@ -69,11 +69,8 @@ namespace Drones.Utils.Scheduler
 
         public void AddToQueue(Job job)
         {
-            if (_algorithm.JobQueue.Count < 3 * SimManager.AllDrones.Count)
-            {
-                _algorithm.JobQueue.Add(job);
-                SimManager.JobEnqueued();
-            }
+            _algorithm.JobQueue.Add(job);
+            SimManager.JobEnqueued();
         }
 
         public int JobQueueLength => _algorithm.JobQueue.Count;

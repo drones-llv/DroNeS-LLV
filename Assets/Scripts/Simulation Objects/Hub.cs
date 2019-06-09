@@ -13,6 +13,7 @@ namespace Drones
     using Data;
     using Utils.Scheduler;
     using Utils.Router;
+    using System;
 
     public class Hub : MonoBehaviour, IDataSource, IPoolable
     {
@@ -99,6 +100,8 @@ namespace Drones
             StartCoroutine(_jobGenerator.Generate());
         }
         #endregion
+
+        #region Properties
         public Collider Collider
         {
             get
@@ -124,7 +127,7 @@ namespace Drones
         {
             get
             {
-                if (_DronePath == null) 
+                if (_DronePath == null)
                     _DronePath = transform.GetComponentInChildren<DeploymentPath>();
                 return _DronePath;
             }
@@ -150,11 +153,22 @@ namespace Drones
 
         public void AddToDeploymentQueue(Drone drone) => DronePath.AddToDeploymentQueue(drone);
         public Vector3 Position => transform.position;
+        #endregion
         public void UpdateEnergy(float dE)
         {
             _Data.energyConsumption += dE;
             SimManager.UpdateEnergy(dE);
         }
+
+        internal void DeleteJob(Job job)
+        {
+            _Data.incompleteJobs.Remove(job);
+            _Data.completedCount++;
+            SimManager.UpdateCompleteCount();
+            SimManager.AllIncompleteJobs.Remove(job);
+            SimManager.AllJobs.Remove(job);
+        }
+
         public void UpdateRevenue(float value)
         {
             _Data.revenue += value;

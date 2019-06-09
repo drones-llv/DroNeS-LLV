@@ -28,6 +28,7 @@ namespace Drones.Data
         public int queuedJobs;
         public int crashes;
         public int delayedJobs;
+        public int completedJobs;
         public int failedJobs;
 
         private void InitializeCollections()

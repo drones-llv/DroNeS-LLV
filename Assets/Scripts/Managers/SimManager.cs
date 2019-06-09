@@ -36,6 +36,8 @@ namespace Drones.Managers
         public static SecureSortedSet<uint, IDataSource> AllCompleteJobs => Instance._Data.completeJobs;
         public static SecureSortedSet<uint, Battery> AllBatteries => Instance._Data.batteries;
         public static SecureSortedSet<uint, Job> AllJobs => Instance._Data.jobs;
+        public static int CompletedJobs => Instance._Data.completedJobs;
+
         private static DataField[] DataFields
         {
             get
@@ -129,6 +131,7 @@ namespace Drones.Managers
             Instance._Data.totalDelay += dt;
             if (dt > 0) UpdateDelayCount();
         }
+        public static void UpdateCompleteCount() => Instance._Data.completedJobs++;
         private static void UpdateDelayCount() => Instance._Data.delayedJobs++;
         public static void UpdateFailedCount() => Instance._Data.failedJobs++;
         public static void UpdateCrashCount() => Instance._Data.crashes++;
@@ -146,12 +149,12 @@ namespace Drones.Managers
                 DataFields[1].SetField(Drone.ActiveDrones.childCount.ToString());
                 DataFields[2].SetField(Instance._Data.crashes.ToString());
                 DataFields[3].SetField(Instance._Data.queuedJobs.ToString());
-                DataFields[4].SetField(AllCompleteJobs.Count.ToString());
+                DataFields[4].SetField(Instance._Data.completedJobs.ToString());
                 DataFields[5].SetField(Instance._Data.delayedJobs.ToString());
                 DataFields[6].SetField(Instance._Data.failedJobs.ToString());
                 DataFields[7].SetField(AllHubs.Count.ToString());
                 DataFields[8].SetField(Instance._Data.revenue.ToString("C", CultureInfo.CurrentCulture));
-                DataFields[9].SetField(UnitConverter.Convert(Chronos.min, Instance._Data.totalDelay / AllCompleteJobs.Count));
+                DataFields[9].SetField(UnitConverter.Convert(Chronos.min, Instance._Data.totalDelay / Instance._Data.completedJobs));
                 DataFields[10].SetField(UnitConverter.Convert(Energy.kWh, Instance._Data.totalEnergy));
                 DataFields[11].SetField(UnitConverter.Convert(Chronos.min, Instance._Data.totalAudible));
                 yield return wait;
@@ -190,7 +193,7 @@ namespace Drones.Managers
         private static IEnumerator DataLogger()
         {
             if (!IsLogging) yield break;
-            string filename = Instance._Data.simulation.ToString().Replace("/","-");
+            string filename = Instance._Data.simulation.ToString().Replace("/","-").Replace(":","|");
             filename = Path.ChangeExtension(filename, ".csv");
             string filepath = Path.Combine(SaveManager.ExportPath, filename);
             if (!File.Exists(filepath))
@@ -219,11 +222,11 @@ namespace Drones.Managers
                 data[2] = Drone.ActiveDrones.childCount.ToString();
                 data[3] = Instance._Data.crashes.ToString();
                 data[4] = Instance._Data.queuedJobs.ToString();
-                data[5] = AllCompleteJobs.Count.ToString();
+                data[5] = Instance._Data.completedJobs.ToString();
                 data[6] = Instance._Data.delayedJobs.ToString();
                 data[7] = Instance._Data.failedJobs.ToString();
                 data[8] = Instance._Data.revenue.ToString("C", CultureInfo.CurrentCulture).Replace(",","");
-                data[9] = (Instance._Data.totalDelay/AllCompleteJobs.Count).ToString("0.00");
+                data[9] = (Instance._Data.totalDelay/Instance._Data.completedJobs).ToString("0.00");
                 data[10] = Instance._Data.totalAudible.ToString("0.00");
                 data[11] = UnitConverter.Convert(Energy.kWh, Instance._Data.totalEnergy);
                 SaveManager.WriteTupleToCSV(filepath, data);

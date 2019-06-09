@@ -121,7 +121,6 @@ namespace Drones.Utils.Router
             }
             catch (StackOverflowException)
             {
-                Debug.Log(job.Pickup + " to " + job.DropOff);
                 var h = hubReturn ? _hubAlt[0] : _maxAlt;
                 _origin.y = h;
                 _destination.y = h;
@@ -395,6 +394,7 @@ namespace Drones.Utils.Router
         private List<Vector3> Navigate(Vector3 start, Vector3 end, float alt, bool hubReturn = false)
         {
             frame++;
+            if (frame > 1500) throw new StackOverflowException("Failed!");
             List<Vector3> waypoints = new List<Vector3> { start };
 
             var dir = end - start;

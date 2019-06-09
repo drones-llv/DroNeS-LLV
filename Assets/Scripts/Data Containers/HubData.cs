@@ -32,6 +32,7 @@ namespace Drones.Data
         public int crashes;
         public int delayedJobs;
         public int failedJobs;
+        public int completedCount;
         public float revenue;
         public float delay;
         public float energyConsumption;

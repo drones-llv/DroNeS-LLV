@@ -199,11 +199,11 @@ namespace Drones.UI
             Data[5].SetField(hub.batteries.Count.ToString());
             Data[6].SetField(hub.chargingBatteries.Count.ToString());
             Data[7].SetField(((Hub)Source).Scheduler.JobQueueLength.ToString());
-            Data[8].SetField(hub.completedJobs.Count.ToString());
+            Data[8].SetField(hub.completedCount.ToString());
             Data[9].SetField(hub.delayedJobs.ToString());
             Data[10].SetField(hub.failedJobs.ToString());
             Data[11].SetField(hub.revenue.ToString("C", CultureInfo.CurrentCulture));
-            Data[12].SetField(Convert(Chronos.min, hub.delay / hub.completedJobs.Count));
+            Data[12].SetField(Convert(Chronos.min, hub.delay / hub.completedCount));
             Data[13].SetField(Convert(Energy.kWh, hub.energyConsumption));
             Data[14].SetField(Convert(Chronos.min, hub.audibility));
         }

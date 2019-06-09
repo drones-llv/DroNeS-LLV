@@ -124,7 +124,7 @@ namespace Drones
                     job.StartDelivery();
                 }
             }
-            if (_Data.hub != 0) LoadWaypoints(GetHub().Router.GetRoute(this));
+            if (_Data.hub != 0) SetWaypoints(GetHub().Router.GetRoute(this));
             return true;
         }
 
@@ -137,8 +137,8 @@ namespace Drones
             }
             else
                 _Data.battery = battery.UID;
-
         }
+
         public void AssignHub(Hub hub) 
         {
             if (hub == null) return;
@@ -147,7 +147,8 @@ namespace Drones
         }
         public void CompleteJob(Job job)
         {
-            _Data.completedJobs.Add(_Data.job, job);
+            //_Data.completedJobs.Add(_Data.job, job);
+            GetHub().DeleteJob(job);
             UpdateDelay(job.Deadline.Timer());
             GetHub().UpdateRevenue(job.Earnings);
             AssignJob(null);
@@ -254,13 +255,13 @@ namespace Drones
                 _Data.movement == DroneMovement.Descend && transform.position.y <= Waypoint.y;
         }
 
-        public void LoadWaypoints(Queue<Vector3> waypoints)
+        public void SetWaypoints(Queue<Vector3> waypoints)
         {
             _Data.waypoints = waypoints;
 
             if (InHub) GetHub().AddToDeploymentQueue(this);
 
-            _Data.movement = DroneMovement.Hover;
+            //_Data.movement = DroneMovement.Hover;
             StartCoroutine(Horizontal());
         }
 

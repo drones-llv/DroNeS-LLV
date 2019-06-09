@@ -70,9 +70,8 @@ namespace Drones.Managers
 
                 _movementJobHandle = _movementJob.Schedule(_Transforms);
 
-                yield return new WaitUntil(() => MovementJobHandle.IsCompleted);
-                MovementJobHandle.Complete();
                 yield return null;
+                MovementJobHandle.Complete();
             }
         }
 

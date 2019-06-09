@@ -9,11 +9,13 @@ namespace Drones.EventSystem
     using Utils;
     public class DebugLog : IEvent
     {
-        public DebugLog(object msg)
+        private DebugLog(object msg)
         {
             Message = msg.ToString();
             ConsoleLog.WriteToConsole(this);
         }
+
+        public static void New(object msg) => new DebugLog(msg);
 
         public EventType Type => EventType.DebugLog;
 
