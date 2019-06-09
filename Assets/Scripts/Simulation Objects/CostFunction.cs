@@ -29,16 +29,15 @@ namespace Drones.Utils
         public float GetPaid(TimeKeeper.Chronos complete)
         {
             float dt = Normalize(complete - Start);
-            float reduction = 1 - Discretize(dt);
-
+            float reduction = (dt > int.MaxValue) ? float.MinValue : 1 - Discretize(dt);
             return (reduction > 0) ? Reward * reduction : Penalty;
         }
 
         public static float Evaluate(StrippedJob job, ChronoWrapper complete)
         {
             float dt = Normalize(complete - job.start);
-            float reduction = 1 - Discretize(dt);
-            job.penalty = -Mathf.Abs(job.penalty);
+
+            float reduction = (dt > int.MaxValue) ? float.MinValue : 1 - Discretize(dt);
             return (reduction > 0) ? job.reward * reduction : job.penalty;
         }
 

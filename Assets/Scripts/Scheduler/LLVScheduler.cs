@@ -45,6 +45,8 @@ namespace Drones.Utils.Scheduler
                         jobs.Add(new LLVStruct { job = (StrippedJob)JobQueue[i] });
                         netlossvalue.Add(0);
                     }
+
+
                     var num = jobs.Length;
                     var initializer = new LLVInitializerJob
                     {

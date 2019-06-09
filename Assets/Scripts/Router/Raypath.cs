@@ -10,8 +10,8 @@ namespace Drones.Utils.Router
     {
         private List<List<Obstacle>> _SortedBuildings;
         private List<Obstacle> _Hubs;
-        private const float _maxAlt = 250;
-        private const float _minAlt = 30;
+        private const float _maxAlt = 200;
+        private const float _minAlt = 60;
         private const int _altDiv = 10; // Altitude interval
         private const int _buildingDiv = 30; // Building bucket height interval
         private const int _Ra = 200; // Corridor width
@@ -79,29 +79,26 @@ namespace Drones.Utils.Router
                 return _SortedBuildings;
             }
         }
-        int frame;
 
-        // The public interface to get the list of waypoints
-        public override Queue<Vector3> GetRoute(Drone drone)
+        private Queue<Vector3> Route(Drone drone, int stack = 0, float alt = -1)
         {
-            frame = 0;
             UpdateGameState();
             var job = drone.GetJob();
+
             _destination =
                 job == null || job.Status == JobStatus.Pickup ? drone.GetHub().Position :
                 job.Status == JobStatus.Delivering ? job.DropOff :
                 drone.GetHub().Position;
             _origin = drone.transform.position;
             var hubReturn = job == null || job.Status == JobStatus.Pickup;
-            float alt = hubReturn ? _hubAlt[(_destination - _origin).z > 0 ? 0 : 1] : 
-                Altitudes[ChooseAltitude(_origin, _destination)];
+            if (alt < 0)
+            {
+                alt = hubReturn ? _hubAlt[(_destination - _origin).z > 0 ? 0 : 1] :
+                    Altitudes[ChooseAltitude(_origin, _destination)];
+            }
 
             _origin.y = 0;
             _destination.y = 0;
-            if (hubReturn)
-            {
-                _destination -= Vector3.Normalize(_destination - _origin) * 6;
-            }
             try
             {
                 var waypoints = Navigate(_origin, _destination, alt, hubReturn);
@@ -121,24 +118,32 @@ namespace Drones.Utils.Router
             }
             catch (StackOverflowException)
             {
-                var h = hubReturn ? _hubAlt[0] : _maxAlt;
-                _origin.y = h;
-                _destination.y = h;
-                var waypoints = new Queue<Vector3>(new[] { _origin, _destination });
+                Debug.Log("Failed");
+                stack++;
+                var newalt = alt + _altDiv * stack;
+                if (newalt > _hubAlt[1])
+                {
+                    _origin.y = newalt;
+                    _destination.y = newalt;
+                    var v = _destination;
+                    v.y = hubReturn ? 500 : 5;
 
-                var v = _destination;
-                v.y = hubReturn ? 500 : 5;
-                waypoints.Enqueue(v);
+                    return new Queue<Vector3>(new[] { _origin, _destination, v});
+                }
 
-                return waypoints;
+                return Route(drone, stack, newalt);
             }
 
+
         }
+
+        // The public interface to get the list of waypoints
+        public override Queue<Vector3> GetRoute(Drone drone) => Route(drone);
+
         // To test: -7.4, 500, 7.0 to -2640.1, 0.0, -5468.1
         // To test: -7.4, 500, 7.0 to -1111.9, 0.0, -2228.0
         public Queue<Vector3> GetRouteTest(Vector3 origin, Vector3 dest)
         {
-            frame = 0;
             var tmp = GameObject.FindGameObjectsWithTag("NoFlyZone");
             _NoFlyZones = new List<Obstacle>();
             foreach (var i in tmp)
@@ -280,6 +285,7 @@ namespace Drones.Utils.Router
 
             return obstacles;
         }
+
         // swap function
         private static void Swap<T>(ref T a, ref T b)
         {
@@ -391,7 +397,7 @@ namespace Drones.Utils.Router
             return waypoint;
         }
 
-        private List<Vector3> Navigate(Vector3 start, Vector3 end, float alt, bool hubReturn = false)
+        private List<Vector3> Navigate(Vector3 start, Vector3 end, float alt, bool hubReturn = false, int frame = 0)
         {
             frame++;
             if (frame > 1500) throw new StackOverflowException("Failed!");
@@ -410,7 +416,6 @@ namespace Drones.Utils.Router
                 return 1;
             });
 
-            // To store and flag any deadend waypoints to be redirected, I believe Python has a set() which is equivalent
             // waypoints are hashed, see above for function
             HashSet<int> errorPoints = new HashSet<int>(); 
 
@@ -466,7 +471,7 @@ namespace Drones.Utils.Router
                 possibilities.Clear();
                 buildings.Clear();
 
-                var list = Navigate(start, next, alt);
+                var list = Navigate(start, next, alt, hubReturn, frame);
 
                 for (int i = 1; i < list.Count; i++)
                     waypoints.Add(list[i]);
@@ -474,7 +479,7 @@ namespace Drones.Utils.Router
                 if (errorPoints.Count > 0 && errorPoints.Contains(HashVector(next)))
                     end = _destination;
 
-                list = Navigate(list[list.Count - 1], end, alt); // pass arguments by value!
+                list = Navigate(list[list.Count - 1], end, alt, hubReturn, frame); // pass arguments by value!
 
                 for (int i = 1; i < list.Count; i++)
                     waypoints.Add(list[i]);
@@ -487,6 +492,7 @@ namespace Drones.Utils.Router
             return waypoints;
 
         }
+
     }
 
 }

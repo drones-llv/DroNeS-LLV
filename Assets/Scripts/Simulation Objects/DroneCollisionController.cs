@@ -21,8 +21,8 @@ namespace Drones.Utils
             }
         }
 
-        private bool CollisionOn => !InHub && Descent.Collider.bounds.Contains(transform.position);
-        public bool InHub => DroneHub.Collider.bounds.Contains(transform.position);
+        private bool _CollisionOn;
+        public bool InHub => !_CollisionOn;
 
         void Awake()
         {
@@ -55,19 +55,28 @@ namespace Drones.Utils
         {
             if (other.gameObject.layer == LayerMask.NameToLayer("IgnoreCollision")) return;
 
-            if (CollisionOn && other.GetInstanceID() != DroneHub.Collider.GetInstanceID())
+            if (other.gameObject.layer != LayerMask.NameToLayer("Hub") && _CollisionOn)
             {
                 DroneManager.MovementJobHandle.Complete();
                 Collide(other);
             }
+            else _CollisionOn &= other.GetComponent<Hub>() != _Owner.GetHub();
+        }
+
+        public void OnTriggerExit(Collider other)
+        {
+            if (other.gameObject.layer == LayerMask.NameToLayer("IgnoreCollision")) return;
+
+            _CollisionOn |= (other.gameObject.layer == LayerMask.NameToLayer("Hub")
+                && other.GetComponent<Hub>() == _Owner.GetHub());
         }
 
         private void Collide(Collider other)
         {
             _Owner.GetHub().UpdateCrashCount();
+            _Owner.GetJob()?.FailJob();
             if (gameObject == AbstractCamera.Followee)
                 AbstractCamera.ActiveCamera.BreakFollow();
-
             Explosion.New(transform.position);
             var dd = new RetiredDrone(_Owner, other);
             SimManager.AllRetiredDrones.Add(dd.UID, dd);

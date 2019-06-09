@@ -57,7 +57,6 @@ namespace Drones
             SimManager.AllDrones.Remove(this);
             InPool = true;
             InfoWindow?.Close.onClick.Invoke();
-            GetJob()?.FailJob();
             GetBattery()?.Destroy();
             gameObject.SetActive(false);
             transform.SetParent(PC().PoolParent);
@@ -108,21 +107,14 @@ namespace Drones
             {
                 var j = (StrippedJob)job;
                 var t = (JobScheduler.EuclideanDist(j) + JobScheduler.ManhattanDist(j))/MovementJob.HSPEED;
-                if (t > GetBattery().Charge * CostFunction.GUARANTEE)
+                if (Mathf.Min(t, 0.9f * CostFunction.GUARANTEE) > GetBattery().Charge * CostFunction.GUARANTEE)
                 {
                     GetHub().Scheduler.AddToQueue(this);
                     return false;
                 }
                 _Data.job = job.UID;
                 job.AssignDrone(this);
-                if (InHub)
-                {
-                    var d = GetJob().DropOff - GetHub().Position;
-                    d.y = 0;
-                    d = d.normalized * 4;
-                    transform.position += d;
-                    job.StartDelivery();
-                }
+                job.StartDelivery();
             }
             if (_Data.hub != 0) SetWaypoints(GetHub().Router.GetRoute(this));
             return true;
@@ -147,7 +139,7 @@ namespace Drones
         }
         public void CompleteJob(Job job)
         {
-            //_Data.completedJobs.Add(_Data.job, job);
+            //JobHistory.Add(_Data.job, job);
             GetHub().DeleteJob(job);
             UpdateDelay(job.Deadline.Timer());
             GetHub().UpdateRevenue(job.Earnings);
@@ -303,13 +295,20 @@ namespace Drones
             _Data.movement = DroneMovement.Hover;
             if (!InHub)
             {
-                if (transform.position.y < 10f) 
+                if (transform.position.y < 10f && ReachedJob()) 
                     GetJob().CompleteJob();
                 else
                     StartCoroutine(Horizontal());
                 yield break;
             }
             StartCoroutine(Horizontal());
+        }
+
+        private bool ReachedJob()
+        {
+            var d = GetJob().DropOff;
+            d.y = transform.position.y;
+            return Vector3.Distance(d, transform.position) < 0.25f;
         }
 
         public SDrone Serialize() => new SDrone(_Data, this);

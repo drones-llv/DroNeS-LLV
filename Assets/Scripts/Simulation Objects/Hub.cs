@@ -154,6 +154,7 @@ namespace Drones
         public void AddToDeploymentQueue(Drone drone) => DronePath.AddToDeploymentQueue(drone);
         public Vector3 Position => transform.position;
         #endregion
+
         public void UpdateEnergy(float dE)
         {
             _Data.energyConsumption += dE;
@@ -258,7 +259,7 @@ namespace Drones
             drone.GetBattery().AssignHub(hub);
         }
 
-        public void StopCharging(Battery battery) => _Data.chargingBatteries.Remove(battery);
+        public void StopCharging(Battery battery) => _Data.chargingBatteries.Remove(battery.UID);
 
         private void GetBatteryForDrone(Drone drone)
         {

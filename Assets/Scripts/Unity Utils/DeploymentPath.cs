@@ -45,7 +45,7 @@ namespace Drones.Utils
             }
         }
 
-        public float PERIOD = 3.0f;
+        public float PERIOD = 2.0f;
         private static int AltitudeCompare(Drone a, Drone b)
         {
             if (a.Waypoint.y < b.Waypoint.y) return -1;
@@ -62,6 +62,7 @@ namespace Drones.Utils
             {
                 _deploymentQueue.Add(drone);
                 _inQueue.Add(drone.UID);
+
             }
         }
         private bool _Started;

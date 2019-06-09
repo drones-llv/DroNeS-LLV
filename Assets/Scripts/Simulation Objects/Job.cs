@@ -14,7 +14,7 @@ namespace Drones
 
     public class Job : IDataSource
     {
-        public static readonly TimeKeeper.Chronos _EoT = new TimeKeeper.Chronos(int.MaxValue, 23, 59, 59.99f).SetReadOnly();
+        public static readonly TimeKeeper.Chronos _EoT = new TimeKeeper.Chronos(int.MaxValue - 100, 23, 59, 59.99f).SetReadOnly();
         public Job(SJob data)
         {
             _Data = new JobData(data);
@@ -63,7 +63,7 @@ namespace Drones
         public float PackageWeight => _Data.packageWeight;
         public float PackageXArea => _Data.packageXArea;
         public float CostFunc(TimeKeeper.Chronos time) => _Data.costFunction.GetPaid(time);
-        public float Loss => -_Data.costFunction.GetPaid(_EoT);
+        public float Loss => -CostFunc(_EoT);
 
         public void AssignDrone(Drone drone)
         {
