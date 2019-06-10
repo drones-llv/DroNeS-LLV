@@ -24,7 +24,6 @@ namespace Drones.Utils
 
         public static void Reset()
         {
-            Debug.Log("OP Reset");
             _Instance = null;
         }
 

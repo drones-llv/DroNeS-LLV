@@ -37,6 +37,7 @@ namespace Drones.Utils.Scheduler
                         JobQueue.RemoveAt(0);
                         SimManager.JobDequeued();
                     }
+                    yield return null;
                 }
             }
         }

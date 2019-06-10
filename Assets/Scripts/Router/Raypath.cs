@@ -10,7 +10,7 @@ namespace Drones.Utils.Router
     {
         private List<List<Obstacle>> _SortedBuildings;
         private List<Obstacle> _Hubs;
-        private const float _maxAlt = 200;
+        private const float _maxAlt = 250;
         private const float _minAlt = 60;
         private const int _altDiv = 10; // Altitude interval
         private const int _buildingDiv = 30; // Building bucket height interval
@@ -118,10 +118,9 @@ namespace Drones.Utils.Router
             }
             catch (StackOverflowException)
             {
-                Debug.Log("Failed");
                 stack++;
-                var newalt = alt + _altDiv * stack;
-                if (newalt > _hubAlt[1])
+                var newalt = hubReturn ? _hubAlt[0] : _maxAlt;
+                if (stack > 1)
                 {
                     _origin.y = newalt;
                     _destination.y = newalt;
@@ -176,7 +175,6 @@ namespace Drones.Utils.Router
             }
             catch (StackOverflowException)
             {
-                Debug.Log("Failed");
                 return new Queue<Vector3>();
             }
 
