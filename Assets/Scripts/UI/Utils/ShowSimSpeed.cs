@@ -25,7 +25,7 @@ namespace Drones.UI
         {
             if (Instance == null)
             {
-                Instance = OpenWindows.Transform.GetComponentInChildren<ShowSimSpeed>(true);
+                Instance = UIManager.Transform.GetComponentInChildren<ShowSimSpeed>(true);
                 Instance.gameObject.SetActive(true);
             }
             Image[] all = Instance.GetComponentsInChildren<Image>(true);
@@ -115,6 +115,7 @@ namespace Drones.UI
         public void OnDestroy()
         {
             Instance = null;
+            Active = null;
         }
 
         public static Image Active { get; private set; }
@@ -142,7 +143,7 @@ namespace Drones.UI
         {
             if (Instance == null)
             {
-                Instance = OpenWindows.Transform.GetComponentInChildren<ShowSimSpeed>(true);
+                Instance = UIManager.Transform.GetComponentInChildren<ShowSimSpeed>(true);
                 Instance.gameObject.SetActive(true);
             }
             Instance.StopAllCoroutines();

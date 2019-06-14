@@ -6,68 +6,91 @@ namespace Drones.UI
 {
     using Drones.Utils.Extensions;
     using Utils;
-    public abstract class Dashboard : MonoBehaviour
+    public class Dashboard : MonoBehaviour
     {
-        protected static Dictionary<DashboardMode, Vector2> PanelSize = new Dictionary<DashboardMode, Vector2>
+        protected static Dictionary<DashboardMode, Vector2> DashboardSize = new Dictionary<DashboardMode, Vector2>
         {
             {DashboardMode.EditMode, new Vector2(550, 240)},
             {DashboardMode.Simulation, new Vector2(550, 450)}
         };
         [SerializeField]
-        private GameObject _SimulationInfo;
+        private SimulationInfo _SimulationInfo;
         [SerializeField]
-        private GameObject _CameraOptions;
+        private CameraOptions _CameraOptions;
+        [SerializeField]
+        private SimulationPanel _SimPanel;
+        [SerializeField]
+        private EditPanel _EdPanel;
 
-        protected GameObject CameraOptions
+        public CameraOptions CameraOptions
         {
             get
             {
                 if (_CameraOptions == null)
                 {
-                    _CameraOptions = transform.FindDescendent("Options Display").gameObject;
+                    _CameraOptions = GetComponentInChildren<CameraOptions>();
                 }
                 return _CameraOptions;
             }
         }
-        protected GameObject SimulationInfo
+        public SimulationInfo SimulationInfo
         {
             get
             {
-                if (_SimulationInfo)
+                if (_SimulationInfo == null)
                 {
-                    _SimulationInfo = transform.parent.GetChild(0).gameObject;
+                    _SimulationInfo = GetComponentInChildren<SimulationInfo>();
                 }
                 return _SimulationInfo;
             }
         }
-
-        protected Dictionary<Transform, Button> _OwnerToButton;
-
-        protected abstract Dictionary<Transform, Button> OwnerToButton { get; }
-
-        protected GameObject _ActiveFoldable;
-
-        protected void EnableFoldable(Button button)
+        public SimulationPanel SimPanel
         {
-            if (PriorityFocus.Count > 0) return;
-
-            if (_ActiveFoldable != null && _ActiveFoldable.gameObject.activeSelf)
+            get
             {
-                OwnerToButton[_ActiveFoldable.transform.parent].onClick.Invoke();
+                if (_SimPanel == null)
+                {
+                    _SimPanel = GetComponentInChildren<SimulationPanel>();
+                }
+                return _SimPanel;
             }
-            _ActiveFoldable = button.GetComponentInChildren<FoldableMenu>(true).gameObject;
-            _ActiveFoldable.SetActive(true);
-            button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(delegate { DisableFoldable(button); });
+        }
+        public EditPanel EdPanel
+        {
+            get
+            {
+                if (_EdPanel == null)
+                {
+                    _EdPanel = GetComponentInChildren<EditPanel>();
+                }
+                return _EdPanel;
+            }
         }
 
-        protected void DisableFoldable(Button button)
+        public void OnEdit()
         {
-            _ActiveFoldable.SetActive(false);
-            _ActiveFoldable = null;
-            button.onClick.RemoveAllListeners();
-            button.onClick.AddListener(delegate { EnableFoldable(button); });
+            AbstractCamera.ActiveCamera?.BreakFollow();
+            CameraSwitch.OnEagleEye();
+            transform.ToRect().sizeDelta = DashboardSize[DashboardMode.EditMode];
+            SimulationInfo.gameObject.SetActive(false);
+            SimPanel.gameObject.SetActive(false);
+            EdPanel.gameObject.SetActive(true);
+            CameraOptions.gameObject.SetActive(true);
         }
+
+        public void OnRun()
+        {
+            Selectable.Deselect();
+            Selectable.DeleteMode = false;
+            AbstractCamera.ActiveCamera?.BreakFollow();
+            CameraSwitch.OnRTS();
+            transform.ToRect().sizeDelta = DashboardSize[DashboardMode.Simulation];
+            SimulationInfo.gameObject.SetActive(true);
+            SimPanel.gameObject.SetActive(true);
+            EdPanel.gameObject.SetActive(false);
+            CameraOptions.gameObject.SetActive(false);
+        }
+
     }
 
 }

@@ -12,6 +12,13 @@ namespace Drones.UI
     public class Selectable: MonoBehaviour
     {
         private static readonly WaitUntil _Wait = new WaitUntil(() => Input.GetMouseButton(0));
+        public static void Reset()
+        {
+            _Cam = null;
+            Selected = null;
+            _DeleteMode = false;
+            _IsMoving = false;
+        }
         private static Camera _Cam;
         private const float _ClickDelta = 0.35f;
         public static Camera Cam
@@ -279,7 +286,6 @@ namespace Drones.UI
                 yield return new WaitUntil(() => Input.GetMouseButtonUp(1));
                 DeleteMode = false;
             }
-            yield break;
         }
 
     }

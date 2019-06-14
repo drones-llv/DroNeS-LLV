@@ -8,6 +8,7 @@ namespace Drones.StartScreen
 {
     using System;
     using Drones.Managers;
+    using Drones.UI;
     using Drones.Utils;
     using Drones.Utils.Extensions;
     using Drones.Utils.Scheduler;
@@ -126,14 +127,14 @@ namespace Drones.StartScreen
 
             LogToggle.onValueChanged.AddListener((bool value) =>
             {
-                SimManager.IsLogging = value;
+                DataLogger.IsLogging = value;
                 LogPeriod.enabled = value;
             });
 
             LogPeriod.onValueChanged.AddListener((float value) =>
             {
                 LPDisplay.SetText(value.ToString());
-                SimManager.LoggingPeriod = value;
+                DataLogger.LoggingPeriod = value;
             });
 
             Scheduler.onValueChanged.AddListener((int arg0) =>
@@ -149,8 +150,8 @@ namespace Drones.StartScreen
         {
             RenderLimit.onValueChanged.Invoke(RenderLimit.value);
             RenderToggle.onValueChanged.Invoke(RenderToggle.isOn);
-            LogToggle.onValueChanged.Invoke(LogToggle.isOn);
-            LogPeriod.onValueChanged.Invoke(LogPeriod.value);
+            LogToggle.onValueChanged.Invoke(DataLogger.IsLogging);
+            LogPeriod.onValueChanged.Invoke(DataLogger.LoggingPeriod);
             Scheduler.onValueChanged.Invoke(Scheduler.value);
         }
 

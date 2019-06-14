@@ -64,7 +64,6 @@ namespace Drones.UI
             IsOpen = false;
         }
 
-        private void OnDestroy() => OnRelease();
         #region IListWindow
         public ListTupleContainer TupleContainer
         {
@@ -146,7 +145,7 @@ namespace Drones.UI
             {
                 foreach (var receiver in DataReceivers.Values)
                 {
-                    receiver.Delete();
+                    receiver?.Delete();
                 }
             }
             DataReceivers.Clear();

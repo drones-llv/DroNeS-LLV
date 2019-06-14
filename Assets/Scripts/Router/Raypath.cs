@@ -10,7 +10,7 @@ namespace Drones.Utils.Router
     {
         private List<List<Obstacle>> _SortedBuildings;
         private List<Obstacle> _Hubs;
-        private const float _maxAlt = 250;
+        private const float _maxAlt = 200;
         private const float _minAlt = 60;
         private const int _altDiv = 10; // Altitude interval
         private const int _buildingDiv = 30; // Building bucket height interval
@@ -127,13 +127,11 @@ namespace Drones.Utils.Router
                     var v = _destination;
                     v.y = hubReturn ? 500 : 5;
 
-                    return new Queue<Vector3>(new[] { _origin, _destination, v});
+                    return new Queue<Vector3>(new[] { _origin, _destination, v });
                 }
 
                 return Route(drone, stack, newalt);
             }
-
-
         }
 
         // The public interface to get the list of waypoints

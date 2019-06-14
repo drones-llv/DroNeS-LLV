@@ -39,7 +39,6 @@ namespace Drones.Utils
             {TimeSpeed.Ultra, 8f},
             {TimeSpeed.Pause, 0f}
         };
-
         private static Stopwatch StopWatch { get; set; } = Stopwatch.StartNew();
         public static long DeltaFrame() => StopWatch.ElapsedMilliseconds;
 
@@ -261,13 +260,6 @@ namespace Drones.Utils
             #endregion
         }
 
-    }
-
-    [Serializable]
-    public class TimeScale
-    {
-        public TimeScale(float i) => timescale = i;
-        public float timescale;
     }
 
 

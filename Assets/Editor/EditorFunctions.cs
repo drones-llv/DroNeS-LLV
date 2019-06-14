@@ -28,8 +28,8 @@ public class EditorFunctions : EditorWindow
 
     void OnGUI()
     {
-        if (citySimulatorMap == null) { citySimulatorMap = GameObject.Find("CitySimulatorMap"); }
-        if (abstractMap == null) { abstractMap = citySimulatorMap?.GetComponent<AbstractMap>(); }
+        if (citySimulatorMap == null) { citySimulatorMap = GameObject.Find("Manhattan"); }
+        if (abstractMap == null) { abstractMap = citySimulatorMap?.GetComponent<CustomMap>(); }
 
         minHeight = EditorGUILayout.FloatField("Minimum Building Height:", minHeight);
         maxHeight = EditorGUILayout.FloatField("Maximum Building Height:", maxHeight);
@@ -38,8 +38,8 @@ public class EditorFunctions : EditorWindow
         {
             //if (abstractMap.MapVisualizer != null) { abstractMap.ResetMap(); }
             abstractMap.MapVisualizer = CreateInstance<MapVisualizer>();
-            //abstractMap.Initialize(new Mapbox.Utils.Vector2d(40.764170691358686f, -73.97670925665614f), 16);
-            abstractMap.Initialize(new Mapbox.Utils.Vector2d(-29.3151, 27.4869), 16);
+            abstractMap.Initialize(new Mapbox.Utils.Vector2d(40.764170691358686f, -73.97670925665614f), 16);
+            //abstractMap.Initialize(new Mapbox.Utils.Vector2d(-29.3151, 27.4869), 16);
         }
 
         if (GUILayout.Button("1. Setup Objects"))
@@ -121,7 +121,7 @@ public class EditorFunctions : EditorWindow
 
         if (GUILayout.Button("HEIGHT!"))
         {
-            GenerateHeightBitMap(3000,3000, 2);
+            GenerateHeightBitMapNY();
         }
 
 
@@ -195,26 +195,27 @@ public class EditorFunctions : EditorWindow
 
     public static void GenerateHeightBitMapNY()
     {
-        Texture2D data = new Texture2D(2160, 3750);
+        Texture2D data = new Texture2D(4*2160,4*3750);
         try
         {
-            float tallest = 600;
-            for (int i = 0; i < 4320 * 2; i += 4)
+            float tallest = 500;
+            for (int i = 0; i < 4320 * 2; i += 4/4)
             {
-                for (int j = 0; j < 7500 * 2; j += 4)
+                for (int j = 0; j < 7500 * 2; j += 4/4)
                 {
                     var v = new Vector3(i - 4320, 1000, j - 7500);
                     var c = Color.black;
-                    if (Physics.BoxCast(v, new Vector3(2, 1, 2), Vector3.down, out RaycastHit info, Quaternion.identity, 1000, 1 << 12))
+                    if (Physics.BoxCast(v, new Vector3(2/4f, 1, 2/4f), Vector3.down, out RaycastHit info, Quaternion.identity, 1000, 1 << 12))
                     {
-                        c += Color.white * info.point.y / tallest;
+                        c += Color.white * Mathf.Clamp(info.point.y / tallest, 0, 1);
                         c.a = 1;
                     }
-                    else if (!Physics.BoxCast(v, new Vector3(2, 1, 2), Vector3.down, Quaternion.identity, 1000, 1 << 13))
+                    else if (!Physics.BoxCast(v, new Vector3(2/4f, 1, 2/4f), Vector3.down, Quaternion.identity, 1000, 1 << 13))
                     {
                         c = Color.white;
                     }
-                    data.SetPixel(i / 4, j / 4, c);
+                    //data.SetPixel(i / 4, j / 4, c);
+                    data.SetPixel(i, j, c);
                 }
             }
             var path = Path.Combine(SaveManager.SavePath, "height_bitmap.png");

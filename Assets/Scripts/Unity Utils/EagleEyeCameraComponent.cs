@@ -55,7 +55,7 @@ namespace Drones.UI
             Controller.MoveLateral(Input.GetAxis("Horizontal") * SpeedScale);
             Controller.Rotate(Input.GetAxis("Rotate"));
 
-            if (UIFocus.hover == 0 && !UIFocus.Controlling)
+            if (UIFocus.Hover == 0 && !UIFocus.Controlling)
             {
                 Controller.Zoom(Input.GetAxis("Mouse ScrollWheel"));
                 if (Input.GetMouseButton(0))

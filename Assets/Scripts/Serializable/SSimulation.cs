@@ -29,6 +29,7 @@ namespace Drones.Serializable
         public int delayedJobs;
         public int crashes;
         public int queuedJobs;
+        public int completedCount;
 
         public SSimulation(SimulationData data)
         {
@@ -42,6 +43,7 @@ namespace Drones.Serializable
             delayedJobs = data.delayedJobs;
             failedJobs = data.failedJobs;
             queuedJobs = data.queuedJobs;
+            completedCount = data.completedCount;
             drones = new List<SDrone>();
             retiredDrones = new List<SRetiredDrone>();
             batteries = new List<SBattery>();

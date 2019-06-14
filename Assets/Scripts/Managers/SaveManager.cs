@@ -101,7 +101,7 @@ namespace Drones.Managers
         {
             SimManager.SetStatus(SimulationStatus.Paused);
             GameObject win = UnityEngine.Object.Instantiate(Resources.Load("Prefabs/UI/Windows/SaveLoad/SaveLoad Window") as GameObject);
-            win.transform.SetParent(OpenWindows.Transform, false);
+            win.transform.SetParent(UIManager.Transform, false);
             win.GetComponent<SaveLoadWindow>().SetSaveMode();
         }
 
@@ -109,14 +109,14 @@ namespace Drones.Managers
         {
             SimManager.SetStatus(SimulationStatus.Paused);
             GameObject win = UnityEngine.Object.Instantiate(Resources.Load("Prefabs/UI/Windows/SaveLoad/SaveLoad Window") as GameObject);
-            win.transform.SetParent(OpenWindows.Transform, false);
+            win.transform.SetParent(UIManager.Transform, false);
             win.GetComponent<SaveLoadWindow>().SetLoadMode();
         }
 
         public static void OpenOverwriteConfirmation(string filepath)
         {
             GameObject win = UnityEngine.Object.Instantiate(Resources.Load("Prefabs/UI/Windows/SaveLoad/Overwrite Dialog") as GameObject);
-            win.transform.SetParent(OpenWindows.Transform, false);
+            win.transform.SetParent(UIManager.Transform, false);
             win.GetComponent<OverwriteConfirmation>().SetFilepath(filepath);
         }
 
@@ -130,22 +130,6 @@ namespace Drones.Managers
             string data = Deobfuscate(filepath);
             SimManager.LoadSimulation(JsonUtility.FromJson<SSimulation>(data));
             ConsoleLog.Clear();
-        }
-
-        public static void WriteTupleToCSV(string filepath, params string[] data)
-        {
-            using (StreamWriter writer = File.AppendText(filepath))
-            {
-                string output = "";
-                for (int i = 0; i < data.Length; i++)
-                {
-                    output += data[i];
-                    if (i < data.Length - 1)
-                        output += ",";
-                }
-                writer.WriteLine(output);
-                writer.Close();
-            }
         }
 
     }

@@ -7,7 +7,13 @@ namespace Drones.UI
 
     public class PriorityFocus : UIFocus
     {
-        public static uint Count;
+        public static uint Count { get; private set; }
+        public static new void Reset()
+        {
+            Count = 0;
+            Hover = 0;
+        }
+
         private int _index;
         private void OnEnable()
         {

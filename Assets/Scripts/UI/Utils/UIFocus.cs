@@ -6,7 +6,9 @@ namespace Drones.UI
 {
     public class UIFocus : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerClickHandler
     {
-        public static int hover;
+        public static int Hover { get; protected set; }
+        public static void Reset() => Hover = 0;
+
         private Transform _Window;
         public static bool Controlling { get; protected set; }
 
@@ -26,20 +28,20 @@ namespace Drones.UI
         {
             StopAllCoroutines();
             Controlling = false;
-            if (hover > 0) { hover--; }
+            if (Hover > 0) { Hover--; }
         }
 
         public virtual void OnPointerEnter(PointerEventData eventData)
         {
             if (!AbstractCamera.Controlling)
             {
-                hover++;
+                Hover++;
             }
         }
 
         public virtual void OnPointerExit(PointerEventData eventData)
         {
-            if (hover > 0) { hover--; }
+            if (Hover > 0) { Hover--; }
         }
 
         public virtual void OnPointerDown(PointerEventData eventData)

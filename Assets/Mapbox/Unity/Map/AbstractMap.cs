@@ -742,7 +742,7 @@ namespace Mapbox.Unity.Map
 
 		private void OnMapExtentChanged(object sender, ExtentArgs currentExtent)
 		{
-            if (GetType() == typeof(AbstractMap))
+            if (!Application.isPlaying)
                 TriggerTileRedrawForExtent(currentExtent);
             else
                 StartCoroutine(TriggerTileRedrawForExtent2(currentExtent, System.Diagnostics.Stopwatch.StartNew()));

@@ -14,7 +14,7 @@ namespace Drones.Utils.Scheduler
         public void Execute(int i)
         {
             var tmp = results[i];
-            tmp.loss = ExpectedValue(tmp.job, time) - ExpectedValue(tmp.job, time + ExpectedDuration(tmp.job));
+            tmp.loss = ExpectedValue(tmp.job, time) - ExpectedValue(tmp.job, time + tmp.job.expectedDuration);
             results[i] = tmp;
         }
 

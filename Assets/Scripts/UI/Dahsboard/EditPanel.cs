@@ -9,11 +9,9 @@ namespace Drones.UI
     using Utils;
     using Managers;
     using System;
-    using Drones.EventSystem;
 
-    public class EditPanel : Dashboard
+    public class EditPanel : ControlPanel
     {
-        public static EditPanel Instance { get; private set; }
         #region Fields
         [SerializeField]
         private Button _Play;
@@ -140,7 +138,7 @@ namespace Drones.UI
 
         private void Awake()
         {
-            Instance = this;
+            //Instance = this;
             Play.onClick.AddListener(ExitEditMode);
             Navigation.onClick.AddListener(MapFoldable.OpenNavigationWindow);
             Lists.onClick.AddListener(delegate { EnableFoldable(Lists); });
@@ -154,40 +152,15 @@ namespace Drones.UI
         private void OnEnable()
         {
             AbstractCamera.ActiveCamera?.BreakFollow();
-            transform.parent.ToRect().sizeDelta = PanelSize[DashboardMode.EditMode];
-            SimulationPanel.Instance?.gameObject.SetActive(false);
-            SimulationInfo.SetActive(false);
-            CameraOptions.SetActive(true);
-            try
-            {
-                SimManager.SetStatus(SimulationStatus.EditMode);
-            }
-            catch (NullReferenceException)
-            {
-
-            }
 
             CameraSwitch.OnEagleEye();
-        }
-
-        private void OnDisable()
-        {
-            transform.parent.ToRect().sizeDelta = PanelSize[DashboardMode.Simulation];
-            CameraOptions.SetActive(false);
-            SimulationPanel.Instance.gameObject.SetActive(true);
-            SimulationInfo.SetActive(true);
-        }
-
-        private void OnDestroy()
-        {
-            Instance = null;
         }
 
         public static void ExitEditMode()
         {
             SimManager.SetStatus(SimulationStatus.Paused);
             CameraSwitch.OnRTS();
-            Instance.gameObject.SetActive(false);
+            //Instance.gameObject.SetActive(false);
         }
 
         private void DeleteSelection() => Selectable.DeleteMode = true;

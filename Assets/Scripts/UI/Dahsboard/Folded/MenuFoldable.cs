@@ -8,7 +8,6 @@ namespace Drones.UI
 {
     using Utils;
     using Managers;
-    using Data;
     public class MenuFoldable : FoldableMenu
     {
 
@@ -18,15 +17,9 @@ namespace Drones.UI
             Buttons[1].onClick.AddListener(SaveSimulation);
             Buttons[2].onClick.AddListener(LoadSimulation);
             Buttons[3].onClick.AddListener(ExportToCSV);
-            Buttons[4].onClick.AddListener(OpenEditMode);
+            Buttons[4].onClick.AddListener(()=>SimManager.SetStatus(SimulationStatus.EditMode));
             base.Start();
         }
-
-        private void OpenEditMode()
-        {
-            EditPanel.Instance.gameObject.SetActive(true);
-        }
-
 
         private void ExportToCSV()
         {
@@ -53,13 +46,8 @@ namespace Drones.UI
         private void QuitToMainMenu()
         {
             SimManager.SetStatus(SimulationStatus.Paused);
-            SimManager.ClearObjects();
-            BatteryData.Reset();
-            DroneData.Reset();
-            JobData.Reset();
-            HubData.Reset();
-            NFZData.Reset();
-            StartCoroutine(LoadMainMenu());
+            SimManager.Quit();
+            SimManager.Instance.StartCoroutine(LoadMainMenu());
         }
 
         IEnumerator LoadMainMenu()

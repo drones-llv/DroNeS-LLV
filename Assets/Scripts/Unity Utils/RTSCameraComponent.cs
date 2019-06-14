@@ -57,7 +57,7 @@ namespace Drones
             Controller.MoveLateral(Input.GetAxis("Horizontal") * SpeedScale);
             Controller.Rotate(Input.GetAxis("Rotate"));
 
-            if (UIFocus.hover == 0)
+            if (UIFocus.Hover == 0)
             {
                 Controller.Zoom(Input.GetAxis("Mouse ScrollWheel") * SpeedScale);
                 //FPS mouse hold click
@@ -103,7 +103,7 @@ namespace Drones
         #region ICameraMovement Implementation
         public override void Zoom(float input)
         {
-            if (_Following || UIFocus.hover != 0) return;
+            if (_Following || UIFocus.Hover != 0) return;
             Vector3 positiveDirection = CameraTransform.forward;
             // Cannot zoom when facing up
             if (positiveDirection.y < 0)

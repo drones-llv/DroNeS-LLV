@@ -31,7 +31,6 @@ namespace Drones.Managers
                 EditMode();
             else
                 PlayMode();
-
         }
 
         private void PlayMode()
@@ -82,7 +81,7 @@ namespace Drones.Managers
             }
             if (Input.GetKeyDown(KeyCode.Backslash))
             {
-                EditPanel.ExitEditMode();
+                SimManager.SetStatus(SimulationStatus.Paused);
                 return;
             }
 

@@ -11,6 +11,8 @@ namespace Drones.Utils.Scheduler
         public ChronoWrapper start;
         public float reward;
         public float penalty;
+        public float expectedDuration;
+        public float stDevDuration;
 
         public static explicit operator Job(StrippedJob job) => SimManager.AllJobs[job.UID];
     }

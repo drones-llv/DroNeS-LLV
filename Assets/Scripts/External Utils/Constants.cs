@@ -17,8 +17,7 @@ namespace Drones.Utils
         public const string mapStyle = "mapbox://styles/jw5514/cjr5l685g4u4z2sjxfdupnl8b";
         public const string buildingMaterialPath = "Materials/WhiteBuilding";
         public const string SimulationManagerPath = "Prefabs/Managers/Simulation Manager";
-        public const string DroneManagerPath = "Prefabs/Managers/Drone Manager";
-        public const string ShortcutManagerPath = "Prefabs/Managers/Shortcut Manager";
+        public const string UIManagerPath = "Prefabs/Managers/UIManager";
         public const string PositionHighlightPath = "Prefabs/PositionHighlight";
         public const string HubHighlightPath = "Prefabs/HubHighlight";
         public const string ToolTipPath = "Prefabs/Windows/ToolTip";

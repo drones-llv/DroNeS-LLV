@@ -120,6 +120,7 @@ namespace Drones
 
         protected virtual void OnDestroy()
         {
+            _Following = false;
             Followee = null;
             Controlling = false;
             ActiveCamera = null;

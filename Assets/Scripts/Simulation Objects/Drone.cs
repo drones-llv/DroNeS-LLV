@@ -28,7 +28,6 @@ namespace Drones
                         name = "ActiveDrones"
                     }.transform;
                     DontDestroyOnLoad(_ActiveDrones.gameObject);
-
                 }
                 return _ActiveDrones;
             }
@@ -106,7 +105,7 @@ namespace Drones
             else
             {
                 var j = (StrippedJob)job;
-                var t = (JobScheduler.EuclideanDist(j) + JobScheduler.ManhattanDist(j))/MovementJob.HSPEED;
+                var t = j.expectedDuration;
                 if (Mathf.Min(t, 0.9f * CostFunction.GUARANTEE) > GetBattery().Charge * CostFunction.GUARANTEE)
                 {
                     GetHub().Scheduler.AddToQueue(this);
@@ -137,6 +136,7 @@ namespace Drones
             _Data.hubsAssigned++;
             _Data.hub = hub.UID;
         }
+
         public void CompleteJob(Job job)
         {
             //JobHistory.Add(_Data.job, job);

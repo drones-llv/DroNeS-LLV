@@ -57,7 +57,7 @@ namespace Drones.UI
             gameObject.SetActive(true);
             transform.ToRect().offsetMax = p.GetTemplate(GetType()).transform.ToRect().offsetMax;
             transform.ToRect().offsetMin = p.GetTemplate(GetType()).transform.ToRect().offsetMin;
-            OpenWindows.AddToList(this);
+            UIManager.AddToList(this);
         }
         public virtual void OnRelease()
         {
@@ -174,7 +174,7 @@ namespace Drones.UI
 
             Close.onClick.AddListener(delegate 
             {
-                OpenWindows.Remove(this);
+                UIManager.Remove(this);
                 if (CreatorEvent != null)
                 {
                     CreatorEvent.RemoveAllListeners();

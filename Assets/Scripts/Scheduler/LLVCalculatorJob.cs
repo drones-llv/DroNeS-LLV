@@ -21,7 +21,7 @@ namespace Drones.Utils.Scheduler
         public void Execute(int i)
         {
             float plost = totalLosses[0] - input[i].loss;
-            float mean = (totalDuration[0] - ExpectedDuration(input[i].job)) / (input.Length - 1);
+            float mean = (totalDuration[0] - input[i].job.expectedDuration) / (input.Length - 1);
             float pgain = ExpectedValue(input[i].job, time) - ExpectedValue(input[i].job, time + mean);
             nlv[i] = plost - pgain;
         }

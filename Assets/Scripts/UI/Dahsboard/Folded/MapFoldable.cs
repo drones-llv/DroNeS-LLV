@@ -2,7 +2,7 @@
 {
     using Drones.Utils;
     using UnityEngine;
-    using static OpenWindows;
+    using static UIManager;
     public class MapFoldable : FoldableMenu
     {
         protected override void Start()
@@ -23,7 +23,7 @@
             {
                 const string naviPath = "Prefabs/UI/Windows/Navigation/Navigation Window";
                 var n = Instantiate(Resources.Load(naviPath) as GameObject).GetComponent<NavigationWindow>();
-                n.transform.SetParent(OpenWindows.Transform, false);
+                n.transform.SetParent(UIManager.Transform, false);
             }
         }
     }

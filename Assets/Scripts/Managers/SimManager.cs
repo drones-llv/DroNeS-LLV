@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Globalization;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -12,21 +11,19 @@ namespace Drones.Managers
     using DataStreamer;
     using Data;
     using static Singletons;
-    using Utils.Extensions;
     using Serializable;
-
 
     public class SimManager : MonoBehaviour
     {
         #region Fields
         private SimulationData _Data;
-        private uint _mapsLoaded;
-        private DataField[] _DataFields;
         private bool _Initialized;
+        private bool _IsQuitting;
         #endregion
 
         #region Properties
         public static SimManager Instance { get; private set; }
+        public static string Name => Instance._Data.simulation.ToString();
         public static SimulationStatus Status => Instance._Data.status;
         public static SecureSortedSet<uint, IDataSource> AllRetiredDrones => Instance._Data.retiredDrones;
         public static SecureSortedSet<uint, IDataSource> AllDrones => Instance._Data.drones;
@@ -36,19 +33,10 @@ namespace Drones.Managers
         public static SecureSortedSet<uint, IDataSource> AllCompleteJobs => Instance._Data.completeJobs;
         public static SecureSortedSet<uint, Battery> AllBatteries => Instance._Data.batteries;
         public static SecureSortedSet<uint, Job> AllJobs => Instance._Data.jobs;
-        public static int CompletedJobs => Instance._Data.completedJobs;
+        public static void GetData(SimulationInfo info) => info.SetData(Instance._Data);
+        public static void GetData(DataLogger logger, TimeKeeper.Chronos time) => logger.SetData(Instance._Data, time);
 
-        private static DataField[] DataFields
-        {
-            get
-            {
-                if (Instance._DataFields == null)
-                    Instance._DataFields = OpenWindows.Transform.FindDescendent("Drone Network", 1).GetComponentsInChildren<DataField>();
-                return Instance._DataFields;
-            }
-        }
-        public static bool LoadComplete => !(Manhattan == null || Brooklyn == null) && Manhattan.RedrawComplete && Brooklyn.RedrawComplete;
-        public static uint MapsLoaded => Instance._mapsLoaded;
+        public static bool LoadComplete => Manhattan != null && Brooklyn != null && Manhattan.RedrawComplete && Brooklyn.RedrawComplete;
         public static bool Initialized
         {
             get => Instance._Initialized;
@@ -57,25 +45,15 @@ namespace Drones.Managers
             {
                 if (value)
                 {
-                    if (!OpenWindows.Transform.gameObject.activeSelf)
-                        OpenWindows.Transform.gameObject.SetActive(true);
+                    if (UIManager.Transform == null) UIManager.New();
                     SetStatus(SimulationStatus.EditMode);
                 }
                 Instance._Initialized = value;
             }
         }
-        public static bool IsLogging { get; set; } = true;
-        public static float LoggingPeriod { get; set; } = 300;
         #endregion
 
-        private void OnDestroy()
-        {
-            StopAllCoroutines();
-            ResetSingletons();
-            Instance = null;
-        }
-
-        #region Initializers
+        #region MonoBehaviours
         private void Awake()
         {
             Instance = this;
@@ -89,49 +67,48 @@ namespace Drones.Managers
         {
             yield return new WaitUntil(() => SceneManager.GetActiveScene() == SceneManager.GetSceneByBuildIndex(1));
             Initialized = true;
-            Instance.StartCoroutine(StreamDataToDashboard());
-            Instance.StartCoroutine(DataLogger());
             DroneManager.New();
             BatteryManager.New();
             ShortcutManager.New();
+            DataLogger.New();
+        }
+
+        public void OnDestroy()
+        {
+            if (!_IsQuitting) return;
+            StopAllCoroutines();
+            ClearObjects();
+            BatteryData.Reset();
+            DroneData.Reset();
+            JobData.Reset();
+            HubData.Reset();
+            NFZData.Reset();
+            ResetSingletons();
+            UIFocus.Reset();
+            PriorityFocus.Reset();
+            Selectable.Reset();
+            Instance = null;
         }
         #endregion
-
-        public static void OnMapLoaded() => Instance._mapsLoaded++;
-
+        public static void Quit() => Instance._IsQuitting = true;
         public static void SetStatus(SimulationStatus status)
         {
             Instance._Data.status = status;
             if (status == SimulationStatus.Paused || status == SimulationStatus.EditMode)
-                OnPause();
-            else
-                OnPlay();
+                TimeKeeper.TimeSpeed = TimeSpeed.Pause;
 
             if (status != SimulationStatus.EditMode)
-                Selectable.Deselect();
+                UIManager.Dashboard.OnRun();
             else
-                EditPanel.Instance.gameObject.SetActive(true);
+                UIManager.Dashboard.OnEdit();
         }
-
-        public static void OnPlay()
-        {
-            Selectable.Deselect();
-            Instance.StartCoroutine(StreamDataToDashboard());
-        }
-
-        public static void OnPause()
-        {
-            Instance.StopCoroutine(StreamDataToDashboard());
-            TimeKeeper.TimeSpeed = TimeSpeed.Pause;
-        }
-
         public static void UpdateRevenue(float value) => Instance._Data.revenue += value;
         public static void UpdateDelay(float dt)
         {
             Instance._Data.totalDelay += dt;
             if (dt > 0) UpdateDelayCount();
         }
-        public static void UpdateCompleteCount() => Instance._Data.completedJobs++;
+        public static void UpdateCompleteCount() => Instance._Data.completedCount++;
         private static void UpdateDelayCount() => Instance._Data.delayedJobs++;
         public static void UpdateFailedCount() => Instance._Data.failedJobs++;
         public static void UpdateCrashCount() => Instance._Data.crashes++;
@@ -139,30 +116,7 @@ namespace Drones.Managers
         public static void UpdateEnergy(float dE) => Instance._Data.totalEnergy += dE;
         public static void JobEnqueued() => Instance._Data.queuedJobs++;
         public static void JobDequeued() => Instance._Data.queuedJobs--;
-
-        private static IEnumerator StreamDataToDashboard()
-        {
-            var wait = new WaitForSeconds(0.75f);
-            while (true)
-            {
-                DataFields[0].SetField(AllDrones.Count.ToString());
-                DataFields[1].SetField(Drone.ActiveDrones.childCount.ToString());
-                DataFields[2].SetField(Instance._Data.crashes.ToString());
-                DataFields[3].SetField(Instance._Data.queuedJobs.ToString());
-                DataFields[4].SetField(Instance._Data.completedJobs.ToString());
-                DataFields[5].SetField(Instance._Data.delayedJobs.ToString());
-                DataFields[6].SetField(Instance._Data.failedJobs.ToString());
-                DataFields[7].SetField(AllHubs.Count.ToString());
-                DataFields[8].SetField(Instance._Data.revenue.ToString("C", CultureInfo.CurrentCulture));
-                DataFields[9].SetField(UnitConverter.Convert(Chronos.min, Instance._Data.totalDelay / Instance._Data.completedJobs));
-                DataFields[10].SetField(UnitConverter.Convert(Energy.kWh, Instance._Data.totalEnergy));
-                DataFields[11].SetField(UnitConverter.Convert(Chronos.min, Instance._Data.totalAudible));
-                yield return wait;
-            }
-        }
-
         public static SSimulation SerializeSimulation() => new SSimulation(Instance._Data);
-
         public static void ClearObjects()
         {
             NoFlyZone[] nfzArr = new NoFlyZone[AllNFZ.Count];
@@ -182,57 +136,12 @@ namespace Drones.Managers
                 Drone.ActiveDrones?.GetChild(0)?.GetComponent<Drone>()?.Delete();
             }
         }
-
         public static void LoadSimulation(SSimulation data)
         {
             ClearObjects();
             Instance._Data = new SimulationData(data);
             TimeKeeper.SetTime(data.currentTime);
-        }
-
-        private static IEnumerator DataLogger()
-        {
-            if (!IsLogging) yield break;
-            string filename = Instance._Data.simulation.ToString().Replace("/","-").Replace(":","|");
-            filename = Path.ChangeExtension(filename, ".csv");
-            string filepath = Path.Combine(SaveManager.ExportPath, filename);
-            if (!File.Exists(filepath))
-            {
-                string[] headers = { "time (s)", 
-                                    "Total Drones",
-                                    "Active Drones",
-                                    "Crashed Drones",
-                                    "Job Queue Length",
-                                    "Jobs Completed",
-                                    "Jobs Delayed",
-                                    "Jobs Failed",
-                                    "Revenue", 
-                                    "Delay (s)", 
-                                    "Audibility (s)", 
-                                    "Energy (kWh)" };
-                SaveManager.WriteTupleToCSV(filepath, headers);
-            }
-            var time = TimeKeeper.Chronos.Get();
-            var wait = new WaitUntil(() => time.Timer() > LoggingPeriod);
-            string[] data = new string[12];
-            while (true)
-            {
-                data[0] = time.ToCSVFormat();
-                data[1] = AllDrones.Count.ToString();
-                data[2] = Drone.ActiveDrones.childCount.ToString();
-                data[3] = Instance._Data.crashes.ToString();
-                data[4] = Instance._Data.queuedJobs.ToString();
-                data[5] = Instance._Data.completedJobs.ToString();
-                data[6] = Instance._Data.delayedJobs.ToString();
-                data[7] = Instance._Data.failedJobs.ToString();
-                data[8] = Instance._Data.revenue.ToString("C", CultureInfo.CurrentCulture).Replace(",","");
-                data[9] = (Instance._Data.totalDelay/Instance._Data.completedJobs).ToString("0.00");
-                data[10] = Instance._Data.totalAudible.ToString("0.00");
-                data[11] = UnitConverter.Convert(Energy.kWh, Instance._Data.totalEnergy);
-                SaveManager.WriteTupleToCSV(filepath, data);
-                yield return wait;
-                time.Now();
-            }
+            SetStatus(SimulationStatus.EditMode);
         }
 
     }

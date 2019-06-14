@@ -204,8 +204,6 @@ namespace Drones.Data
             };
         }
 
-
-
     }
 
 }

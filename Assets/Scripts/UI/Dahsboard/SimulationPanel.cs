@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace Drones.UI
 {
-    public class SimulationPanel : Dashboard
+    public class SimulationPanel : ControlPanel
     {
         #region Fields
         [SerializeField]
@@ -19,18 +19,6 @@ namespace Drones.UI
         [SerializeField]
         private Button _Menu;
         #endregion
-
-        public static SimulationPanel Instance { get; private set; }
-
-        private void Awake()
-        {
-            Instance = this;
-        }
-
-        private void OnDestroy()
-        {
-            Instance = null;
-        }
 
         #region Properties
         private Button Map

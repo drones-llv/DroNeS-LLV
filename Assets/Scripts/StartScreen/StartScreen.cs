@@ -70,7 +70,6 @@ namespace Drones.StartScreen
             yield return new WaitUntil(() => SimManager.LoadComplete && Time.unscaledDeltaTime < 1 / 30f);
 
             SceneManager.SetActiveScene(SceneManager.GetSceneAt(1));
-            OpenWindows.Transform.gameObject.SetActive(true);
             yield return SceneManager.UnloadSceneAsync(0);
         }
 

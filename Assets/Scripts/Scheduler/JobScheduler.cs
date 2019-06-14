@@ -124,11 +124,8 @@ namespace Drones.Utils.Scheduler
 
         public static float ExpectedValue(StrippedJob j, ChronoWrapper time)
         {
-            var man = ManhattanDist(j);
-            var euc = EuclideanDist(j);
-
-            var mu = (man + euc) / 2 / MovementJob.HSPEED;
-            var stdev = (mu - euc) / MovementJob.HSPEED;
+            var mu = j.expectedDuration;
+            var stdev = j.stDevDuration;
 
             var h = (4 * stdev + mu) / STEPS;
             float expected = CostFunction.Evaluate(j, time) * Normal(0, mu, stdev) / 2;
@@ -143,7 +140,5 @@ namespace Drones.Utils.Scheduler
         }
 
         public static float ExpectedDuration(StrippedJob job) => (ManhattanDist(job) + EuclideanDist(job)) / (2 * MovementJob.HSPEED);
-
-
     }
 }

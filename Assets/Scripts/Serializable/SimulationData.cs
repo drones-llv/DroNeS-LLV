@@ -28,8 +28,8 @@ namespace Drones.Data
         public int queuedJobs;
         public int crashes;
         public int delayedJobs;
-        public int completedJobs;
         public int failedJobs;
+        public int completedCount;
 
         private void InitializeCollections()
         {
@@ -94,6 +94,7 @@ namespace Drones.Data
             totalAudible = data.totalAudible;
             totalEnergy = data.totalEnergy;
             queuedJobs = data.queuedJobs;
+            completedCount = data.completedCount;
             crashes = data.crashes;
             delayedJobs = data.delayedJobs;
             failedJobs = data.failedJobs;
