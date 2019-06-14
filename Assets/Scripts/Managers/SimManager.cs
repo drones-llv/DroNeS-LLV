@@ -33,8 +33,7 @@ namespace Drones.Managers
         public static SecureSortedSet<uint, IDataSource> AllCompleteJobs => Instance._Data.completeJobs;
         public static SecureSortedSet<uint, Battery> AllBatteries => Instance._Data.batteries;
         public static SecureSortedSet<uint, Job> AllJobs => Instance._Data.jobs;
-        public static void GetData(SimulationInfo info) => info.SetData(Instance._Data);
-        public static void GetData(DataLogger logger, TimeKeeper.Chronos time) => logger.SetData(Instance._Data, time);
+
 
         public static bool LoadComplete => Manhattan != null && Brooklyn != null && Manhattan.RedrawComplete && Brooklyn.RedrawComplete;
         public static bool Initialized
@@ -117,6 +116,8 @@ namespace Drones.Managers
         public static void JobEnqueued() => Instance._Data.queuedJobs++;
         public static void JobDequeued() => Instance._Data.queuedJobs--;
         public static SSimulation SerializeSimulation() => new SSimulation(Instance._Data);
+        public static void GetData(SimulationInfo info) => info.SetData(Instance._Data);
+        public static void GetData(DataLogger logger, TimeKeeper.Chronos time) => logger.SetData(Instance._Data, time);
         public static void ClearObjects()
         {
             NoFlyZone[] nfzArr = new NoFlyZone[AllNFZ.Count];
@@ -140,6 +141,10 @@ namespace Drones.Managers
         {
             ClearObjects();
             Instance._Data = new SimulationData(data);
+            Instance._Data.Load(data);
+            DataLogger.Load();
+            BatteryManager.ForceCountChange();
+            DroneManager.ForceDroneCountChange();
             TimeKeeper.SetTime(data.currentTime);
             SetStatus(SimulationStatus.EditMode);
         }

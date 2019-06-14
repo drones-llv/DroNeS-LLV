@@ -18,6 +18,7 @@ namespace Drones.Serializable
         public List<uint> completedJobs;
         public List<uint> schedulerJobQueue;
         public List<uint> schedulerDroneQueue;
+        public float generationRate;
         public SVector3 position;
         public uint uid;
         public int crashes;
@@ -32,6 +33,7 @@ namespace Drones.Serializable
         public SHub(HubData data, Hub hub)
         {
             count = HubData.Count;
+            generationRate = hub.JobGenerationRate;
             uid = data.UID;
             batteries = new List<uint>();
             freeBatteries = new List<uint>();
@@ -51,6 +53,7 @@ namespace Drones.Serializable
             crashes = data.crashes;
             delayedJobs = data.delayedJobs;
             failedJobs = data.failedJobs;
+
 
             foreach (var bat in data.batteries.Keys)
                 batteries.Add(bat);

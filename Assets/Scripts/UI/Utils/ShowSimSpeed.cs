@@ -132,7 +132,8 @@ namespace Drones.UI
                         {TimeSpeed.Slow, Slow},
                         {TimeSpeed.Normal, Play},
                         {TimeSpeed.Fast, Fast},
-                        {TimeSpeed.Ultra, Ultra}
+                        {TimeSpeed.Ultra, Ultra},
+                        {TimeSpeed.WTF, Ultra}
                     };
                 }
                 return Instance._SpeedToImage;

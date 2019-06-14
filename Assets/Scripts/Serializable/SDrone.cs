@@ -15,6 +15,7 @@ namespace Drones.Serializable
         public uint totalHubHandovers;
         public bool isWaiting;
         public bool inHub;
+        public bool isActive;
         public DroneMovement movement;
         public FlightStatus status;
         public List<uint> completedJobs;
@@ -37,6 +38,7 @@ namespace Drones.Serializable
         public SDrone(DroneData data, Drone drone)
         {
             count = DroneData.Count;
+            isActive = (drone.transform.parent == Drone.ActiveDrones);
             uid = data.UID;
             totalDeliveryCount = data.DeliveryCount;
             totalBatterySwaps = data.batterySwaps;
@@ -59,7 +61,6 @@ namespace Drones.Serializable
             hub = data.hub;
             battery = data.battery;
             charge = drone.GetBattery().Charge;
-
             foreach (var point in data.waypoints)
                 waypointsQueue.Add(point);
         }

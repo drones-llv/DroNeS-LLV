@@ -56,6 +56,7 @@ namespace Drones.Utils
         {
             _Active = true;
             if (_Time == null) _Time = TimeKeeper.Chronos.Get();
+            yield return new WaitUntil(() => TimeKeeper.TimeSpeed != TimeSpeed.Pause);
             while (_Active)
             {
                 _Time.Now();

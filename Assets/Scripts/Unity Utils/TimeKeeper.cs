@@ -37,6 +37,7 @@ namespace Drones.Utils
             {TimeSpeed.Normal, 1f},
             {TimeSpeed.Fast, 4f},
             {TimeSpeed.Ultra, 8f},
+            {TimeSpeed.WTF, 16f},
             {TimeSpeed.Pause, 0f}
         };
         private static Stopwatch StopWatch { get; set; } = Stopwatch.StartNew();

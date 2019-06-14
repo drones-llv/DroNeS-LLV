@@ -44,6 +44,7 @@ namespace Drones.Data
             totalEnergy = data.totalEnergy;
             targetAltitude = data.targetAltitude;
             previousPosition = _source.transform.position;
+            _source.transform.position = data.position;
             waypoints = new Queue<Vector3>();
             foreach (Vector3 point in data.waypointsQueue)
             {
@@ -51,7 +52,6 @@ namespace Drones.Data
             }
             currentWaypoint = data.waypoint;
             previousWaypoint = data.previousWaypoint;
-
             foreach (uint id in data.completedJobs)
                 completedJobs.Add(id, AllCompleteJobs[id]);
            

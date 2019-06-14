@@ -7,7 +7,6 @@ using TMPro;
 namespace Drones.StartScreen
 {
     using System;
-    using Drones.Managers;
     using Drones.UI;
     using Drones.Utils;
     using Drones.Utils.Extensions;
@@ -19,6 +18,7 @@ namespace Drones.StartScreen
 
         public TextMeshProUGUI RLDisplay;
         public TextMeshProUGUI LPDisplay;
+        public TextMeshProUGUI ASDisplay;
 
         private void OnDestroy()
         {
@@ -33,11 +33,37 @@ namespace Drones.StartScreen
         [SerializeField]
         Slider _LogPeriod;
         [SerializeField]
+        Toggle _SaveToggle;
+        [SerializeField]
+        Slider _SavePeriod;
+        [SerializeField]
         Button _Back;
         [SerializeField]
         Button _Reset;
         [SerializeField]
         TMP_Dropdown _Schdeuler;
+
+        public Toggle SaveToggle
+        {
+            get
+            {
+                if (_SaveToggle == null)
+                {
+                    _SaveToggle = GetComponentsInChildren<Toggle>(true)[1];
+                }
+                return _SaveToggle;
+            }
+        }
+
+        public Slider SavePeriod
+        {
+            get
+            {
+                if (_SavePeriod == null) _SavePeriod = GetComponentsInChildren<Slider>(true)[1];
+                return _SavePeriod;
+            }
+        }
+
 
         public Toggle LogToggle
         {
@@ -66,7 +92,7 @@ namespace Drones.StartScreen
             {
                 if (_RenderToggle == null)
                 {
-                    _RenderToggle = GetComponentsInChildren<Toggle>(true)[1];
+                    _RenderToggle = GetComponentsInChildren<Toggle>(true)[2];
                 }
                 return _RenderToggle;
             }
@@ -76,7 +102,7 @@ namespace Drones.StartScreen
         {
             get
             {
-                if (_RenderLimit == null) _RenderLimit = GetComponentsInChildren<Slider>(true)[1];
+                if (_RenderLimit == null) _RenderLimit = GetComponentsInChildren<Slider>(true)[2];
                 return _RenderLimit;
             }
         }
@@ -137,6 +163,18 @@ namespace Drones.StartScreen
                 DataLogger.LoggingPeriod = value;
             });
 
+            SaveToggle.onValueChanged.AddListener((bool value) =>
+            {
+                DataLogger.IsAutosave = value;
+                SavePeriod.enabled = value;
+            });
+
+            SavePeriod.onValueChanged.AddListener((float value) =>
+            {
+                ASDisplay.SetText(value.ToString());
+                DataLogger.AutosavePeriod = value;
+            });
+
             Scheduler.onValueChanged.AddListener((int arg0) =>
             {
                 JobScheduler.ALGORITHM = (Scheduling)Enum.Parse(typeof(Scheduling), Scheduler.options[arg0].text);
@@ -152,6 +190,8 @@ namespace Drones.StartScreen
             RenderToggle.onValueChanged.Invoke(RenderToggle.isOn);
             LogToggle.onValueChanged.Invoke(DataLogger.IsLogging);
             LogPeriod.onValueChanged.Invoke(DataLogger.LoggingPeriod);
+            SaveToggle.onValueChanged.Invoke(DataLogger.IsAutosave);
+            SavePeriod.onValueChanged.Invoke(DataLogger.AutosavePeriod);
             Scheduler.onValueChanged.Invoke(Scheduler.value);
         }
 
@@ -159,15 +199,19 @@ namespace Drones.StartScreen
 
         private void OnReset()
         {
-            RenderLimit.value = 0;
             RenderToggle.isOn = true;
+            RenderLimit.value = 0;
             LogToggle.isOn = true;
-            LogPeriod.value = 300;
+            LogPeriod.value = 60;
+            SaveToggle.isOn = true;
+            SavePeriod.value = 300;
             Scheduler.value = (int)Scheduling.FCFS;
             RenderLimit.onValueChanged.Invoke(RenderLimit.value);
             RenderToggle.onValueChanged.Invoke(RenderToggle.isOn);
             LogToggle.onValueChanged.Invoke(LogToggle.isOn);
             LogPeriod.onValueChanged.Invoke(LogPeriod.value);
+            SaveToggle.onValueChanged.Invoke(SaveToggle.isOn);
+            SavePeriod.onValueChanged.Invoke(SavePeriod.value);
             Scheduler.onValueChanged.Invoke(Scheduler.value);
         }
 

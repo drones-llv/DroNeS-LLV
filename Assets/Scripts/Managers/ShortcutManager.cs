@@ -64,6 +64,12 @@ namespace Drones.Managers
                 TimeKeeper.TimeSpeed = TimeSpeed.Ultra;
                 return;
             }
+            if (Input.GetKeyDown(KeyCode.Alpha5))
+            {
+                SimManager.SetStatus(SimulationStatus.Running);
+                TimeKeeper.TimeSpeed = TimeSpeed.WTF;
+                return;
+            }
             if (Input.GetKeyDown(KeyCode.Backslash))
             {
                 SimManager.SetStatus(SimulationStatus.EditMode);

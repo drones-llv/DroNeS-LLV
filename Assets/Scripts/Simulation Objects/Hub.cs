@@ -329,9 +329,15 @@ namespace Drones
             hub.transform.SetParent(null);
             hub.gameObject.SetActive(true);
             hub.InPool = false;
-            SimManager.AllHubs.Add(hub.UID, hub);
-
+            SimManager.AllHubs.Add(data.uid, hub);
             hub._Data = new HubData(data, hub, drones, batteries);
+            hub._jobGenerator = new JobGenerator(hub, data.generationRate);
+            hub.JobGenerationRate = data.generationRate;
+            hub.StartCoroutine(hub._jobGenerator.Generate());
+            foreach (var d in hub._Data.freeDrones.Values)
+            {
+                hub.Scheduler.AddToQueue(d);
+            }
             return hub;
         }
 

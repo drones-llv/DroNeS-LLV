@@ -88,6 +88,10 @@ namespace Drones.Data
         public SimulationData(SSimulation data)
         {
             InitializeCollections();
+        }
+
+        public void Load(SSimulation data)
+        {
             simulation = data.simulation;
             revenue = data.revenue;
             totalDelay = data.totalDelay;
@@ -122,7 +126,7 @@ namespace Drones.Data
             }
             foreach (var hub in data.hubs)
             {
-                Hub.Load(hub, data.drones, data.batteries);
+                var h = Hub.Load(hub, data.drones, data.batteries);
             }
             SetUpCallbacks();
         }

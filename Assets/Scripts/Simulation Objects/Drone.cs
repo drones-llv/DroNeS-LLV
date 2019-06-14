@@ -264,12 +264,12 @@ namespace Drones
                 AbstractCamera.ActiveCamera.BreakFollow();
         }
 
-        IEnumerator Horizontal()
+        IEnumerator Horizontal(bool load = false)
         {
             var wait = new WaitUntil(() => ReachedWaypoint());
             while (_Data.waypoints.Count > 0)
             {
-                NextWaypoint();
+                if (!load) NextWaypoint();
                 if (Mathf.Abs(transform.position.y - Waypoint.y) > 0.5f)
                 {
                     _Data.movement = (transform.position.y > Waypoint.y) ? DroneMovement.Descend : DroneMovement.Ascend;
@@ -319,9 +319,9 @@ namespace Drones
         {
             _Data = new DroneData(data, this);
             InPool = false;
-            transform.position = data.position;
             if (_Data.battery != 0) GetBattery().AssignDrone(this);
-
+            StartCoroutine(Horizontal(true));
+            if (data.isActive) transform.SetParent(ActiveDrones);
             return this;
         }
 

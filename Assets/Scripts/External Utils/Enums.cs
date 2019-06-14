@@ -59,7 +59,7 @@
 
     public enum SortOrder { Ascending, Descending };
 
-    public enum TimeSpeed { Normal, Fast, Slow, Ultra, Pause };
+    public enum TimeSpeed { Normal, Fast, Slow, Ultra, WTF, Pause };
 
     public enum FractionFormat { Decimal, Percentage };
 

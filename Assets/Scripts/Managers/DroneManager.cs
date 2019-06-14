@@ -61,6 +61,7 @@ namespace Drones.Managers
                 {
                     drone.PreviousPosition = drone.transform.position;
                     _MovementInfoArray[j] = drone.GetMovementInfo(_MovementInfoArray[j]);
+                    Debug.Log(_MovementInfoArray[j].waypoint);
                     j++;
                 }
 
@@ -92,6 +93,28 @@ namespace Drones.Managers
             {
                 _MovementInfoArray[j] = new MovementInfo();
                 _MovementInfoArray[j] = drone.GetMovementInfo(_MovementInfoArray[j]);
+                j++;
+            }
+
+        }
+
+        public static void ForceDroneCountChange()
+        {
+            _Instance._movementJobHandle.Complete();
+            _Instance._Transforms.Dispose();
+            _Instance._Transforms = new TransformAccessArray(0);
+            foreach (Drone drone in _Instance.Drones.Values)
+            {
+                _Instance._Transforms.Add(drone.transform);
+            }
+            _Instance._MovementInfoArray.Dispose();
+            _Instance._MovementInfoArray = new NativeArray<MovementInfo>(_Instance._Transforms.length, Allocator.Persistent);
+
+            int j = 0;
+            foreach (Drone drone in _Instance.Drones.Values)
+            {
+                _Instance._MovementInfoArray[j] = new MovementInfo();
+                _Instance._MovementInfoArray[j] = drone.GetMovementInfo(_Instance._MovementInfoArray[j]);
                 j++;
             }
 
