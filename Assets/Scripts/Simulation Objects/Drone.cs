@@ -218,14 +218,7 @@ namespace Drones
             Delete();
         }
 
-        private bool ReachedDestination()
-        {
-            Vector3 a = transform.position;
-            Vector3 b = GetJob().DropOff;
-            a.y = b.y = 0;
-            return Vector3.Distance(a, b) < 0.25f;
-        }
-
+        #region Movement Engine
         IEnumerator DeliverySequence()
         {
             if (InHub)
@@ -240,6 +233,7 @@ namespace Drones
 
         public void Drop()
         {
+            StopAllCoroutines();
             _Data.movement = DroneMovement.Drop;
             if (AbstractCamera.Followee == gameObject)
                 AbstractCamera.ActiveCamera.BreakFollow();
@@ -325,6 +319,7 @@ namespace Drones
             d.y = transform.position.y;
             return Vector3.Distance(d, transform.position) < 0.25f;
         }
+        #endregion
 
         public SDrone Serialize() => new SDrone(_Data, this);
 
