@@ -103,6 +103,10 @@ namespace Drones.Data
         private Vector3 CurrentPosition => _source.transform.position;
         public Vector3 Direction => Vector3.Normalize(previousPosition - CurrentPosition);
         public bool frequentRequests;
+
+        // Movement variables
+        public Vector3 velocity;
+        public Vector3 acceleration;
     }
 
 }

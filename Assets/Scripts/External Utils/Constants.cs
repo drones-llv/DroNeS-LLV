@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Drones.Utils
+﻿namespace Drones.Utils
 {
     public static class Constants
     {
@@ -14,9 +11,19 @@ namespace Drones.Utils
         public const float R = 6378.137f; // Radius of earth in KM
         public const float CoroutineTimeSlice = 10; // ms
 
+        public const float droneAcceleration = 2f;
         public const float droneHorizontalSpeed = 12f;
         public const float droneVerticalSpeed = 4f;
-        public const float cruisingAltitude = 450f;
+        public const float droneSeekForce = 10.0f;
+        public const float droneApproachRadius = 20f;
+
+        public const float droneLeftSensorRange = 10.0f;
+        public const float droneRightSensorRange = 10.0f;
+        public const float droneFrontSensorRange = 6.0f;
+        public const float droneAvoidanceStrenth = 4.0f;
+
+
+        public const float cruisingAltitude = 150f;
         public const float droneDescendLevel = 10f;
         public const float returnToHubAltitude = 510f;
 

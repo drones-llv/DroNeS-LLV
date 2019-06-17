@@ -254,15 +254,18 @@ namespace Drones
 
         IEnumerator NavigateToJob()
         {
+            _Data.movement = DroneMovement.Hover;
+            Vector3 dest = GetJob().DropOff;
+            dest.y = transform.position.y;
+
+            _Data.velocity = (dest - transform.position).normalized * Constants.droneHorizontalSpeed;
+            _Data.acceleration = new Vector3(0, 0, 0);
+
             while (!ReachedJob())
             {
-                float step = Constants.droneHorizontalSpeed * Time.deltaTime * TimeKeeper.Timescale;
-                var dest = GetJob().DropOff;
-                dest.y = transform.position.y;
-                transform.position = Vector3.MoveTowards(transform.position, dest, step);
+                MoveTo(dest);
                 yield return null;
             }
-            // Cap the position
             transform.position = new Vector3(GetJob().DropOff.x, transform.position.y, GetJob().DropOff.z);
         }
 
@@ -294,12 +297,12 @@ namespace Drones
         IEnumerator ReturnToHub()
         {
             _Data.movement = DroneMovement.Hover;
+            Vector3 hub = GetHub().Position;
+            hub.y = transform.position.y;
+
             while (!ReachedHub())
             {
-                float step = Constants.droneHorizontalSpeed * Time.deltaTime * TimeKeeper.Timescale;
-                Vector3 dest = GetHub().Position;
-                dest.y = transform.position.y;
-                transform.position = Vector3.MoveTowards(transform.position, dest, step);
+                MoveTo(hub);
                 yield return null;
             }
             _Data.movement = DroneMovement.Idle;
@@ -318,6 +321,100 @@ namespace Drones
             var d = GetHub().Position;
             d.y = transform.position.y;
             return Vector3.Distance(d, transform.position) < 0.25f;
+        }
+        #endregion
+
+        #region Obstacle Avoidance
+        private int CheckSensors()
+        {
+            int avoidDirection = 0;
+            Ray frontSensor = new Ray(transform.position, _Data.velocity);
+            Ray leftSensor = new Ray(transform.position, Quaternion.Euler(0, -45, 0) * _Data.velocity);
+            Ray rightSensor = new Ray(transform.position, Quaternion.Euler(0, 45, 0) * _Data.velocity);
+            RaycastHit info;
+
+            // Left sensor
+            if (Physics.Raycast(leftSensor, out info, Constants.droneLeftSensorRange))
+            {
+                if (!info.collider.CompareTag("Drone"))
+                {
+                    Debug.DrawLine(transform.position, info.point, Color.red);
+                    avoidDirection += 1;
+                }
+            }
+
+            // Right sensor
+            if (Physics.Raycast(rightSensor, out info, Constants.droneRightSensorRange))
+            {
+                if (!info.collider.CompareTag("Drone"))
+                {
+                    Debug.DrawLine(transform.position, info.point, Color.red);
+                    avoidDirection -= 1;
+                }
+            }
+
+            // Front sensor
+            if (Physics.Raycast(frontSensor, out info, Constants.droneFrontSensorRange))
+            {
+                if (!info.collider.CompareTag("Drone"))
+                {
+                    Debug.DrawLine(transform.position, info.point, Color.red);
+                    avoidDirection =
+                        avoidDirection != 0 ? avoidDirection * 2 :
+                        info.normal.x < 0 ? 1 : -1;
+                }
+            }
+            return avoidDirection;
+        }
+
+        private Vector3 Seek(Vector3 target)
+        {
+            Vector3 desired = target - transform.position;
+            float distance = desired.magnitude;
+            desired = desired.normalized * Constants.droneHorizontalSpeed;
+
+            if (distance < Constants.droneApproachRadius)
+            {
+                desired *= distance / Constants.droneApproachRadius;
+            }
+
+            Vector3 steer = desired - _Data.velocity;
+
+            if (steer.magnitude > Constants.droneSeekForce)
+            {
+                steer = steer.normalized * Constants.droneSeekForce;
+            }
+            return steer;
+        }
+
+        private void MoveTo(Vector3 target)
+        {
+            int m = CheckSensors();
+            if (m == 0)
+            {
+                _Data.acceleration = Seek(target);
+            }
+            else
+            {
+                _Data.acceleration = Avoid(m);
+            }
+
+            // Increment the velocity vector
+            _Data.velocity += _Data.acceleration * Time.deltaTime * TimeKeeper.Timescale;
+            // Normalize if above the max speed
+            if (_Data.velocity.magnitude > Constants.droneHorizontalSpeed)
+            {
+                _Data.velocity = _Data.velocity.normalized * Constants.droneHorizontalSpeed;
+            }
+            // Increment the position vector
+            transform.position += _Data.velocity * Time.deltaTime * TimeKeeper.Timescale;
+            transform.rotation = Quaternion.LookRotation(_Data.velocity);
+        }
+
+        private Vector3 Avoid(int m)
+        {
+            Vector3 steer = Quaternion.Euler(0, 45 * m, 0) * _Data.velocity * Constants.droneAvoidanceStrenth;
+            return steer;
         }
         #endregion
 
