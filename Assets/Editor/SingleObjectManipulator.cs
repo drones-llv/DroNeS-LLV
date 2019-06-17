@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
 using TMPro;
-using Drones.Utils.Router;
 
 public class SingleObjectManipulator : EditorWindow
 {

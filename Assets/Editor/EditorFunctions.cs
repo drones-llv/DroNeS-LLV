@@ -1,4 +1,4 @@
-﻿using static Drones.LoadingTools.MeshOptimizer;
+﻿using static Drones.Utils.MeshOptimizer;
 using UnityEngine;
 using UnityEditor;
 using Mapbox.Unity.Map;
@@ -7,12 +7,12 @@ using Drones;
 using System.Collections.Generic;
 using System.IO;
 using System;
-using Drones.Serializable;
 using Drones.Managers;
+using Drones.Mapbox;
+using Drones.Router;
+using Drones.Serializable;
 using Mapbox.Unity.Map.TileProviders;
-using Drones.Utils.Router;
-using Managers;
-using Router;
+using Utils;
 
 public class EditorFunctions : EditorWindow
 {
@@ -174,7 +174,7 @@ public class EditorFunctions : EditorWindow
                     data.SetPixel(i / metre, j / metre, c);
                 }
             }
-            var path = Path.Combine(SaveManager.ExportPath, "height_bitmap.png");
+            var path = Path.Combine(SaveLoadManager.ExportPath, "height_bitmap.png");
             File.WriteAllBytes(path, data.EncodeToPNG());
         }
         catch (IndexOutOfRangeException)
@@ -208,7 +208,7 @@ public class EditorFunctions : EditorWindow
                     data.SetPixel(i / meter, j / meter, c);
                 }
             }
-            var path = Path.Combine(SaveManager.SavePath, "height_bitmap_"+meter+"m.png");
+            var path = Path.Combine(SaveLoadManager.SavePath, "height_bitmap_"+meter+"m.png");
             File.WriteAllBytes(path, data.EncodeToPNG());
         }
         catch (IndexOutOfRangeException)
@@ -242,7 +242,7 @@ public class EditorFunctions : EditorWindow
                     data.SetPixel(i / meter, j / meter, c);
                 }
             }
-            var path = Path.Combine(SaveManager.SavePath, "height_bitmap_test_"+ meter +"m.png");
+            var path = Path.Combine(SaveLoadManager.SavePath, "height_bitmap_test_"+ meter +"m.png");
             File.WriteAllBytes(path, data.EncodeToPNG());
         }
         catch (IndexOutOfRangeException)
@@ -266,7 +266,7 @@ public class EditorFunctions : EditorWindow
                     data.SetPixel(i / 4, j / 4, (cols.Length == 0) ? Color.white : Color.black);
                 }
             }
-            var path = Path.Combine(SaveManager.SavePath, "bitmap_mesh.png");
+            var path = Path.Combine(SaveLoadManager.SavePath, "bitmap_mesh.png");
             File.WriteAllBytes(path, data.EncodeToPNG());
         }
         catch (IndexOutOfRangeException)

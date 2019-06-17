@@ -1,9 +1,9 @@
-﻿using UnityEditor;
+﻿using Drones.UI.Utils;
+using UnityEditor;
 using TMPro.EditorUtilities;
 
 namespace Drones.Editor
 {
-    using UI;
     [CustomEditor(typeof(DataField))]
     [CanEditMultipleObjects]
     public class DataFieldInspector : TMP_UiEditorPanel

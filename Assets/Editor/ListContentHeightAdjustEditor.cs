@@ -1,10 +1,9 @@
-﻿using UnityEngine;
+﻿using Drones.UI.Utils;
+using UnityEngine;
 using UnityEditor;
 
 namespace Drones.Editor
 {
-    using UI;
-
     [InitializeOnLoad]
     public static class ListContentHeightAdjustEditor
     {
