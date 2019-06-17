@@ -59,7 +59,7 @@ namespace Drones.Scheduler
             {
                 StartCoroutine(_algorithm.ProcessQueue());
             }
-            if (drone != null && !_droneQueue.Contains(drone))
+            if (!_droneQueue.Contains(drone))
             {
                 _droneQueue.Enqueue(drone);
             }

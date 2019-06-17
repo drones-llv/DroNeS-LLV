@@ -8,59 +8,41 @@ namespace Drones.Router
     [Serializable]
     public abstract class Pathfinder
     {
-        protected List<Obstacle> _Buildings;
-        protected static Dictionary<uint, Obstacle> _NoFlyZones;
-        protected static Dictionary<uint, Obstacle> _Hubs;
-        public static Dictionary<uint, Obstacle> Hubs
-        {
-            get
-            {
-                if (_Hubs == null)
-                {
-                    _Hubs = new Dictionary<uint, Obstacle>();
-                }
-                return _Hubs;
-            }
-        }
-        public static Dictionary<uint, Obstacle> NoFlyZones
-        {
-            get
-            {
-                if (_NoFlyZones == null)
-                {
-                    _NoFlyZones = new Dictionary<uint, Obstacle>();
-                }
-                return _NoFlyZones;
-            }
-        }
+        private List<Obstacle> _buildings;
+        protected static Dictionary<uint, Obstacle> Nfz;
+        private static Dictionary<uint, Obstacle> _hubs;
+        protected const float MaxAlt = 200;
+        protected const float MinAlt = 60;
+        protected const int AltDivision = 10; // Altitude interval
+        protected readonly int[] HubAlt = { 480, 490 };
+        public static Dictionary<uint, Obstacle> Hubs => _hubs ?? (_hubs = new Dictionary<uint, Obstacle>());
+
+        public static Dictionary<uint, Obstacle> NoFlyZones => Nfz ?? (Nfz = new Dictionary<uint, Obstacle>());
 
         protected List<Obstacle> Buildings
         {
             get
             {
-                if (_Buildings == null)
+                if (_buildings != null) return _buildings;
+                _buildings = new List<Obstacle>();
+                var container = GameObject.FindWithTag("Building").transform;
+                foreach (Transform b in container)
                 {
-                    _Buildings = new List<Obstacle>();
-                    var container = GameObject.FindWithTag("Building").transform;
-                    foreach (Transform b in container)
-                    {
-                        _Buildings.Add(new Obstacle(b, _Rd));
-                    }
+                    _buildings.Add(new Obstacle(b, Rd));
                 }
-                return _Buildings;
+                return _buildings;
             }
         }
 
-        protected const int _Rd = 2; // drone Radius
-
-        protected Pathfinder() { }
+        protected const int Rd = 2; // drone Radius
 
         public abstract Queue<Vector3> GetRoute(Drone drone);
 
         ~Pathfinder()
         {
-            Buildings?.Clear();
-            NoFlyZones?.Clear();
+            _buildings?.Clear();
+            Nfz?.Clear();
+            _hubs?.Clear();
         }
     }
 }

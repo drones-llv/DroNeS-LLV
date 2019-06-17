@@ -59,18 +59,15 @@ namespace Drones.Utils
 
         public void AddToDeploymentQueue(Drone drone)
         {
-            if (!_Started) StartCoroutine(DeployDrone());
-            if (!_inQueue.Contains(drone.UID))
-            {
-                _deploymentQueue.Add(drone);
-                _inQueue.Add(drone.UID);
-
-            }
+            if (!_started) StartCoroutine(DeployDrone());
+            if (_inQueue.Contains(drone.UID)) return;
+            _deploymentQueue.Add(drone);
+            _inQueue.Add(drone.UID);
         }
-        private bool _Started;
+        private bool _started;
         public void Stop()
         {
-            _Started = false;
+            _started = false;
             StopCoroutine(DeployDrone());
         }
 
@@ -115,22 +112,19 @@ namespace Drones.Utils
 
         public IEnumerator DeployDrone()
         {
-            if (_Started) yield break;
+            if (_started) yield break;
             var time = TimeKeeper.Chronos.Get();
-            Drone outgoing;
-            _Started = true;
+            _started = true;
             while (true)
             {
                 time.Now();
                 while (time.Timer() < PERIOD) yield return null;
-                if (IsClear && _deploymentQueue.Count > 0)
-                {
-                    outgoing = _deploymentQueue.Remove();
-                    _inQueue.Remove(outgoing.UID);
-                    if (outgoing.InPool) continue;
+                if (!IsClear || _deploymentQueue.Count <= 0) continue;
+                var outgoing = _deploymentQueue.Remove();
+                _inQueue.Remove(outgoing.UID);
+                if (outgoing.InPool) continue;
 
-                    Owner.DeployDrone(outgoing);
-                }
+                Owner.DeployDrone(outgoing);
             }
         }
 

@@ -9,6 +9,7 @@ using Drones.UI.Utils;
 using Drones.Utils;
 using Drones.Utils.Interfaces;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Utils;
 using BatteryStatus = Utils.BatteryStatus;
 
@@ -21,9 +22,9 @@ namespace Drones.Objects
         #region IDataSource
         public override string ToString() => Name;
 
-        public bool IsDataStatic => _Data.IsDataStatic;
+        public bool IsDataStatic => _data.IsDataStatic;
 
-        public void GetData(ISingleDataSourceReceiver receiver) => receiver.SetData(_Data);
+        public void GetData(ISingleDataSourceReceiver receiver) => receiver.SetData(_data);
 
         public AbstractInfoWindow InfoWindow { get; set; }
 
@@ -41,24 +42,24 @@ namespace Drones.Objects
         }
         #endregion
 
-        public uint UID => _Data.UID;
+        public uint UID => _data.UID;
 
         public string Name => "H" + UID.ToString("000000");
 
         #region Fields
-        private HubData _Data;
+        private HubData _data;
         [SerializeField]
-        private HubCollisionController _CollisionController;
+        private HubCollisionController collisionController;
         [SerializeField]
-        private DeploymentPath _DronePath;
+        private DeploymentPath dronePath;
         [SerializeField]
-        private Collider _Collider;
+        private Collider hubCollider;
         [SerializeField]
-        private float _jobGenerationRate = 0.1f;
+        private float jobGenerationRate = 0.1f;
+        [SerializeField]
+        private Pathfinder router;
         private JobGenerator _jobGenerator;
-        [SerializeField]
-        private Pathfinder _Router;
-        private JobScheduler _Scheduler;
+        private JobScheduler _scheduler;
         #endregion
 
         #region IPoolable
@@ -72,26 +73,26 @@ namespace Drones.Objects
         {
             InPool = true;
             InfoWindow?.Close.onClick.Invoke();
-            if (_Data.drones != null)
+            if (_data.drones != null)
             {
-                _Data.drones.ReSort();
-                while (_Data.drones.Count > 0)
-                    ((Drone)_Data.drones.GetMin(false)).SelfDestruct();
+                _data.drones.ReSort();
+                while (_data.drones.Count > 0)
+                    ((Drone)_data.drones.GetMin(false)).SelfDestruct();
             }
-            _Data = null;
+            _data = null;
             SimManager.AllHubs.Remove(this);
             gameObject.SetActive(false);
             transform.SetParent(PC().PoolParent);
             if (!(_jobGenerator is null))
                 StopCoroutine(_jobGenerator.Generate());
             _jobGenerator = null;
-            _Router = null;
+            router = null;
         }
 
         public void OnGet(Transform parent = null)
         {
             InPool = false;
-            _Data = new HubData(this);
+            _data = new HubData(this);
             SimManager.AllHubs.Add(UID, this);
             transform.SetParent(parent);
             gameObject.SetActive(true);
@@ -101,12 +102,12 @@ namespace Drones.Objects
         #endregion
 
         #region Properties
-        public Collider Collider
+        public Collider HubCollider
         {
             get
             {
-                if (_Collider == null) _Collider = GetComponent<Collider>();
-                return _Collider;
+                if (hubCollider == null) hubCollider = GetComponent<Collider>();
+                return hubCollider;
             }
         }
 
@@ -114,11 +115,11 @@ namespace Drones.Objects
         {
             get
             {
-                if (_CollisionController == null)
+                if (collisionController == null)
                 {
-                    _CollisionController = GetComponentInChildren<HubCollisionController>();
+                    collisionController = GetComponentInChildren<HubCollisionController>();
                 }
-                return _CollisionController;
+                return collisionController;
             }
         }
 
@@ -126,9 +127,9 @@ namespace Drones.Objects
         {
             get
             {
-                if (_DronePath == null)
-                    _DronePath = transform.GetComponentInChildren<DeploymentPath>();
-                return _DronePath;
+                if (dronePath == null)
+                    dronePath = transform.GetComponentInChildren<DeploymentPath>();
+                return dronePath;
             }
 
         }
@@ -136,17 +137,17 @@ namespace Drones.Objects
         {
             get
             {
-                if (_Router == null)
-                    _Router = new Raypath();
-                return _Router;
+                if (router == null)
+                    router = new Raypath();
+                return router;
             }
         }
         public JobScheduler Scheduler
         {
             get
             {
-                if (_Scheduler == null) _Scheduler = transform.GetComponentInChildren<JobScheduler>();
-                return _Scheduler;
+                if (_scheduler == null) _scheduler = transform.GetComponentInChildren<JobScheduler>();
+                return _scheduler;
             }
         }
 
@@ -156,14 +157,14 @@ namespace Drones.Objects
 
         public void UpdateEnergy(float dE)
         {
-            _Data.energyConsumption += dE;
+            _data.energyConsumption += dE;
             SimManager.UpdateEnergy(dE);
         }
 
         internal void DeleteJob(Job job)
         {
-            _Data.incompleteJobs.Remove(job);
-            _Data.completedCount++;
+            _data.incompleteJobs.Remove(job);
+            _data.completedCount++;
             SimManager.UpdateCompleteCount();
             SimManager.AllIncompleteJobs.Remove(job);
             SimManager.AllJobs.Remove(job);
@@ -171,57 +172,58 @@ namespace Drones.Objects
 
         public void UpdateRevenue(float value)
         {
-            _Data.revenue += value;
+            _data.revenue += value;
             SimManager.UpdateRevenue(value);
         }
         public void UpdateDelay(float dt)
         {
-            _Data.delay += dt;
+            _data.delay += dt;
             if (dt > 0) UpdateDelayCount();
             SimManager.UpdateDelay(dt);
         }
-        private void UpdateDelayCount() => _Data.delayedJobs++;
+        private void UpdateDelayCount() => _data.delayedJobs++;
         public void UpdateFailedCount() 
         { 
-            _Data.failedJobs++;
+            _data.failedJobs++;
             SimManager.UpdateFailedCount();
         }
         public void UpdateCrashCount() 
         {
-            _Data.crashes++;
+            _data.crashes++;
             SimManager.UpdateCrashCount();
         }
         public void UpdateAudible(float dt)
         {
-            _Data.audibility += dt;
+            _data.audibility += dt;
             SimManager.UpdateAudible(dt);
         }
-        public void JobComplete(Job job) => _Data.completedJobs.Add(job.UID, job);
-        public SecureSortedSet<uint, IDataSource> Drones => _Data.drones;
+        public void JobComplete(Job job) => _data.completedJobs.Add(job.UID, job);
+        public SecureSortedSet<uint, IDataSource> Drones => _data.drones;
         public float JobGenerationRate
         {
-            get => _jobGenerationRate;
+            get => jobGenerationRate;
 
             set
             {
-                _jobGenerationRate = value;
+                jobGenerationRate = value;
                 _jobGenerator.SetLambda(value);
             }
         }
         public void OnJobCreate(params Job[] jobs)
         {
-            foreach (Job job in jobs)
+            foreach (var job in jobs)
             {
-                _Data.incompleteJobs.Add(job.UID, job);
+                _data.incompleteJobs.Add(job.UID, job);
                 Scheduler.AddToQueue(job);
             }
         }
-        void Awake() => _Data = new HubData();
+
+        private void Awake() => _data = new HubData();
 
         #region Drone/Battery Interface
         public void DeployDrone(Drone drone)
         {
-            _Data.freeDrones.Remove(drone);
+            _data.freeDrones.Remove(drone);
             GetBatteryForDrone(drone);
             var bat = drone.GetBattery();
             StopCharging(bat);
@@ -231,9 +233,9 @@ namespace Drones.Objects
 
         public void OnDroneReturn(Drone drone)
         {
-            if (drone != null && _Data.freeDrones.Add(drone.UID, drone))
+            if (_data.freeDrones.Add(drone.UID, drone))
             {
-                _Data.chargingBatteries.Add(drone.GetBattery().UID, drone.GetBattery());
+                _data.chargingBatteries.Add(drone.GetBattery().UID, drone.GetBattery());
             }
             drone.WaitForDeployment();
             Scheduler.AddToQueue(drone);
@@ -241,85 +243,72 @@ namespace Drones.Objects
 
         private void RemoveBatteryFromDrone(Drone drone)
         {
-            if (drone.GetHub() == this && _Data.freeBatteries.Add(drone.GetBattery().UID, drone.GetBattery()))
-            {
-                _Data.chargingBatteries.Add(drone.GetBattery().UID, drone.GetBattery());
-                drone.AssignBattery(null);
-            }
+            var battery = drone.GetBattery();
+            if (drone.GetHub() != this || !_data.freeBatteries.Add(battery.UID, battery)) return;
+            _data.chargingBatteries.Add(battery.UID, battery);
+            drone.AssignBattery();
+            battery.AssignDrone();
         }
 
-        public void ReassignDrone(Drone drone, Hub hub)
-        {
-            _Data.drones.Remove(drone);
-            _Data.batteries.Remove(drone.GetBattery());
-            drone.AssignHub(hub);
-            hub._Data.drones.Add(drone.UID, drone);
-            hub._Data.batteries.Add(drone.GetBattery().UID, drone.GetBattery());
-            drone.GetBattery().AssignHub(hub);
-        }
-
-        public void StopCharging(Battery battery) => _Data.chargingBatteries.Remove(battery.UID);
+        public void StopCharging(Battery battery) => _data.chargingBatteries.Remove(battery.UID);
 
         private void GetBatteryForDrone(Drone drone)
         {
             if (drone.GetBattery() != null) return;
 
-            if (_Data.drones.Count >= _Data.batteries.Count)
+            if (_data.drones.Count >= _data.batteries.Count)
             {
                 drone.AssignBattery(BuyBattery(drone));
             }
             else
             {
-                drone.AssignBattery(_Data.freeBatteries.GetMax(true));
+                drone.AssignBattery(_data.freeBatteries.GetMax(true));
                 drone.GetBattery().AssignDrone(drone);
             }
         }
 
         public Drone BuyDrone()
         {
-            Drone drone = Drone.New();
+            var drone = Drone.New();
             Scheduler.AddToQueue(drone);
             drone.transform.position = transform.position;
             GetBatteryForDrone(drone);
-            _Data.drones.Add(drone.UID, drone);
-            _Data.freeDrones.Add(drone.UID, drone);
+            _data.drones.Add(drone.UID, drone);
+            _data.freeDrones.Add(drone.UID, drone);
             return drone;
         }
 
         public void SellDrone()
         {
-            if (_Data.freeDrones.Count > 0)
-            {
-                Drone drone = _Data.freeDrones.GetMin(false);
-                var dd = new RetiredDrone(drone);
-                SimManager.AllRetiredDrones.Add(dd.UID, dd);
-                _Data.drones.Remove(drone);
-                drone.Delete();
-            }
+            if (_data.freeDrones.Count <= 0) return;
+            var drone = _data.freeDrones.GetMin(false);
+            var dd = new RetiredDrone(drone);
+            SimManager.AllRetiredDrones.Add(dd.UID, dd);
+            _data.drones.Remove(drone);
+            drone.Delete();
         }
 
-        public void DestroyBattery(Battery battery) => _Data.batteries.Remove(battery);
+        public void DestroyBattery(Battery battery) => _data.batteries.Remove(battery);
 
         public Battery BuyBattery(Drone drone = null)
         {
+            // ReSharper disable once HeapView.ObjectAllocation.Evident
             var bat = new Battery(drone, this);
-            _Data.batteries.Add(bat.UID, bat);
+            _data.batteries.Add(bat.UID, bat);
 
-            if (drone is null) _Data.freeBatteries.Add(bat.UID, bat);
+            if (drone is null) _data.freeBatteries.Add(bat.UID, bat);
             return bat;
         }
 
         public void SellBattery()
         {
-            if (_Data.freeBatteries.Count > 0)
-            {
-                var bat = _Data.freeBatteries.GetMin(true);
-                _Data.batteries.Remove(bat);
-            }
+            if (_data.freeBatteries.Count <= 0) return;
+            var bat = _data.freeBatteries.GetMin(true);
+            _data.batteries.Remove(bat);
         }
         #endregion
 
-        public SHub Serialize() => new SHub(_Data, this);
+        public SHub Serialize() => new SHub(_data, this);
 
         public static Hub Load(SHub data, List<SDrone> drones, List<SBattery> batteries)
         {
@@ -329,11 +318,11 @@ namespace Drones.Objects
             hub.gameObject.SetActive(true);
             hub.InPool = false;
             SimManager.AllHubs.Add(data.uid, hub);
-            hub._Data = new HubData(data, hub, drones, batteries);
+            hub._data = new HubData(data, hub, drones, batteries);
             hub._jobGenerator = new JobGenerator(hub, data.generationRate);
             hub.JobGenerationRate = data.generationRate;
             hub.StartCoroutine(hub._jobGenerator.Generate());
-            foreach (var d in hub._Data.freeDrones.Values)
+            foreach (var d in hub._data.freeDrones.Values)
             {
                 hub.Scheduler.AddToQueue(d);
             }

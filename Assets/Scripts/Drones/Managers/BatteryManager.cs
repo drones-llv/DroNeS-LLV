@@ -11,29 +11,29 @@ namespace Drones.Managers
 {
     public class BatteryManager : MonoBehaviour
     {
-        public static JobHandle EnergyJobHandle => _Instance._energyJobHandle;
-        private static BatteryManager _Instance;
+        private static JobHandle EnergyJobHandle => _instance._energyJobHandle;
+        private static BatteryManager _instance;
         public static BatteryManager New()
         {
-            _Instance = new GameObject("BatteryManager").AddComponent<BatteryManager>();
-            return _Instance;
+            _instance = new GameObject("BatteryManager").AddComponent<BatteryManager>();
+            return _instance;
         }
 
         private JobHandle _energyJobHandle = new JobHandle();
         private readonly TimeKeeper.Chronos _time = TimeKeeper.Chronos.Get();
-        private SecureSortedSet<uint, Battery> Batteries => SimManager.AllBatteries;
-        private NativeArray<EnergyInfo> _EnergyInfoArray;
+        private static SecureSortedSet<uint, Battery> Batteries => SimManager.AllBatteries;
+        private NativeArray<EnergyInfo> _energyInfoArray;
 
         private void OnDisable()
         {
             EnergyJobHandle.Complete();
-            if (_EnergyInfoArray.IsCreated) _EnergyInfoArray.Dispose();
-            _Instance = null;
+            if (_energyInfoArray.IsCreated) _energyInfoArray.Dispose();
+            _instance = null;
         }
 
         private void Initialise()
         {
-            _EnergyInfoArray = new NativeArray<EnergyInfo>(Batteries.Count, Allocator.Persistent);
+            _energyInfoArray = new NativeArray<EnergyInfo>(Batteries.Count, Allocator.Persistent);
             _time.Now();
         }
 
@@ -46,23 +46,23 @@ namespace Drones.Managers
 
         private IEnumerator Operate()
         {
-            EnergyJob _energyJob = new EnergyJob();
+            var _energyJob = new EnergyJob();
             while (true)
             {
                 if (Batteries.Count == 0) yield return null;
-                int j = 0;
+                var j = 0;
 
-                foreach (Battery battery in Batteries.Values)
+                foreach (var battery in Batteries.Values)
                 {
-                    var dE = _EnergyInfoArray[j].energy;
+                    var dE = _energyInfoArray[j].energy;
                     battery.GetDrone()?.UpdateEnergy(dE);
-                    battery.SetEnergyInfo(_EnergyInfoArray[j]);
+                    battery.SetEnergyInfo(_energyInfoArray[j]);
 
-                    _EnergyInfoArray[j] = battery.GetEnergyInfo(_EnergyInfoArray[j]);
+                    _energyInfoArray[j] = battery.GetEnergyInfo(_energyInfoArray[j]);
                     j++;
                 }
 
-                _energyJob.Energies = _EnergyInfoArray;
+                _energyJob.Energies = _energyInfoArray;
                 _energyJob.DeltaTime = _time.Timer();
                 _time.Now();
 
@@ -73,17 +73,17 @@ namespace Drones.Managers
             }
         }
 
-        public void OnCountChange()
+        private void OnCountChange()
         {
             _energyJobHandle.Complete();
-            _EnergyInfoArray.Dispose();
+            _energyInfoArray.Dispose();
             Initialise();
 
-            int j = 0;
-            foreach (Battery drone in Batteries.Values)
+            var j = 0;
+            foreach (var drone in Batteries.Values)
             {
-                _EnergyInfoArray[j] = new EnergyInfo();
-                _EnergyInfoArray[j] = drone.GetEnergyInfo(_EnergyInfoArray[j]);
+                _energyInfoArray[j] = new EnergyInfo();
+                _energyInfoArray[j] = drone.GetEnergyInfo(_energyInfoArray[j]);
                 j++;
             }
 
@@ -91,15 +91,15 @@ namespace Drones.Managers
 
         public static void ForceCountChange()
         {
-            _Instance._energyJobHandle.Complete();
-            _Instance._EnergyInfoArray.Dispose();
-            _Instance.Initialise();
+            _instance._energyJobHandle.Complete();
+            _instance._energyInfoArray.Dispose();
+            _instance.Initialise();
 
-            int j = 0;
-            foreach (Battery drone in _Instance.Batteries.Values)
+            var j = 0;
+            foreach (var drone in Batteries.Values)
             {
-                _Instance._EnergyInfoArray[j] = new EnergyInfo();
-                _Instance._EnergyInfoArray[j] = drone.GetEnergyInfo(_Instance._EnergyInfoArray[j]);
+                _instance._energyInfoArray[j] = new EnergyInfo();
+                _instance._energyInfoArray[j] = drone.GetEnergyInfo(_instance._energyInfoArray[j]);
                 j++;
             }
         }

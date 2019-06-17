@@ -10,26 +10,25 @@ using Drones.UI.Utils;
 using Drones.Utils;
 using Drones.Utils.Interfaces;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Utils;
 
 namespace Drones.Objects
 {
     public class Drone : MonoBehaviour, IDataSource, IPoolable
     {
-        private static Transform _ActiveDrones;
+        private static Transform _activeDrones;
         public static Transform ActiveDrones
         {
             get
             {
-                if (_ActiveDrones == null)
+                if (_activeDrones != null) return _activeDrones;
+                _activeDrones = new GameObject
                 {
-                    _ActiveDrones = new GameObject
-                    {
-                        name = "ActiveDrones"
-                    }.transform;
-                    DontDestroyOnLoad(_ActiveDrones.gameObject);
-                }
-                return _ActiveDrones;
+                    name = "ActiveDrones"
+                }.transform;
+                DontDestroyOnLoad(_activeDrones.gameObject);
+                return _activeDrones;
             }
         }
 
@@ -48,14 +47,14 @@ namespace Drones.Objects
         public void Delete() => PC().Release(GetType(), this);
         public void Awake()
         {
-            _Data = new DroneData();
+            _data = new DroneData();
         }
         public void OnRelease()
         {
             StopAllCoroutines();
             SimManager.AllDrones.Remove(this);
             InPool = true;
-            InfoWindow?.Close.onClick.Invoke();
+            if (InfoWindow != null) InfoWindow.Close.onClick.Invoke();
             GetBattery()?.Destroy();
             gameObject.SetActive(false);
             transform.SetParent(PC().PoolParent);
@@ -63,8 +62,8 @@ namespace Drones.Objects
 
         public void OnGet(Transform parent = null)
         {
-            _Data = new DroneData(this);
-            SimManager.AllDrones.Add(_Data.UID, this);
+            _data = new DroneData(this);
+            SimManager.AllDrones.Add(_data.UID, this);
             transform.SetParent(parent);
             gameObject.SetActive(true);
             InPool = false;
@@ -74,11 +73,11 @@ namespace Drones.Objects
         #endregion
 
         #region IDataSource
-        public bool IsDataStatic => _Data.IsDataStatic;
+        public bool IsDataStatic => _data.IsDataStatic;
 
         public AbstractInfoWindow InfoWindow { get; set; }
 
-        public void GetData(ISingleDataSourceReceiver receiver) => receiver.SetData(_Data);
+        public void GetData(ISingleDataSourceReceiver receiver) => receiver.SetData(_data);
 
         public void OpenInfoWindow()
         {
@@ -93,48 +92,43 @@ namespace Drones.Objects
         #endregion
 
         public override string ToString() => Name;
-        public uint UID => _Data.UID;
-        public string Name => "D" + _Data.UID.ToString("000000");
+        public uint UID => _data.UID;
+        public string Name => "D" + _data.UID.ToString("000000");
 
         public bool AssignJob(Job job)
         {
-            if (job == null)
+            var j = (StrippedJob)job;
+            var t = j.expectedDuration;
+            if (Mathf.Min(t, 0.9f * CostFunction.GUARANTEE) > GetBattery().Charge * CostFunction.GUARANTEE)
             {
-                _Data.job = 0;
+                GetHub().Scheduler.AddToQueue(this);
+                return false;
             }
-            else
-            {
-                var j = (StrippedJob)job;
-                var t = j.expectedDuration;
-                if (Mathf.Min(t, 0.9f * CostFunction.GUARANTEE) > GetBattery().Charge * CostFunction.GUARANTEE)
-                {
-                    GetHub().Scheduler.AddToQueue(this);
-                    return false;
-                }
-                _Data.job = job.UID;
-                job.AssignDrone(this);
-                job.StartDelivery();
-            }
-            if (_Data.hub != 0) SetWaypoints(GetHub().Router.GetRoute(this));
+            _data.job = job.UID;
+            job.AssignDrone(this);
+            job.StartDelivery();
+            if (_data.hub != 0) SetWaypoints(GetHub().Router.GetRoute(this));
             return true;
         }
 
-        public void AssignBattery(Battery battery)
+        public bool AssignJob()
         {
-            if (battery == null)
-            {
-                _Data.batterySwaps++;
-                _Data.battery = 0;
-            }
-            else
-                _Data.battery = battery.UID;
+            _data.job = 0;
+            if (_data.hub != 0) SetWaypoints(GetHub().Router.GetRoute(this));
+            return true;
         }
 
+        public void AssignBattery(Battery battery) =>_data.battery = battery.UID;
+        public void AssignBattery()
+        {
+            _data.batterySwaps++;
+            _data.battery = 0;
+        }
+        
         public void AssignHub(Hub hub) 
         {
-            if (hub == null) return;
-            _Data.hubsAssigned++;
-            _Data.hub = hub.UID;
+            _data.hubsAssigned++;
+            _data.hub = hub.UID;
         }
 
         public void CompleteJob(Job job)
@@ -143,51 +137,51 @@ namespace Drones.Objects
             GetHub().DeleteJob(job);
             UpdateDelay(job.Deadline.Timer());
             GetHub().UpdateRevenue(job.Earnings);
-            AssignJob(null);
+            AssignJob();
         }
 
-        public Job GetJob() => (Job)SimManager.AllIncompleteJobs[_Data.job];
-        public Hub GetHub() => (Hub)SimManager.AllHubs[_Data.hub];
-        public Battery GetBattery() => SimManager.AllBatteries[_Data.battery];
-        public void WaitForDeployment() => _Data.isWaiting = true;
-        public void Deploy() => _Data.isWaiting = false;
+        public Job GetJob() => (Job)SimManager.AllIncompleteJobs[_data.job];
+        public Hub GetHub() => (Hub)SimManager.AllHubs[_data.hub];
+        public Battery GetBattery() => SimManager.AllBatteries[_data.battery];
+        public void WaitForDeployment() => _data.isWaiting = true;
+        public void Deploy() => _data.isWaiting = false;
         public void UpdateDelay(float dt)
         {
-            _Data.totalDelay += dt;
+            _data.totalDelay += dt;
             GetHub().UpdateDelay(dt);
         }
         public void UpdateEnergy(float dE)
         {
-            _Data.totalEnergy += dE;
+            _data.totalEnergy += dE;
             GetHub().UpdateEnergy(dE);
         }
         public void UpdateAudible(float dt)
         {
-            _Data.audibleDuration += dt;
+            _data.audibleDuration += dt;
             GetHub().UpdateAudible(dt);
         }
         public MovementInfo GetMovementInfo(MovementInfo info)
         {
-            info.moveType = _Data.movement;
+            info.moveType = _data.movement;
             info.height = Waypoint.y;
-            info.waypoint = _Data.currentWaypoint;
-            info.isWaiting = _Data.isWaiting ? 1 : 0;
+            info.waypoint = _data.currentWaypoint;
+            info.isWaiting = _data.isWaiting ? 1 : 0;
             info.prev_pos = PreviousPosition;
 
             return info;
         }
         public EnergyInfo GetEnergyInfo(ref EnergyInfo info)
         {
-            info.moveType = _Data.movement;
-            info.pkgWgt = (_Data.job == 0) ? 0 : GetJob().PackageWeight;
+            info.moveType = _data.movement;
+            info.pkgWgt = (_data.job == 0) ? 0 : GetJob().PackageWeight;
 
             return info;
         }
 
         #region Fields
-        private DroneData _Data;
-        [SerializeField]
-        private DroneCollisionController _CollisionController;
+        private DroneData _data;
+        [FormerlySerializedAs("_CollisionController")] [SerializeField]
+        private DroneCollisionController collisionController;
         #endregion
 
         #region Drone Properties
@@ -195,23 +189,23 @@ namespace Drones.Objects
         {
             get
             {
-                if (_CollisionController == null)
+                if (collisionController == null)
                 {
-                    _CollisionController = GetComponent<DroneCollisionController>();
+                    collisionController = GetComponent<DroneCollisionController>();
                 }
-                return _CollisionController;
+                return collisionController;
             }
         }
         public bool InHub => CollisionController.InHub;
-        public DroneMovement Movement => _Data.movement;
-        public Vector3 Direction => _Data.Direction;
-        public float JobProgress => _Data.JobProgress;
-        public SecureSortedSet<uint, IDataSource> JobHistory => _Data.completedJobs;
-        public Vector3 Waypoint => _Data.currentWaypoint;
+        public DroneMovement Movement => _data.movement;
+        public Vector3 Direction => _data.Direction;
+        public float JobProgress => _data.JobProgress;
+        public SecureSortedSet<uint, IDataSource> JobHistory => _data.completedJobs;
+        public Vector3 Waypoint => _data.currentWaypoint;
         public Vector3 PreviousPosition
         {
-            get => _Data.previousPosition;
-            set => _Data.previousPosition = value;
+            get => _data.previousPosition;
+            set => _data.previousPosition = value;
         }
         #endregion
 
@@ -228,28 +222,29 @@ namespace Drones.Objects
 
         private void NextWaypoint()
         {
-            _Data.distanceTravelled += Vector3.Distance(_Data.previousWaypoint, _Data.currentWaypoint);
-            _Data.previousWaypoint = _Data.currentWaypoint;
-            _Data.currentWaypoint = _Data.waypoints.Dequeue();
+            _data.distanceTravelled += Vector3.Distance(_data.previousWaypoint, _data.currentWaypoint);
+            _data.previousWaypoint = _data.currentWaypoint;
+            _data.currentWaypoint = _data.waypoints.Dequeue();
         }
 
         private bool ReachedWaypoint()
         {
             Vector3 a = transform.position;
-            Vector3 b = _Data.currentWaypoint;
+            Vector3 b = _data.currentWaypoint;
             a.y = b.y = 0;
             return Vector3.Distance(a, b) < 0.25f;
         }
 
         private bool ReachedAltitude()
         {
-            return _Data.movement == DroneMovement.Ascend && transform.position.y >= Waypoint.y ||
-                _Data.movement == DroneMovement.Descend && transform.position.y <= Waypoint.y;
+            var position = transform.position;
+            return _data.movement == DroneMovement.Ascend && position.y >= Waypoint.y ||
+                _data.movement == DroneMovement.Descend && position.y <= Waypoint.y;
         }
 
-        public void SetWaypoints(Queue<Vector3> waypoints)
+        private void SetWaypoints(Queue<Vector3> waypoints)
         {
-            _Data.waypoints = waypoints;
+            _data.waypoints = waypoints;
 
             if (InHub) GetHub().AddToDeploymentQueue(this);
 
@@ -259,40 +254,40 @@ namespace Drones.Objects
 
         public void Drop()
         {
-            _Data.movement = DroneMovement.Drop;
+            _data.movement = DroneMovement.Drop;
             if (AbstractCamera.Followee == gameObject)
                 AbstractCamera.ActiveCamera.BreakFollow();
         }
 
-        IEnumerator Horizontal(bool load = false)
+        private IEnumerator Horizontal(bool load = false)
         {
-            var wait = new WaitUntil(() => ReachedWaypoint());
-            while (_Data.waypoints.Count > 0)
+            var wait = new WaitUntil(ReachedWaypoint);
+            while (_data.waypoints.Count > 0)
             {
                 if (!load) NextWaypoint();
                 if (Mathf.Abs(transform.position.y - Waypoint.y) > 0.5f)
                 {
-                    _Data.movement = (transform.position.y > Waypoint.y) ? DroneMovement.Descend : DroneMovement.Ascend;
+                    _data.movement = (transform.position.y > Waypoint.y) ? DroneMovement.Descend : DroneMovement.Ascend;
                     StartCoroutine(Vertical());
                     yield break;
                 }
-                _Data.movement = DroneMovement.Horizontal;
+                _data.movement = DroneMovement.Horizontal;
                 yield return wait;
-                _Data.movement = DroneMovement.Hover;
+                _data.movement = DroneMovement.Hover;
             }
             if (InHub)
             {
-                _Data.movement = DroneMovement.Horizontal;
+                _data.movement = DroneMovement.Horizontal;
                 yield return wait;
-                _Data.movement = DroneMovement.Idle;
+                _data.movement = DroneMovement.Idle;
                 GetHub().OnDroneReturn(this);
             }
         }
 
-        IEnumerator Vertical()
+        private IEnumerator Vertical()
         {
-            yield return new WaitUntil(() => ReachedAltitude());
-            _Data.movement = DroneMovement.Hover;
+            yield return new WaitUntil(ReachedAltitude);
+            _data.movement = DroneMovement.Hover;
             if (!InHub)
             {
                 if (transform.position.y < 10f && ReachedJob()) 
@@ -307,19 +302,20 @@ namespace Drones.Objects
         private bool ReachedJob()
         {
             var d = GetJob().DropOff;
-            d.y = transform.position.y;
-            return Vector3.Distance(d, transform.position) < 0.25f;
+            var position = transform.position;
+            d.y = position.y;
+            return Vector3.Distance(d, position) < 0.25f;
         }
 
-        public SDrone Serialize() => new SDrone(_Data, this);
+        public SDrone Serialize() => new SDrone(_data, this);
 
-        public StrippedDrone Strip() => new StrippedDrone(_Data, this);
+        public StrippedDrone Strip() => new StrippedDrone(_data, this);
 
-        public Drone LoadState(SDrone data)
+        private Drone LoadState(SDrone data)
         {
-            _Data = new DroneData(data, this);
+            _data = new DroneData(data, this);
             InPool = false;
-            if (_Data.battery != 0) GetBattery().AssignDrone(this);
+            if (_data.battery != 0) GetBattery().AssignDrone(this);
             StartCoroutine(Horizontal(true));
             if (data.isActive) transform.SetParent(ActiveDrones);
             return this;

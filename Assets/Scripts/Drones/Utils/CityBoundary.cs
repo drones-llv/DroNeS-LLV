@@ -160,8 +160,8 @@ namespace Drones.Utils
 
             for (int i = 0; i < borders.Count; i++)
             {
-                vertices.Add(borders[i].v1);
-                vertices.Add(borders[i].v2);
+                vertices.Add(borders[i].V1);
+                vertices.Add(borders[i].V2);
             }
             vertices = RemoveDuplicate(vertices);
 

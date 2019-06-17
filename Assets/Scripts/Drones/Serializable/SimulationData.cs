@@ -52,7 +52,7 @@ namespace Drones.Serializable
             noFlyZones.ItemAdded += (obj) =>
             {
                 var hub = obj as Hub;
-                Pathfinder.Hubs.Add(obj.UID, new Obstacle((BoxCollider)hub.Collider, 2));
+                Pathfinder.Hubs.Add(obj.UID, new Obstacle((BoxCollider)hub.HubCollider, 2));
             };
             noFlyZones.ItemRemoved += (obj) =>
             {
