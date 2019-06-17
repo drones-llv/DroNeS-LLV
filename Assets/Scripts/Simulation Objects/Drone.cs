@@ -336,8 +336,9 @@ namespace Drones
             // Left sensor
             if (Physics.Raycast(leftSensor, out info, Constants.droneLeftSensorRange))
             {
-                if (!info.collider.CompareTag("Drone"))
+                if (!info.collider.CompareTag("Drone") && !info.collider.CompareTag("Hub"))
                 {
+                    Debug.Log(info.collider.tag);
                     Debug.DrawLine(transform.position, info.point, Color.red);
                     avoidDirection += 1;
                 }
@@ -346,7 +347,7 @@ namespace Drones
             // Right sensor
             if (Physics.Raycast(rightSensor, out info, Constants.droneRightSensorRange))
             {
-                if (!info.collider.CompareTag("Drone"))
+                if (!info.collider.CompareTag("Drone") && !info.collider.CompareTag("Hub"))
                 {
                     Debug.DrawLine(transform.position, info.point, Color.red);
                     avoidDirection -= 1;
@@ -356,7 +357,7 @@ namespace Drones
             // Front sensor
             if (Physics.Raycast(frontSensor, out info, Constants.droneFrontSensorRange))
             {
-                if (!info.collider.CompareTag("Drone"))
+                if (!info.collider.CompareTag("Drone") && !info.collider.CompareTag("Hub"))
                 {
                     Debug.DrawLine(transform.position, info.point, Color.red);
                     avoidDirection =
