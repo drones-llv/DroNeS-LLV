@@ -1,15 +1,31 @@
 ﻿using UnityEngine;
+using System.Collections.Generic;
 
 namespace Drones.Utils.Router
 {
     public class Obstacle
     {
+        private static Dictionary<Collider, Obstacle> _Accessor;
+        public static Dictionary<Collider, Obstacle> Accessor
+        {
+            get
+            {
+                if (_Accessor == null)
+                {
+                    _Accessor = new Dictionary<Collider, Obstacle>();
+                }
+                return _Accessor;
+            }
+        }
+
         public Obstacle(Transform t, float excludedRadius = 0)
         {
+            var c = t.GetComponent<Collider>();
             truePosition = t.position;
             position = t.position;
             size = t.localScale + (Vector3.forward + Vector3.right) * 2 * excludedRadius;
-            var h = t.GetComponent<Collider>().ClosestPointOnBounds(position + Vector3.up * 500).y;
+            var h = c.ClosestPointOnBounds(position + Vector3.up * 500).y;
+
             size.y = h;
             orientation = t.eulerAngles;
             position.y = 0;
@@ -27,6 +43,7 @@ namespace Drones.Utils.Router
             verts[1] = position - dz + dx; // jk
             verts[2] = position - dz - dx; // kl
             verts[3] = position + dz - dx; // li
+            Accessor.Add(c, this);
         }
 
         public Obstacle(BoxCollider t, float excludedRadius = 0)
@@ -52,7 +69,7 @@ namespace Drones.Utils.Router
             verts[1] = position - dz + dx; // jk
             verts[2] = position - dz - dx; // kl
             verts[3] = position + dz - dx; // li
-
+            Accessor.Add(t, this);
         }
 
         public Vector3 truePosition;

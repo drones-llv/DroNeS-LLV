@@ -1,84 +1,78 @@
-﻿using UnityEngine;
+﻿using System;
 using System.IO;
 using System.Text;
-using System;
+using Drones.Managers;
+using Drones.Serializable;
 using Drones.UI;
+using Drones.Utils;
+using UnityEngine;
 
-namespace Drones.Managers
+namespace Managers
 {
-    using Drones.Utils;
-    using Serializable;
     public static class SaveManager
     {
-        private static string _SavePath;
+        private static string _savePath;
         public static string SavePath 
         { 
             get
             {
-                if (_SavePath == null)
+                if (_savePath == null)
                 {
-                    _SavePath = Path.Combine(DronesPath, "Saves");
+                    _savePath = Path.Combine(DronesPath, "Saves");
                 }
-                if (!Directory.Exists(_SavePath))
+                if (!Directory.Exists(_savePath))
                 {
-                    Directory.CreateDirectory(_SavePath);
+                    Directory.CreateDirectory(_savePath);
                 }
-                return _SavePath;
+                return _savePath;
             }
         }
 
-        private static string _ExportPath;
+        private static string _exportPath;
         public static string ExportPath
         {
             get
             {
-                if (_ExportPath == null)
+                if (_exportPath == null)
                 {
-                    _ExportPath = Path.Combine(DronesPath, "Exports");
+                    _exportPath = Path.Combine(DronesPath, "Exports");
                 }
-                if (!Directory.Exists(_ExportPath))
+                if (!Directory.Exists(_exportPath))
                 {
-                    Directory.CreateDirectory(_ExportPath);
+                    Directory.CreateDirectory(_exportPath);
                 }
-                return _ExportPath;
+                return _exportPath;
             }
         }
 
-        private static string _DronesPath;
+        private static string _dronesPath;
         public static string DronesPath
         {
             get
             {
-                if (_DronesPath == null)
+                if (_dronesPath != null) return _dronesPath;
+                _dronesPath = OSID.Current != Platform.Windows ? 
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Documents", "DroNeS") : 
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "DroNeS");
+                if (!Directory.Exists(_dronesPath))
                 {
-                    if (OSID.Current != Platform.Windows)
-                    {
-                        _DronesPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Documents", "DroNeS");
-                    }
-                    else
-                    {
-                        _DronesPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "DroNeS");
-                    }
-                    if (!Directory.Exists(_DronesPath))
-                    {
-                        Directory.CreateDirectory(_DronesPath);
-                    }
+                    Directory.CreateDirectory(_dronesPath);
                 }
-                return _DronesPath;
+                return _dronesPath;
             }
         }
 
         private static void Obfuscate(string filepath, string data)
         {
             var bytes = Encoding.UTF8.GetBytes(data);
-            for (int i = 0; i < bytes.Length; i++) bytes[i] ^= 0x5a;
+            for (var i = 0; i < bytes.Length; i++) bytes[i] ^= 0x5a;
             File.WriteAllText(filepath, Convert.ToBase64String(bytes));
         }
 
         private static string Deobfuscate(string filepath)
         {
             var bytes = Convert.FromBase64String(File.ReadAllText(filepath));
-            for (int i = 0; i < bytes.Length; i++) bytes[i] ^= 0x5a;
+            for (var i = 0; i < bytes.Length; i++) bytes[i] ^= 0x5a;
             return Encoding.UTF8.GetString(bytes);
         }
 
@@ -100,23 +94,23 @@ namespace Drones.Managers
         public static void OpenSaveWindow()
         {
             SimManager.SetStatus(SimulationStatus.Paused);
-            GameObject win = UnityEngine.Object.Instantiate(Resources.Load("Prefabs/UI/Windows/SaveLoad/SaveLoad Window") as GameObject);
-            win.transform.SetParent(UIManager.Transform, false);
+            var win = UnityEngine.Object.Instantiate(
+                Resources.Load("Prefabs/UI/Windows/SaveLoad/SaveLoad Window") as GameObject, UIManager.Transform, false);
             win.GetComponent<SaveLoadWindow>().SetSaveMode();
         }
 
         public static void OpenLoadWindow()
         {
             SimManager.SetStatus(SimulationStatus.Paused);
-            GameObject win = UnityEngine.Object.Instantiate(Resources.Load("Prefabs/UI/Windows/SaveLoad/SaveLoad Window") as GameObject);
-            win.transform.SetParent(UIManager.Transform, false);
+            var win = UnityEngine.Object.Instantiate(
+                Resources.Load("Prefabs/UI/Windows/SaveLoad/SaveLoad Window") as GameObject, UIManager.Transform, false);
             win.GetComponent<SaveLoadWindow>().SetLoadMode();
         }
 
         public static void OpenOverwriteConfirmation(string filepath)
         {
-            GameObject win = UnityEngine.Object.Instantiate(Resources.Load("Prefabs/UI/Windows/SaveLoad/Overwrite Dialog") as GameObject);
-            win.transform.SetParent(UIManager.Transform, false);
+            var win = UnityEngine.Object.Instantiate(
+                Resources.Load("Prefabs/UI/Windows/SaveLoad/Overwrite Dialog") as GameObject, UIManager.Transform, false);
             win.GetComponent<OverwriteConfirmation>().SetFilepath(filepath);
         }
 
@@ -127,7 +121,7 @@ namespace Drones.Managers
 
         public static void Load(string filepath)
         {
-            string data = Deobfuscate(filepath);
+            var data = Deobfuscate(filepath);
             SimManager.LoadSimulation(JsonUtility.FromJson<SSimulation>(data));
             ConsoleLog.Clear();
         }

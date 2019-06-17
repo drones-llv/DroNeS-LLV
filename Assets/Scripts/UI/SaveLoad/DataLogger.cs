@@ -2,6 +2,7 @@
 using System.IO;
 using System.Globalization;
 using System;
+using Managers;
 using UnityEngine;
 
 namespace Drones.UI
@@ -22,8 +23,8 @@ namespace Drones.UI
         public static void Load()
         {
             _Instance.StopAllCoroutines();
-            _Instance.LogPath = Path.Combine(SaveManager.ExportPath, SimManager.Name.Replace("/", "-").Replace(":", "|"));
-            _Instance.Session = SimManager.Name.Replace("/", "-").Replace(":", "|");
+            _Instance.LogPath = Path.Combine(SaveManager.ExportPath, SimManager.Name.Replace("/", "-").Replace(":", "-"));
+            _Instance.Session = SimManager.Name.Replace("/", "-").Replace(":", "-");
             Log();
         }
         public string Session;
@@ -79,6 +80,7 @@ namespace Drones.UI
                                     "Energy (kWh)" };
                 WriteTupleToMemory(ref SimMemory, headers);
                 Flush(filepath, ref SimMemory);
+                //WriteTupleToFile(filepath, headers);
             }
             var time = TimeKeeper.Chronos.Get();
             var wait = new WaitUntil(() => time.Timer() > LoggingPeriod);
@@ -87,6 +89,7 @@ namespace Drones.UI
             {
                 SimManager.GetData(this, time);
                 WriteTupleToMemory(ref SimMemory, _SimulationData);
+                //WriteTupleToFile(filepath, _Instance._SimulationData);
                 yield return wait;
                 time.Now();
             }
@@ -111,6 +114,7 @@ namespace Drones.UI
                                     "Failed" };
                 _Instance.WriteTupleToMemory(ref _Instance.JobMemory, headers);
                 _Instance.Flush(filepath, ref _Instance.JobMemory);
+                //_Instance.WriteTupleToFile(filepath, headers);
             }
             _Instance._JobData[0] = DateTime.Now.ToString();
             _Instance._JobData[1] = data.created.ToCSVFormat();
@@ -123,6 +127,7 @@ namespace Drones.UI
             _Instance._JobData[8] = data.earnings.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
             _Instance._JobData[9] = (data.status == JobStatus.Failed) ? "YES" : "NO";
             _Instance.WriteTupleToMemory(ref _Instance.JobMemory, _Instance._JobData);
+            //_Instance.WriteTupleToFile(filepath, _Instance._JobData);
 
         }
 
@@ -158,6 +163,21 @@ namespace Drones.UI
                     Flush(filepath, ref SimMemory);
                 }
                 //if (IsAutosave) SaveManager.Save(SaveManager.FilePath(Session));
+            }
+        }
+        public void WriteTupleToFile(string filepath, params string[] data)
+        {
+            using (StreamWriter writer = File.AppendText(filepath))
+            {
+                string output = "";
+                for (int i = 0; i < data.Length; i++)
+                {
+                    output += data[i];
+                    if (i < data.Length - 1)
+                        output += ",";
+                }
+                writer.WriteLine(output);
+                writer.Close();
             }
         }
 

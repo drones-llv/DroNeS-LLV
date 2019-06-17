@@ -8,7 +8,30 @@ namespace Drones.Utils.Router
     public abstract class Pathfinder
     {
         protected List<Obstacle> _Buildings;
-        protected List<Obstacle> _NoFlyZones;
+        protected static Dictionary<uint, Obstacle> _NoFlyZones;
+        protected static Dictionary<uint, Obstacle> _Hubs;
+        public static Dictionary<uint, Obstacle> Hubs
+        {
+            get
+            {
+                if (_Hubs == null)
+                {
+                    _Hubs = new Dictionary<uint, Obstacle>();
+                }
+                return _Hubs;
+            }
+        }
+        public static Dictionary<uint, Obstacle> NoFlyZones
+        {
+            get
+            {
+                if (_NoFlyZones == null)
+                {
+                    _NoFlyZones = new Dictionary<uint, Obstacle>();
+                }
+                return _NoFlyZones;
+            }
+        }
 
         protected List<Obstacle> Buildings
         {
@@ -36,7 +59,7 @@ namespace Drones.Utils.Router
         ~Pathfinder()
         {
             Buildings?.Clear();
-            _NoFlyZones?.Clear();
+            NoFlyZones?.Clear();
         }
     }
 }

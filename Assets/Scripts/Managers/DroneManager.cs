@@ -13,32 +13,32 @@ namespace Drones.Managers
 
     public class DroneManager : MonoBehaviour
     {
-        public static JobHandle MovementJobHandle => _Instance._movementJobHandle;
-        private static DroneManager _Instance;
+        public static JobHandle MovementJobHandle => _instance._movementJobHandle;
+        private static DroneManager _instance;
         public static DroneManager New()
         {
-            _Instance = new GameObject("DroneManager").AddComponent<DroneManager>();
-            return _Instance;
+            _instance = new GameObject("DroneManager").AddComponent<DroneManager>();
+            return _instance;
         }
 
         private JobHandle _movementJobHandle = new JobHandle();
         private readonly TimeKeeper.Chronos _time = TimeKeeper.Chronos.Get();
-        private SecureSortedSet<uint, IDataSource> Drones => SimManager.AllDrones;
-        private TransformAccessArray _Transforms;
-        private NativeArray<MovementInfo> _MovementInfoArray;
+        private static SecureSortedSet<uint, IDataSource> Drones => SimManager.AllDrones;
+        private TransformAccessArray _transforms;
+        private NativeArray<MovementInfo> _movementInfoArray;
 
         private void OnDisable()
         {
             MovementJobHandle.Complete();
-            if (_Transforms.isCreated) _Transforms.Dispose();
-            if (_MovementInfoArray.IsCreated) _MovementInfoArray.Dispose();
-            _Instance = null;
+            if (_transforms.isCreated) _transforms.Dispose();
+            if (_movementInfoArray.IsCreated) _movementInfoArray.Dispose();
+            _instance = null;
         }
 
         private void Initialise()
         {
-            _Transforms = new TransformAccessArray(0);
-            _MovementInfoArray = new NativeArray<MovementInfo>(_Transforms.length, Allocator.Persistent);
+            _transforms = new TransformAccessArray(0);
+            _movementInfoArray = new NativeArray<MovementInfo>(_transforms.length, Allocator.Persistent);
             _time.Now();
         }
 
@@ -51,48 +51,50 @@ namespace Drones.Managers
 
         private IEnumerator Operate()
         {
-            MovementJob _movementJob = new MovementJob();
+            var movementJob = new MovementJob();
             while (true)
             {
-                if (_Transforms.length == 0) yield return null;
-                int j = 0;
+                if (_transforms.length == 0) yield return null;
+                var j = 0;
 
-                foreach (Drone drone in Drones.Values)
+                foreach (var dataSource in Drones.Values)
                 {
+                    var drone = (Drone) dataSource;
                     drone.PreviousPosition = drone.transform.position;
-                    _MovementInfoArray[j] = drone.GetMovementInfo(_MovementInfoArray[j]);
-                    Debug.Log(_MovementInfoArray[j].waypoint);
+                    _movementInfoArray[j] = drone.GetMovementInfo(_movementInfoArray[j]);
                     j++;
                 }
 
-                _movementJob.nextMove = _MovementInfoArray;
-                _movementJob.deltaTime = _time.Timer();
+                movementJob.nextMove = _movementInfoArray;
+                movementJob.deltaTime = _time.Timer();
                 _time.Now();
 
-                _movementJobHandle = _movementJob.Schedule(_Transforms);
+                _movementJobHandle = movementJob.Schedule(_transforms);
 
                 yield return null;
                 MovementJobHandle.Complete();
             }
         }
 
-        public void OnDroneCountChange()
+        private void OnDroneCountChange()
         {
             _movementJobHandle.Complete();
-            _Transforms.Dispose();
-            _Transforms = new TransformAccessArray(0);
-            foreach (Drone drone in Drones.Values)
+            _transforms.Dispose();
+            _transforms = new TransformAccessArray(0);
+            foreach (var dataSource in Drones.Values)
             {
-                _Transforms.Add(drone.transform);
+                var drone = (Drone) dataSource;
+                _transforms.Add(drone.transform);
             }
-            _MovementInfoArray.Dispose();
-            _MovementInfoArray = new NativeArray<MovementInfo>(_Transforms.length, Allocator.Persistent);
+            _movementInfoArray.Dispose();
+            _movementInfoArray = new NativeArray<MovementInfo>(_transforms.length, Allocator.Persistent);
 
-            int j = 0;
-            foreach (Drone drone in Drones.Values)
+            var j = 0;
+            foreach (var dataSource in Drones.Values)
             {
-                _MovementInfoArray[j] = new MovementInfo();
-                _MovementInfoArray[j] = drone.GetMovementInfo(_MovementInfoArray[j]);
+                var drone = (Drone) dataSource;
+                _movementInfoArray[j] = new MovementInfo();
+                _movementInfoArray[j] = drone.GetMovementInfo(_movementInfoArray[j]);
                 j++;
             }
 
@@ -100,21 +102,23 @@ namespace Drones.Managers
 
         public static void ForceDroneCountChange()
         {
-            _Instance._movementJobHandle.Complete();
-            _Instance._Transforms.Dispose();
-            _Instance._Transforms = new TransformAccessArray(0);
-            foreach (Drone drone in _Instance.Drones.Values)
+            _instance._movementJobHandle.Complete();
+            _instance._transforms.Dispose();
+            _instance._transforms = new TransformAccessArray(0);
+            foreach (var dataSource in Drones.Values)
             {
-                _Instance._Transforms.Add(drone.transform);
+                var drone = (Drone) dataSource;
+                _instance._transforms.Add(drone.transform);
             }
-            _Instance._MovementInfoArray.Dispose();
-            _Instance._MovementInfoArray = new NativeArray<MovementInfo>(_Instance._Transforms.length, Allocator.Persistent);
+            _instance._movementInfoArray.Dispose();
+            _instance._movementInfoArray = new NativeArray<MovementInfo>(_instance._transforms.length, Allocator.Persistent);
 
-            int j = 0;
-            foreach (Drone drone in _Instance.Drones.Values)
+            var j = 0;
+            foreach (var dataSource in Drones.Values)
             {
-                _Instance._MovementInfoArray[j] = new MovementInfo();
-                _Instance._MovementInfoArray[j] = drone.GetMovementInfo(_Instance._MovementInfoArray[j]);
+                var drone = (Drone) dataSource;
+                _instance._movementInfoArray[j] = new MovementInfo();
+                _instance._movementInfoArray[j] = drone.GetMovementInfo(_instance._movementInfoArray[j]);
                 j++;
             }
 

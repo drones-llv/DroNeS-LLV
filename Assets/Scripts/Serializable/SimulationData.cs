@@ -1,10 +1,12 @@
 ﻿using System;
+using UnityEngine;
 
 namespace Drones.Data
 {
     using Utils;
     using DataStreamer;
     using Serializable;
+    using Drones.Utils.Router;
 
     public class SimulationData : IData
     {
@@ -48,9 +50,28 @@ namespace Drones.Data
                 MemberCondition = (item) => item is Hub
             };
 
+            noFlyZones.ItemAdded += (obj) =>
+            {
+                var hub = obj as Hub;
+                Pathfinder.Hubs.Add(obj.UID, new Obstacle((BoxCollider)hub.Collider, 2));
+            };
+            noFlyZones.ItemRemoved += (obj) =>
+            {
+                Pathfinder.Hubs.Remove(obj.UID);
+            };
+
             noFlyZones = new SecureSortedSet<uint, IDataSource>
             {
                 MemberCondition = (item) => item is NoFlyZone
+            };
+
+            noFlyZones.ItemAdded += (obj) =>
+            {
+                Pathfinder.NoFlyZones.Add(obj.UID, new Obstacle(((NoFlyZone)obj).transform, 2));
+            };
+            noFlyZones.ItemRemoved += (obj) =>
+            {
+                Pathfinder.NoFlyZones.Remove(obj.UID);
             };
 
             incompleteJobs = new SecureSortedSet<uint, IDataSource>
@@ -66,6 +87,8 @@ namespace Drones.Data
             batteries = new SecureSortedSet<uint, Battery>();
 
             jobs = new SecureSortedSet<uint, Job>();
+
+
         }
 
         private void SetUpCallbacks()
@@ -114,10 +137,17 @@ namespace Drones.Data
                 incompleteJobs.Add(loaded.UID, loaded);
                 jobs.Add(loaded.UID, loaded);
             }
-
+            noFlyZones.ItemAdded += (obj) =>
+            {
+                Pathfinder.NoFlyZones.Add(obj.UID, new Obstacle(((NoFlyZone)obj).transform, 2));
+            };
+            noFlyZones.ItemRemoved += (obj) =>
+            {
+                Pathfinder.NoFlyZones.Remove(obj.UID);
+            };
             foreach (var nfz in data.noFlyZones)
             {
-                NoFlyZone.Load(nfz);
+                noFlyZones.Add(nfz.uid, NoFlyZone.Load(nfz));
             }
 
             foreach (var rDrone in data.retiredDrones)

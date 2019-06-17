@@ -11,6 +11,9 @@ using Drones.Serializable;
 using Drones.Managers;
 using Mapbox.Unity.Map.TileProviders;
 using Drones.Utils.Router;
+using Managers;
+using Router;
+
 public class EditorFunctions : EditorWindow
 {
     AbstractMap abstractMap;
@@ -106,45 +109,33 @@ public class EditorFunctions : EditorWindow
             }
         }
 
-        if (GUILayout.Button("Count Buildings"))
+        if (GUILayout.Button("Test Raypath"))
         {
-            int c = 0;
-            foreach (Transform tile in citySimulatorMap.transform)
-            {
-                foreach (Transform building in tile)
-                {
-                    c++;
-                }
-            }
-            Debug.Log(c);
+            Obstacle.Accessor.Clear();
+            TestRoute();
+        }
+
+        if (GUILayout.Button("Test Starpath"))
+        {
+            Obstacle.Accessor.Clear();
+            TestStar();
+        }
+
+        if (GUILayout.Button("Test SmartStarpath"))
+        {
+            Obstacle.Accessor.Clear();
+            TestSmartStar();
         }
 
         if (GUILayout.Button("HEIGHT!"))
         {
-            GenerateHeightBitMapNY();
+            GenerateHeightBitMapTEST(8);
         }
 
 
 
     }
 
-    void FindTallest()
-    {
-        float c = 0;
-        foreach (Transform tile in citySimulatorMap.transform)
-        {
-            foreach (Transform building in tile)
-            {
-                var d = building.GetComponent<MeshRenderer>().bounds.size.y;
-                if (c < d)
-                {
-                    c = d;
-                }
-
-            }
-        }
-        Debug.Log(c);
-    }
 
     [Serializable]
     public class Buildings
@@ -192,33 +183,66 @@ public class EditorFunctions : EditorWindow
         }
     }
 
-
-    public static void GenerateHeightBitMapNY()
+    public static void GenerateHeightBitMapNY(int meter)
     {
-        Texture2D data = new Texture2D(4*2160,4*3750);
+        Texture2D data = new Texture2D(8640 / meter, 16000 / meter);
         try
         {
             float tallest = 500;
-            for (int i = 0; i < 4320 * 2; i += 4/4)
+            for (int i = 0; i < 8640; i += meter)
             {
-                for (int j = 0; j < 7500 * 2; j += 4/4)
+                for (int j = 0; j < 16000; j += meter)
                 {
                     var v = new Vector3(i - 4320, 1000, j - 7500);
                     var c = Color.black;
-                    if (Physics.BoxCast(v, new Vector3(2/4f, 1, 2/4f), Vector3.down, out RaycastHit info, Quaternion.identity, 1000, 1 << 12))
+                    if (Physics.BoxCast(v, Vector3.one * meter / 2f, Vector3.down, out RaycastHit info, Quaternion.identity, 1000, 1 << 12))
                     {
                         c += Color.white * Mathf.Clamp(info.point.y / tallest, 0, 1);
                         c.a = 1;
                     }
-                    else if (!Physics.BoxCast(v, new Vector3(2/4f, 1, 2/4f), Vector3.down, Quaternion.identity, 1000, 1 << 13))
+                    else if (!Physics.BoxCast(v, Vector3.one * meter / 2f, Vector3.down, Quaternion.identity, 1000, 1 << 13))
                     {
                         c = Color.white;
                     }
                     //data.SetPixel(i / 4, j / 4, c);
-                    data.SetPixel(i, j, c);
+                    data.SetPixel(i / meter, j / meter, c);
                 }
             }
-            var path = Path.Combine(SaveManager.SavePath, "height_bitmap.png");
+            var path = Path.Combine(SaveManager.SavePath, "height_bitmap_"+meter+"m.png");
+            File.WriteAllBytes(path, data.EncodeToPNG());
+        }
+        catch (IndexOutOfRangeException)
+        {
+            Debug.Log("Error");
+        }
+    }
+
+    public static void GenerateHeightBitMapTEST(int meter)
+    {
+        Texture2D data = new Texture2D(1200 / meter, 1400 / meter);
+        try
+        {
+            float tallest = 500;
+            for (int i = 0; i < data.width * meter; i += meter)
+            {
+                for (int j = 0; j < data.height * meter; j += meter)
+                {
+                    var v = new Vector3(i - data.width * meter / 2, 1000, j - data.height * meter / 2);
+                    var c = Color.black;
+                    if (Physics.BoxCast(v, Vector3.one * meter / 2f, Vector3.down, out RaycastHit info, Quaternion.identity, 1000, 1 << 12))
+                    {
+                        c += Color.white * Mathf.Clamp(info.point.y / tallest, 0, 1);
+                        c.a = 1;
+                    }
+                    else if (!Physics.BoxCast(v, Vector3.one * meter / 2f, Vector3.down, Quaternion.identity, 1000, 1 << 13))
+                    {
+                        c = Color.white;
+                    }
+                    //data.SetPixel(i / 4, j / 4, c);
+                    data.SetPixel(i / meter, j / meter, c);
+                }
+            }
+            var path = Path.Combine(SaveManager.SavePath, "height_bitmap_test_"+ meter +"m.png");
             File.WriteAllBytes(path, data.EncodeToPNG());
         }
         catch (IndexOutOfRangeException)
@@ -254,6 +278,33 @@ public class EditorFunctions : EditorWindow
     public static void TestRoute()
     {
         Raypath pathfinder = new Raypath();
+
+        var q = pathfinder.GetRouteTest(GameObject.Find("Start").transform.position, GameObject.Find("End").transform.position);
+        while (q.Count > 0)
+        {
+            var qb = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            qb.transform.position = q.Dequeue();
+            qb.transform.localScale = Vector3.one * 25;
+        }
+    }
+
+    public static void TestStar()
+    {
+        Starpath pathfinder = new Starpath(8);
+
+        var q = pathfinder.GetRouteTest(GameObject.Find("Start").transform.position, GameObject.Find("End").transform.position);
+        while (q.Count > 0)
+        {
+            var qb = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            qb.transform.position = q.Dequeue();
+            qb.transform.localScale = Vector3.one * 25;
+        }
+    }
+
+    public static void TestSmartStar()
+    {
+        SmartStarpath pathfinder = new SmartStarpath();
+
 
         var q = pathfinder.GetRouteTest(GameObject.Find("Start").transform.position, GameObject.Find("End").transform.position);
         while (q.Count > 0)
