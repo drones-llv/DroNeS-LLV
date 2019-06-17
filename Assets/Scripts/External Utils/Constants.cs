@@ -14,6 +14,12 @@ namespace Drones.Utils
         public const float R = 6378.137f; // Radius of earth in KM
         public const float CoroutineTimeSlice = 10; // ms
 
+        public const float droneHorizontalSpeed = 12f;
+        public const float droneVerticalSpeed = 4f;
+        public const float cruisingAltitude = 450f;
+        public const float droneDescendLevel = 10f;
+        public const float returnToHubAltitude = 510f;
+
         public const string mapStyle = "mapbox://styles/jw5514/cjr5l685g4u4z2sjxfdupnl8b";
         public const string buildingMaterialPath = "Materials/WhiteBuilding";
         public const string SimulationManagerPath = "Prefabs/Managers/Simulation Manager";
@@ -22,6 +28,5 @@ namespace Drones.Utils
         public const string HubHighlightPath = "Prefabs/HubHighlight";
         public const string ToolTipPath = "Prefabs/Windows/ToolTip";
         public const string WaypointPath = "Prefabs/Waypoint";
-
     }
 }

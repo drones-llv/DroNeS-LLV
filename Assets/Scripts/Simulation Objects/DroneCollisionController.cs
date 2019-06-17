@@ -57,7 +57,6 @@ namespace Drones.Utils
 
             if (other.gameObject.layer != LayerMask.NameToLayer("Hub") && _CollisionOn)
             {
-                DroneManager.MovementJobHandle.Complete();
                 Collide(other);
             }
             else _CollisionOn &= other.GetComponent<Hub>() != _Owner.GetHub();

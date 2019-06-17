@@ -42,6 +42,7 @@ namespace Drones.Utils
         };
         private static Stopwatch StopWatch { get; set; } = Stopwatch.StartNew();
         public static long DeltaFrame() => StopWatch.ElapsedMilliseconds;
+        public static float Timescale { get => _Scale[TimeSpeed]; }
 
         private void OnDestroy()
         {

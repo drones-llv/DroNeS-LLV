@@ -22,8 +22,8 @@ namespace Drones.UI
         public static void Load()
         {
             _Instance.StopAllCoroutines();
-            _Instance.LogPath = Path.Combine(SaveManager.ExportPath, SimManager.Name.Replace("/", "-").Replace(":", "|"));
-            _Instance.Session = SimManager.Name.Replace("/", "-").Replace(":", "|");
+            _Instance.LogPath = Path.Combine(SaveManager.ExportPath, SimManager.Name.Replace("/", "-").Replace(":", "-"));
+            _Instance.Session = SimManager.Name.Replace("/", "-").Replace(":", "-");
             Log();
         }
         public string Session;

@@ -13,9 +13,11 @@ namespace Drones
     using Data;
     using Utils.Jobs;
     using Drones.Utils.Scheduler;
+    using System;
 
     public class Drone : MonoBehaviour, IDataSource, IPoolable
     {
+        private readonly TimeKeeper.Chronos _time = TimeKeeper.Chronos.Get();
         private static Transform _ActiveDrones;
         public static Transform ActiveDrones
         {
@@ -114,8 +116,8 @@ namespace Drones
                 _Data.job = job.UID;
                 job.AssignDrone(this);
                 job.StartDelivery();
+                if (_Data.hub != 0) StartCoroutine(DeliverySequence());
             }
-            if (_Data.hub != 0) SetWaypoints(GetHub().Router.GetRoute(this));
             return true;
         }
 
@@ -130,7 +132,7 @@ namespace Drones
                 _Data.battery = battery.UID;
         }
 
-        public void AssignHub(Hub hub) 
+        public void AssignHub(Hub hub)
         {
             if (hub == null) return;
             _Data.hubsAssigned++;
@@ -165,16 +167,6 @@ namespace Drones
         {
             _Data.audibleDuration += dt;
             GetHub().UpdateAudible(dt);
-        }
-        public MovementInfo GetMovementInfo(MovementInfo info)
-        {
-            info.moveType = _Data.movement;
-            info.height = Waypoint.y;
-            info.waypoint = _Data.currentWaypoint;
-            info.isWaiting = _Data.isWaiting ? 1 : 0;
-            info.prev_pos = PreviousPosition;
-
-            return info;
         }
         public EnergyInfo GetEnergyInfo(ref EnergyInfo info)
         {
@@ -226,35 +218,24 @@ namespace Drones
             Delete();
         }
 
-        private void NextWaypoint()
-        {
-            _Data.distanceTravelled += Vector3.Distance(_Data.previousWaypoint, _Data.currentWaypoint);
-            _Data.previousWaypoint = _Data.currentWaypoint;
-            _Data.currentWaypoint = _Data.waypoints.Dequeue();
-        }
-
-        private bool ReachedWaypoint()
+        private bool ReachedDestination()
         {
             Vector3 a = transform.position;
-            Vector3 b = _Data.currentWaypoint;
+            Vector3 b = GetJob().DropOff;
             a.y = b.y = 0;
             return Vector3.Distance(a, b) < 0.25f;
         }
 
-        private bool ReachedAltitude()
+        IEnumerator DeliverySequence()
         {
-            return _Data.movement == DroneMovement.Ascend && transform.position.y >= Waypoint.y ||
-                _Data.movement == DroneMovement.Descend && transform.position.y <= Waypoint.y;
-        }
-
-        public void SetWaypoints(Queue<Vector3> waypoints)
-        {
-            _Data.waypoints = waypoints;
-
-            if (InHub) GetHub().AddToDeploymentQueue(this);
-
-            //_Data.movement = DroneMovement.Hover;
-            StartCoroutine(Horizontal());
+            if (InHub)
+            {
+                GetHub().AddToDeploymentQueue(this);
+                yield return StartCoroutine(LeaveHub());
+            }
+            yield return StartCoroutine(NavigateToJob());
+            yield return StartCoroutine(DropOff());
+            yield return StartCoroutine(ReturnToHub());
         }
 
         public void Drop()
@@ -264,49 +245,83 @@ namespace Drones
                 AbstractCamera.ActiveCamera.BreakFollow();
         }
 
-        IEnumerator Horizontal(bool load = false)
+        IEnumerator LeaveHub()
         {
-            var wait = new WaitUntil(() => ReachedWaypoint());
-            while (_Data.waypoints.Count > 0)
+            yield return new WaitUntil(() => !_Data.isWaiting);
+            _Data.movement = DroneMovement.Descend;
+            while (transform.position.y < Constants.cruisingAltitude)
             {
-                if (!load) NextWaypoint();
-                if (Mathf.Abs(transform.position.y - Waypoint.y) > 0.5f)
-                {
-                    _Data.movement = (transform.position.y > Waypoint.y) ? DroneMovement.Descend : DroneMovement.Ascend;
-                    StartCoroutine(Vertical());
-                    yield break;
-                }
-                _Data.movement = DroneMovement.Horizontal;
-                yield return wait;
-                _Data.movement = DroneMovement.Hover;
+                transform.Translate(Vector3.down * Constants.droneVerticalSpeed * Time.deltaTime * TimeKeeper.Timescale);
+                yield return null;
             }
-            if (InHub)
-            {
-                _Data.movement = DroneMovement.Horizontal;
-                yield return wait;
-                _Data.movement = DroneMovement.Idle;
-                GetHub().OnDroneReturn(this);
-            }
+            // Cap the position
+            transform.position = new Vector3(transform.position.x, Constants.cruisingAltitude, transform.position.z);
         }
 
-        IEnumerator Vertical()
+        IEnumerator NavigateToJob()
         {
-            yield return new WaitUntil(() => ReachedAltitude());
-            _Data.movement = DroneMovement.Hover;
-            if (!InHub)
+            while (!ReachedJob())
             {
-                if (transform.position.y < 10f && ReachedJob()) 
-                    GetJob().CompleteJob();
-                else
-                    StartCoroutine(Horizontal());
-                yield break;
+                float step = Constants.droneHorizontalSpeed * Time.deltaTime * TimeKeeper.Timescale;
+                var dest = GetJob().DropOff;
+                dest.y = transform.position.y;
+                transform.position = Vector3.MoveTowards(transform.position, dest, step);
+                yield return null;
             }
-            StartCoroutine(Horizontal());
+            // Cap the position
+            transform.position = new Vector3(GetJob().DropOff.x, transform.position.y, GetJob().DropOff.z);
+        }
+
+        IEnumerator DropOff()
+        {
+            // Descend the drone
+            _Data.movement = DroneMovement.Descend;
+            while (transform.position.y >= Constants.droneDescendLevel)
+            {
+                float step = - Constants.droneVerticalSpeed * Time.deltaTime * TimeKeeper.Timescale;
+                transform.Translate(0, step, 0);
+                yield return null;
+            }
+            // Complete the job
+            GetJob().CompleteJob();
+
+            // Reascend to the return-to-hub altitude
+            _Data.movement = DroneMovement.Ascend;
+            while (transform.position.y <= Constants.returnToHubAltitude)
+            {
+                float step = Constants.droneVerticalSpeed * Time.deltaTime * TimeKeeper.Timescale;
+                transform.Translate(0, step, 0);
+                yield return null;
+            }
+            // Cap this position
+            transform.position = new Vector3(transform.position.x, Constants.returnToHubAltitude, transform.position.z);
+        }
+
+        IEnumerator ReturnToHub()
+        {
+            _Data.movement = DroneMovement.Hover;
+            while (!ReachedHub())
+            {
+                float step = Constants.droneHorizontalSpeed * Time.deltaTime * TimeKeeper.Timescale;
+                Vector3 dest = GetHub().Position;
+                dest.y = transform.position.y;
+                transform.position = Vector3.MoveTowards(transform.position, dest, step);
+                yield return null;
+            }
+            _Data.movement = DroneMovement.Idle;
+            GetHub().OnDroneReturn(this);
         }
 
         private bool ReachedJob()
         {
             var d = GetJob().DropOff;
+            d.y = transform.position.y;
+            return Vector3.Distance(d, transform.position) < 0.25f;
+        }
+
+        private bool ReachedHub()
+        {
+            var d = GetHub().Position;
             d.y = transform.position.y;
             return Vector3.Distance(d, transform.position) < 0.25f;
         }
@@ -317,13 +332,7 @@ namespace Drones
 
         public Drone LoadState(SDrone data)
         {
-            _Data = new DroneData(data, this);
-            InPool = false;
-            if (_Data.battery != 0) GetBattery().AssignDrone(this);
-            StartCoroutine(Horizontal(true));
-            if (data.isActive) transform.SetParent(ActiveDrones);
-            return this;
+            throw new NotImplementedException();
         }
-
-    };
+    }
 }

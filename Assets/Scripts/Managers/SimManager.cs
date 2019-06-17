@@ -1,6 +1,4 @@
 ﻿using System.Collections;
-using System.Globalization;
-using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -66,7 +64,6 @@ namespace Drones.Managers
         {
             yield return new WaitUntil(() => SceneManager.GetActiveScene() == SceneManager.GetSceneByBuildIndex(1));
             Initialized = true;
-            DroneManager.New();
             BatteryManager.New();
             ShortcutManager.New();
             DataLogger.New();
@@ -144,7 +141,6 @@ namespace Drones.Managers
             Instance._Data.Load(data);
             DataLogger.Load();
             BatteryManager.ForceCountChange();
-            DroneManager.ForceDroneCountChange();
             TimeKeeper.SetTime(data.currentTime);
             SetStatus(SimulationStatus.EditMode);
         }
