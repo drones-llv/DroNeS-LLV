@@ -2,7 +2,6 @@
 using UnityEngine.Networking;
 using UnityEngine.UI;
 using System.Collections;
-using Drones.Extensions;
 using Drones.Mapbox;
 using Drones.Scheduler;
 using Drones.UI.SaveLoad;
@@ -115,7 +114,7 @@ namespace Drones.StartScreen
             {
                 if (_Back == null)
                 {
-                    _Back = transform.FindDescendent("Back").GetComponent<Button>();
+                    _Back = transform.FindDescendant("Back").GetComponent<Button>();
                 }
                 return _Back;
             }
@@ -127,7 +126,7 @@ namespace Drones.StartScreen
             {
                 if (_Reset == null)
                 {
-                    _Reset = transform.FindDescendent("Reset").GetComponent<Button>();
+                    _Reset = transform.FindDescendant("Reset").GetComponent<Button>();
                 }
                 return _Reset;
             }

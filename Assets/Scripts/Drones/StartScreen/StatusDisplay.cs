@@ -1,5 +1,5 @@
-﻿using Drones.Extensions;
-using UnityEngine;
+﻿using UnityEngine;
+using Utils;
 
 namespace Drones.StartScreen
 {
@@ -18,7 +18,7 @@ namespace Drones.StartScreen
             {
                 if (_Green == null)
                 {
-                    _Green = transform.FindDescendent("Success").gameObject;
+                    _Green = transform.FindDescendant("Success").gameObject;
                 }
                 return _Green;
             }
@@ -30,7 +30,7 @@ namespace Drones.StartScreen
             {
                 if (_Yellow == null)
                 {
-                    _Yellow = transform.FindDescendent("Untested").gameObject;
+                    _Yellow = transform.FindDescendant("Untested").gameObject;
                 }
                 return _Yellow;
             }
@@ -42,7 +42,7 @@ namespace Drones.StartScreen
             {
                 if (_Red == null)
                 {
-                    _Red = transform.FindDescendent("Failed").gameObject;
+                    _Red = transform.FindDescendant("Failed").gameObject;
                 }
                 return _Red;
             }

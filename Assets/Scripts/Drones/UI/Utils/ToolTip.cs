@@ -1,9 +1,9 @@
 ﻿using System.Collections;
-using Drones.Extensions;
 using Drones.Utils.Interfaces;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Utils;
 
 namespace Drones.UI.Utils
 {

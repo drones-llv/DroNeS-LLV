@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Drones.Extensions;
 using UnityEngine;
 using UnityEngine.UI;
+using Utils;
 
 namespace Drones.UI.Dahsboard
 {
@@ -27,7 +27,7 @@ namespace Drones.UI.Dahsboard
             {
                 if (_Map == null)
                 {
-                    _Map = transform.FindDescendent("Map").GetComponent<Button>();
+                    _Map = transform.FindDescendant("Map").GetComponent<Button>();
                 }
                 return _Map;
             }
@@ -39,7 +39,7 @@ namespace Drones.UI.Dahsboard
             {
                 if (_Control == null)
                 {
-                    _Control = transform.FindDescendent("Control").GetComponent<Button>();
+                    _Control = transform.FindDescendant("Control").GetComponent<Button>();
                 }
                 return _Control;
             }
@@ -51,7 +51,7 @@ namespace Drones.UI.Dahsboard
             {
                 if (_Lists == null)
                 {
-                    _Lists = transform.FindDescendent("Lists").GetComponent<Button>();
+                    _Lists = transform.FindDescendant("Lists").GetComponent<Button>();
                 }
                 return _Lists;
             }
@@ -63,7 +63,7 @@ namespace Drones.UI.Dahsboard
             {
                 if (_Histories == null)
                 {
-                    _Histories = transform.FindDescendent("Histories").GetComponent<Button>();
+                    _Histories = transform.FindDescendant("Histories").GetComponent<Button>();
                 }
                 return _Histories;
             }
@@ -75,7 +75,7 @@ namespace Drones.UI.Dahsboard
             {
                 if (_Menu == null)
                 {
-                    _Menu = transform.FindDescendent("Menu").GetComponent<Button>();
+                    _Menu = transform.FindDescendant("Menu").GetComponent<Button>();
                 }
                 return _Menu;
             }

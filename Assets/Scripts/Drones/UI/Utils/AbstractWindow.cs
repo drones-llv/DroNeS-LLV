@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Drones.Extensions;
 using Drones.Managers;
 using Drones.Utils;
 using Drones.Utils.Interfaces;
@@ -7,6 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using Utils;
 
 namespace Drones.UI.Utils
 {
@@ -99,7 +99,7 @@ namespace Drones.UI.Utils
             {
                 if (_Decoration == null)
                 {
-                    _Decoration = transform.FindDescendent("Decoration");
+                    _Decoration = transform.FindDescendant("Decoration");
                 }
                 return _Decoration;
             }

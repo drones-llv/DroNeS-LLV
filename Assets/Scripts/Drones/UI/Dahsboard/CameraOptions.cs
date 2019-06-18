@@ -1,7 +1,7 @@
-﻿using Drones.Extensions;
-using Drones.Utils;
+﻿using Drones.Utils;
 using UnityEngine;
 using UnityEngine.UI;
+using Utils;
 
 namespace Drones.UI.Dahsboard
 {
@@ -22,7 +22,7 @@ namespace Drones.UI.Dahsboard
             {
                 if (_MouseSensitivity == null)
                 {
-                    _MouseSensitivity = transform.FindDescendent("Mouse Sensitivity").GetComponent<Slider>();
+                    _MouseSensitivity = transform.FindDescendant("Mouse Sensitivity").GetComponent<Slider>();
                 }
                 return _MouseSensitivity;
             }
@@ -33,7 +33,7 @@ namespace Drones.UI.Dahsboard
             {
                 if (_MoveSpeed == null)
                 {
-                    _MoveSpeed = transform.FindDescendent("Move Speed").GetComponent<Slider>();
+                    _MoveSpeed = transform.FindDescendant("Move Speed").GetComponent<Slider>();
                 }
                 return _MoveSpeed;
             }
@@ -44,7 +44,7 @@ namespace Drones.UI.Dahsboard
             {
                 if (_RotationSpeed == null)
                 {
-                    _RotationSpeed = transform.FindDescendent("Rotation Speed").GetComponent<Slider>();
+                    _RotationSpeed = transform.FindDescendant("Rotation Speed").GetComponent<Slider>();
                 }
                 return _RotationSpeed;
             }
@@ -55,7 +55,7 @@ namespace Drones.UI.Dahsboard
             {
                 if (_ZoomSpeed == null)
                 {
-                    _ZoomSpeed = transform.FindDescendent("Zoom Speed").GetComponent<Slider>();
+                    _ZoomSpeed = transform.FindDescendant("Zoom Speed").GetComponent<Slider>();
                 }
                 return _ZoomSpeed;
             }

@@ -1,5 +1,4 @@
 ﻿using System;
-using Drones.Extensions;
 using Drones.Objects;
 using Drones.Utils;
 using Drones.Utils.Interfaces;

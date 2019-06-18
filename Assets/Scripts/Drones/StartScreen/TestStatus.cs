@@ -1,6 +1,6 @@
-﻿using Drones.Extensions;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+using Utils;
 
 namespace Drones.StartScreen
 {
@@ -19,7 +19,7 @@ namespace Drones.StartScreen
             {
                 if (_Success == null)
                 {
-                    _Success = transform.FindDescendent("Success").GetComponent<Image>();
+                    _Success = transform.FindDescendant("Success").GetComponent<Image>();
                 }
                 return _Success;
             }
@@ -31,7 +31,7 @@ namespace Drones.StartScreen
             {
                 if (_Failed == null)
                 {
-                    _Failed = transform.FindDescendent("Failed").GetComponent<Image>();
+                    _Failed = transform.FindDescendant("Failed").GetComponent<Image>();
                 }
                 return _Failed;
             }
@@ -43,7 +43,7 @@ namespace Drones.StartScreen
             {
                 if (_Untested == null)
                 {
-                    _Untested = transform.FindDescendent("Untested").GetComponent<Image>();
+                    _Untested = transform.FindDescendant("Untested").GetComponent<Image>();
                 }
                 return _Untested;
             }

@@ -1,10 +1,11 @@
-﻿using Drones.Serializable;
+﻿using System.Collections.Generic;
+using Drones;
+using Drones.Serializable;
 using Mapbox.Utils;
 using UnityEngine;
 using UnityEngine.UI;
-using Utils;
 
-namespace Drones.Extensions
+namespace Utils
 {
     public static class Extensions
     {
@@ -69,7 +70,7 @@ namespace Drones.Extensions
             return null;
         }
 
-        public static Transform FindDescendent(this Transform t, string n, int depth = 0)
+        public static Transform FindDescendant(this Transform t, string n, int depth = 0)
         {
             Transform output = null;
             foreach (Transform child in t)
@@ -77,7 +78,7 @@ namespace Drones.Extensions
                 if (child.name == n) return child;
                 if (depth > 0)
                 {
-                    output = child.FindDescendent(n, depth - 1);
+                    output = child.FindDescendant(n, depth - 1);
                 }
                 if (output != null) return output;
             }
@@ -121,23 +122,9 @@ namespace Drones.Extensions
             return new SVector3(v);
         }
 
-        public static bool GetBit(this byte b, int bitNumber)
-        {
-            return (b & (1 << bitNumber)) != 0;
-        }
+        public static bool IsEmpty<T>(this Queue<T> q) => q.Count == 0;
 
-        public static int GetBitInt(this byte b, int bitNumber)
-        {
-            return (b & (1 << bitNumber)) != 0 ? 1 : 0;
-        }
 
-        public static void SetBit(ref this byte b, int bitNumber, bool val)
-        {
-            if (val)
-                b |= (byte)(1 << bitNumber);
-            else
-                b &= (byte)~(1 << bitNumber);
-        }
     }
 }
 

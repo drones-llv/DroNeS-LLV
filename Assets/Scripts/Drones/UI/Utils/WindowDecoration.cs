@@ -1,7 +1,7 @@
-﻿using Drones.Extensions;
-using Drones.Utils.Interfaces;
+﻿using Drones.Utils.Interfaces;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Utils;
 
 namespace Drones.UI.Utils
 {

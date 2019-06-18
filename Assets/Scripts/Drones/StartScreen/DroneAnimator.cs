@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Drones.Extensions;
 using UnityEngine;
+using Utils;
 
 namespace Drones.StartScreen
 {

@@ -1,8 +1,8 @@
 ﻿using Drones.Data;
-using Drones.Extensions;
 using Drones.UI.Utils;
 using Drones.Utils;
 using Drones.Utils.Interfaces;
+using Utils;
 
 namespace Drones.UI.NoFlyZone
 {

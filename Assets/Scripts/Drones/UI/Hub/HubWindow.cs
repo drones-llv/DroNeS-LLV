@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Globalization;
 using Drones.Data;
-using Drones.Extensions;
 using Drones.UI.Drone;
 using Drones.UI.Utils;
 using Drones.Utils;

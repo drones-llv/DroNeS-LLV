@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Drones.Extensions;
 using Drones.UI.Console;
 using Drones.UI.Dahsboard;
 using Drones.UI.Navigation;

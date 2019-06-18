@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using Drones.Extensions;
 using Drones.Managers;
 using TMPro;
 using UnityEngine;

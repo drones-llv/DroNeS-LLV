@@ -1,8 +1,8 @@
 ﻿using System.Collections;
-using Drones.Extensions;
 using Drones.Utils;
 using TMPro;
 using UnityEngine;
+using Utils;
 
 namespace Drones.UI.Navigation
 {

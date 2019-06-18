@@ -1,6 +1,6 @@
-﻿using Drones.Extensions;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+using Utils;
 
 namespace Drones.StartScreen
 {
@@ -25,7 +25,7 @@ namespace Drones.StartScreen
             {
                 if (_Play == null)
                 {
-                    _Play = transform.FindDescendent("Play").GetComponent<Button>();
+                    _Play = transform.FindDescendant("Play").GetComponent<Button>();
                 }
                 return _Play;
             }
@@ -37,7 +37,7 @@ namespace Drones.StartScreen
             {
                 if (_Options == null)
                 {
-                    _Options = transform.FindDescendent("Options").GetComponent<Button>();
+                    _Options = transform.FindDescendant("Options").GetComponent<Button>();
                 }
                 return _Options;
             }
@@ -49,7 +49,7 @@ namespace Drones.StartScreen
             {
                 if (_Quit == null)
                 {
-                    _Quit = transform.FindDescendent("Quit").GetComponent<Button>();
+                    _Quit = transform.FindDescendant("Quit").GetComponent<Button>();
 
                 }
                 return _Quit;

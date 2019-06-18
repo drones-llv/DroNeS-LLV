@@ -1,8 +1,8 @@
-﻿using Drones.Extensions;
-using Drones.Managers;
+﻿using Drones.Managers;
 using Drones.UI.Utils;
 using UnityEngine;
 using UnityEngine.UI;
+using Utils;
 
 namespace Drones.UI.SaveLoad
 {
@@ -25,7 +25,7 @@ namespace Drones.UI.SaveLoad
             {
                 if (_Confirm == null)
                 {
-                    _Confirm = ContentPanel.transform.FindDescendent("Confirm", 1).GetComponent<Button>();
+                    _Confirm = ContentPanel.transform.FindDescendant("Confirm", 1).GetComponent<Button>();
                 }
                 return _Confirm;
             }
@@ -37,7 +37,7 @@ namespace Drones.UI.SaveLoad
             {
                 if (_Cancel == null)
                 {
-                    _Cancel = ContentPanel.transform.FindDescendent("Cancel", 1).GetComponent<Button>();
+                    _Cancel = ContentPanel.transform.FindDescendant("Cancel", 1).GetComponent<Button>();
                 }
                 return _Cancel;
             }

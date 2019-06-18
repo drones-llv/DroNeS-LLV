@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Drones.Extensions;
 using Drones.Managers;
 using Drones.UI.Utils;
 using Drones.Utils.Interfaces;
@@ -31,7 +30,7 @@ namespace Drones.UI.SaveLoad
             {
                 if (_InputName == null)
                 {
-                    _InputName = ContentPanel.transform.FindDescendent("Input Container").GetComponentInChildren<TMP_InputField>();
+                    _InputName = ContentPanel.transform.FindDescendant("Input Container").GetComponentInChildren<TMP_InputField>();
                 }
                 return _InputName;
             }
@@ -43,7 +42,7 @@ namespace Drones.UI.SaveLoad
             {
                 if (_Operate == null)
                 {
-                    _Operate = InputName.transform.parent.FindDescendent("Save").GetComponent<Button>();
+                    _Operate = InputName.transform.parent.FindDescendant("Save").GetComponent<Button>();
                 }
                 return _Operate;
             }
@@ -55,7 +54,7 @@ namespace Drones.UI.SaveLoad
             {
                 if (_Cancel == null)
                 {
-                    _Cancel = InputName.transform.parent.FindDescendent("Cancel").GetComponent<Button>();
+                    _Cancel = InputName.transform.parent.FindDescendant("Cancel").GetComponent<Button>();
                 }
                 return _Cancel;
             }

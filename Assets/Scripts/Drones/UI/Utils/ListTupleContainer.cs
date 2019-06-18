@@ -1,8 +1,8 @@
 ﻿using System;
-using Drones.Extensions;
 using Drones.Utils;
 using UnityEngine;
 using UnityEngine.UI;
+using Utils;
 
 namespace Drones.UI.Utils
 {

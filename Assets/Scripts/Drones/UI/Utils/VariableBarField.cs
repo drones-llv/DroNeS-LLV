@@ -1,6 +1,6 @@
 ﻿using System;
-using Drones.Extensions;
 using UnityEngine;
+using Utils;
 
 namespace Drones.UI.Utils
 {
