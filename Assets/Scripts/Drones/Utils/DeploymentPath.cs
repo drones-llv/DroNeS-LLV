@@ -47,7 +47,7 @@ namespace Drones.Utils
             }
         }
 
-        public float period = 3.0f;
+        public float period = 1.0f;
         private static int AltitudeCompare(Drone a, Drone b)
         {
             if (a.Waypoint.y < b.Waypoint.y) return -1;

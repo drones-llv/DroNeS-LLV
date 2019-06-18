@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 1894888682}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 10, y: 450, z: 10}
+  m_LocalScale: {x: 10, y: 495, z: 10}
   m_Children: []
   m_Father: {fileID: 1563700628764203956}
   m_RootOrder: 0
@@ -84,9 +84,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c7939956e1d3411d94d049aee5acbc4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _controller: {fileID: 34011538573002244}
-  _Owner: {fileID: 3541644756125382526}
-  _Collider: {fileID: 1894888684}
+  controller: {fileID: 34011538573002244}
+  owner: {fileID: 3541644756125382526}
+  pathCollider: {fileID: 1894888684}
+  period: 3
 --- !u!1 &1563700628764231572
 GameObject:
   m_ObjectHideFlags: 0
@@ -179,10 +180,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 052d8fd885d65431fb5e7c2d149a238c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _CollisionController: {fileID: 34011538573002244}
-  _DronePath: {fileID: 4229716372336963008}
-  _Collider: {fileID: 8869563552237939882}
-  _jobGenerationRate: 0.1
+  collisionController: {fileID: 34011538573002244}
+  dronePath: {fileID: 4229716372336963008}
+  hubCollider: {fileID: 8869563552237939882}
+  jobGenerationRate: 0.1
 --- !u!114 &34011538573002244
 MonoBehaviour:
   m_ObjectHideFlags: 0

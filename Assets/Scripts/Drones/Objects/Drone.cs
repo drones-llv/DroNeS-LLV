@@ -210,12 +210,12 @@ namespace Drones.Objects
         }
         #endregion
 
-        public void SelfDestruct()
+        public void SelfDestruct(bool explosion = false)
         {
             if (gameObject == AbstractCamera.Followee)
                 AbstractCamera.ActiveCamera.BreakFollow();
 
-            Explosion.New(transform.position);
+            if (explosion) Explosion.New(transform.position);
             var dd = new RetiredDrone(this);
             SimManager.AllRetiredDrones.Add(dd.UID, dd);
             Delete();

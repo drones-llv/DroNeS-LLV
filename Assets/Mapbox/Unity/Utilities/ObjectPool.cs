@@ -12,16 +12,13 @@
 
 		public ObjectPool(Func<T> objectGenerator)
 		{
-			if (objectGenerator == null) throw new ArgumentNullException("objectGenerator");
 			_objects = new Queue<T>();
-			_objectGenerator = objectGenerator;
+			_objectGenerator = objectGenerator ?? throw new ArgumentNullException("objectGenerator");
 		}
 
 		public T GetObject()
 		{
-			if (_objects.Count > 0)
-				return _objects.Dequeue();
-			return _objectGenerator();
+			return _objects.Count > 0 ? _objects.Dequeue() : _objectGenerator();
 		}
 
 		public void Put(T item)

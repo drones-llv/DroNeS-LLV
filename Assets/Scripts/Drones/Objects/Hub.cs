@@ -44,7 +44,7 @@ namespace Drones.Objects
 
         public uint UID => _data.UID;
 
-        public string Name => "H" + UID.ToString("000000");
+        public string Name => $"H{UID:000000}";
 
         #region Fields
         private HubData _data;
