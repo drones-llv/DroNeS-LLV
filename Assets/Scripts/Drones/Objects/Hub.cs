@@ -56,8 +56,7 @@ namespace Drones.Objects
         private Collider hubCollider;
         [SerializeField]
         private float jobGenerationRate = 0.1f;
-        [SerializeField]
-        private Pathfinder router;
+        private Pathfinder _router;
         private JobGenerator _jobGenerator;
         private JobScheduler _scheduler;
         #endregion
@@ -86,7 +85,7 @@ namespace Drones.Objects
             if (!(_jobGenerator is null))
                 StopCoroutine(_jobGenerator.Generate());
             _jobGenerator = null;
-            router = null;
+            _router = null;
         }
 
         public void OnGet(Transform parent = null)
@@ -131,17 +130,9 @@ namespace Drones.Objects
                     dronePath = transform.GetComponentInChildren<DeploymentPath>();
                 return dronePath;
             }
+        }
+        public Pathfinder Router => _router ?? (_router = new SmartStarpath());
 
-        }
-        public Pathfinder Router
-        {
-            get
-            {
-                if (router == null)
-                    router = new Raypath();
-                return router;
-            }
-        }
         public JobScheduler Scheduler
         {
             get

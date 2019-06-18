@@ -67,11 +67,9 @@ namespace Drones.Objects
 
         public void AssignDrone(Drone drone)
         {
-            if (Status == JobStatus.Assigning)
-            {
-                _Data.drone = drone.UID;
-                _Data.assignment = TimeKeeper.Chronos.Get();
-            }
+            if (Status != JobStatus.Assigning) return;
+            _Data.drone = drone.UID;
+            _Data.assignment = TimeKeeper.Chronos.Get();
         }
 
         public void FailJob()
@@ -81,14 +79,14 @@ namespace Drones.Objects
             _Data.completed = _EoT;
             _Data.earnings = -Loss;
             var drone = GetDrone();
-            var hub = drone?.GetHub();
+            var hub = drone != null ? drone.GetHub() : null;
             if (hub != null)
             {
                 hub.UpdateRevenue(Earnings);
                 hub.UpdateFailedCount();
             }
-            drone?.AssignJob(null);
-            AssignDrone(null);
+            drone.AssignJob();
+            _Data.drone = 0;
             DataLogger.LogJob(_Data);
         }
 

@@ -93,7 +93,7 @@ namespace Drones.Objects
 
         public override string ToString() => Name;
         public uint UID => _data.UID;
-        public string Name => "D" + _data.UID.ToString("000000");
+        public string Name => $"D{_data.UID:000000}";
 
         public bool AssignJob(Job job)
         {
@@ -107,14 +107,16 @@ namespace Drones.Objects
             _data.job = job.UID;
             job.AssignDrone(this);
             job.StartDelivery();
-            if (_data.hub != 0) SetWaypoints(GetHub().Router.GetRoute(this));
+            if (_data.hub != 0) GetHub().Router.GetRoute(this, ref _data.waypoints);
+            StartDelivery();
             return true;
         }
 
         public bool AssignJob()
         {
             _data.job = 0;
-            if (_data.hub != 0) SetWaypoints(GetHub().Router.GetRoute(this));
+            if (_data.hub != 0) GetHub().Router.GetRoute(this, ref _data.waypoints);
+            StartDelivery();
             return true;
         }
 
@@ -145,7 +147,8 @@ namespace Drones.Objects
         public Battery GetBattery() => SimManager.AllBatteries[_data.battery];
         public void WaitForDeployment() => _data.isWaiting = true;
         public void Deploy() => _data.isWaiting = false;
-        public void UpdateDelay(float dt)
+
+        private void UpdateDelay(float dt)
         {
             _data.totalDelay += dt;
             GetHub().UpdateDelay(dt);
@@ -170,12 +173,10 @@ namespace Drones.Objects
 
             return info;
         }
-        public EnergyInfo GetEnergyInfo(ref EnergyInfo info)
+        public void GetEnergyInfo(ref EnergyInfo info)
         {
             info.moveType = _data.movement;
             info.pkgWgt = (_data.job == 0) ? 0 : GetJob().PackageWeight;
-
-            return info;
         }
 
         #region Fields
@@ -242,13 +243,9 @@ namespace Drones.Objects
                 _data.movement == DroneMovement.Descend && position.y <= Waypoint.y;
         }
 
-        private void SetWaypoints(Queue<Vector3> waypoints)
+        private void StartDelivery()
         {
-            _data.waypoints = waypoints;
-
             if (InHub) GetHub().AddToDeploymentQueue(this);
-
-            //_Data.movement = DroneMovement.Hover;
             StartCoroutine(Horizontal());
         }
 
@@ -275,13 +272,11 @@ namespace Drones.Objects
                 yield return wait;
                 _data.movement = DroneMovement.Hover;
             }
-            if (InHub)
-            {
-                _data.movement = DroneMovement.Horizontal;
-                yield return wait;
-                _data.movement = DroneMovement.Idle;
-                GetHub().OnDroneReturn(this);
-            }
+            if (!InHub) yield break;
+            _data.movement = DroneMovement.Horizontal;
+            yield return wait;
+            _data.movement = DroneMovement.Idle;
+            GetHub().OnDroneReturn(this);
         }
 
         private IEnumerator Vertical()

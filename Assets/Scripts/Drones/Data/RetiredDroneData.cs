@@ -29,7 +29,7 @@ namespace Drones.Data
         {
             UID = drone.UID;
             var j = drone.GetJob();
-            job = j == null ? 0 : j.UID;
+            job = j?.UID ?? 0;
             hub = drone.GetHub()?.Name;
             completedJobs = drone.JobHistory;
             batteryCharge = drone.GetBattery().Charge;

@@ -13,8 +13,15 @@ namespace Drones.Event_System
             Message = msg.ToString();
             ConsoleLog.WriteToConsole(this);
         }
+        
+        private DebugLog(string msg)
+        {
+            Message = msg;
+            ConsoleLog.WriteToConsole(this);
+        }
 
         public static void New(object msg) => new DebugLog(msg);
+        public static void New(string msg) => new DebugLog(msg);
 
         public EventType Type => EventType.DebugLog;
 

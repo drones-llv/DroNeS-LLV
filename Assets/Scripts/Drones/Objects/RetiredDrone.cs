@@ -15,36 +15,36 @@ namespace Drones.Objects
     {
         public RetiredDrone(Drone drone, Collider other)
         {
-            _Data = new RetiredDroneData(drone, other);
+            _data = new RetiredDroneData(drone, other);
             ConsoleLog.WriteToConsole(new DroneCollision(this));
         }
 
         public RetiredDrone(Drone drone)
         {
-            _Data = new RetiredDroneData(drone);
+            _data = new RetiredDroneData(drone);
             ConsoleLog.WriteToConsole(new DroneRetired(this));
 
         }
 
         public RetiredDrone(SRetiredDrone data)
         {
-            _Data = new RetiredDroneData(data);
+            _data = new RetiredDroneData(data);
             SimManager.AllRetiredDrones.Add(UID, this);
         }
 
-        public string Name => "D" + _Data.UID.ToString("000000");
+        public string Name => "D" + _data.UID.ToString("000000");
 
-        public Job GetJob() => (Job)SimManager.AllIncompleteJobs[_Data.job];
-        private readonly RetiredDroneData _Data;
+        public Job GetJob() => (Job)SimManager.AllIncompleteJobs[_data.job];
+        private readonly RetiredDroneData _data;
 
         #region IDataSource
-        public uint UID => _Data.UID;
+        public uint UID => _data.UID;
 
-        public bool IsDataStatic => _Data.IsDataStatic;
+        public bool IsDataStatic => _data.IsDataStatic;
 
         public AbstractInfoWindow InfoWindow { get; set; }
 
-        public void GetData(ISingleDataSourceReceiver receiver) => receiver.SetData(_Data);
+        public void GetData(ISingleDataSourceReceiver receiver) => receiver.SetData(_data);
 
         public void OpenInfoWindow()
         {
@@ -61,25 +61,25 @@ namespace Drones.Objects
         }
         #endregion
 
-        public SecureSortedSet<uint, IDataSource> JobHistory => _Data.completedJobs;
+        public SecureSortedSet<uint, IDataSource> JobHistory => _data.completedJobs;
 
-        public string OtherDroneName => _Data.otherDrone;
+        public string OtherDroneName => _data.otherDrone;
 
-        public Vector3 Location => _Data.collisionLocation;
+        public Vector3 Location => _data.collisionLocation;
 
         public RetiredDrone OtherDrone
         {
             get
             {
-                if (_Data.isDroneCollision)
+                if (_data.isDroneCollision)
                 {
-                    return (RetiredDrone)SimManager.AllRetiredDrones[_Data.otherUID];
+                    return (RetiredDrone)SimManager.AllRetiredDrones[_data.otherUID];
                 }
                 return null;
             }
         }
 
-        public SRetiredDrone Serialize() => new SRetiredDrone(_Data);
+        public SRetiredDrone Serialize() => new SRetiredDrone(_data);
 
 
     }

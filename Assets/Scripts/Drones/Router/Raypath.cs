@@ -67,7 +67,7 @@ namespace Drones.Router
             }
         }
 
-        private Queue<Vector3> Route(Drone drone, int stack = 0, float alt = -1)
+        private void Route(Drone drone, int stack = 0, float alt = -1)
         {
             UpdateGameState();
             var job = drone.GetJob();
@@ -101,25 +101,25 @@ namespace Drones.Router
                 v.y = hubReturn ? 500 : 5;
                 waypoints.Add(v);
 
-                return new Queue<Vector3>(waypoints);
+                Path = new Queue<Vector3>(waypoints);
             }
             catch (StackOverflowException)
             {
                 stack++;
                 var newAlt = hubReturn ? HubAlt[0] : MaxAlt;
-                if (stack <= 1) return Route(drone, stack, newAlt);
+                if (stack <= 1) Route(drone, stack, newAlt);
                 _origin.y = newAlt;
                 _destination.y = newAlt;
                 var v = _destination;
                 v.y = hubReturn ? 500 : 5;
 
-                return new Queue<Vector3>(new[] { _origin, _destination, v });
+                Path = new Queue<Vector3>(new[] { _origin, _destination, v });
 
             }
         }
 
         // The public interface to get the list of waypoints
-        public override Queue<Vector3> GetRoute(Drone drone) => Route(drone);
+        public override void GetRoute(Drone drone, ref Queue<Vector3> waypoints) => Route(drone);
 
         // To test: -7.4, 500, 7.0 to -2640.1, 0.0, -5468.1
         // To test: -7.4, 500, 7.0 to -1111.9, 0.0, -2228.0
@@ -133,9 +133,9 @@ namespace Drones.Router
             }
             _destination = dest;
             _origin = origin;
-            var hubReturn = false;
+            const bool hubReturn = false;
 
-            float alt = 250;
+            const float alt = 250;
             _origin.y = 0;
             _destination.y = 0;
             try

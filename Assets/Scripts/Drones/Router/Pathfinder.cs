@@ -11,6 +11,7 @@ namespace Drones.Router
         private List<Obstacle> _buildings;
         protected static Dictionary<uint, Obstacle> Nfz;
         private static Dictionary<uint, Obstacle> _hubs;
+        protected Queue<Vector3> Path;
         protected const float MaxAlt = 200;
         protected const float MinAlt = 60;
         protected const int AltDivision = 10; // Altitude interval
@@ -36,7 +37,7 @@ namespace Drones.Router
 
         protected const int Rd = 2; // drone Radius
 
-        public abstract Queue<Vector3> GetRoute(Drone drone);
+        public abstract void GetRoute(Drone drone, ref Queue<Vector3> waypoints);
 
         ~Pathfinder()
         {
