@@ -287,9 +287,9 @@ public class EditorFunctions : EditorWindow
         var q = pathfinder.GetRouteTest(GameObject.Find("Start").transform.position, GameObject.Find("End").transform.position);
         while (q.Count > 0)
         {
-            var qb = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            var qb = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             qb.transform.position = q.Dequeue();
-            qb.transform.localScale = Vector3.one * 25;
+            qb.transform.localScale = Vector3.one * 30;
         }
     }
 

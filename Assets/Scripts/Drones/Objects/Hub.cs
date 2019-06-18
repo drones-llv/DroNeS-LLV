@@ -72,7 +72,7 @@ namespace Drones.Objects
         public void OnRelease()
         {
             InPool = true;
-            InfoWindow?.Close.onClick.Invoke();
+            if (InfoWindow != null) InfoWindow.Close.onClick.Invoke();
             if (_data.drones != null)
             {
                 _data.drones.ReSort();

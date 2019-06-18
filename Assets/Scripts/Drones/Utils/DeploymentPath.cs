@@ -9,17 +9,17 @@ namespace Drones.Utils
     public class DeploymentPath : MonoBehaviour
     {
         [SerializeField]
-        private HubCollisionController _controller;
+        private HubCollisionController controller;
         [SerializeField]
-        private Hub _Owner;
+        private Hub owner;
         [SerializeField]
-        private Collider _Collider;
-        public Collider Collider
+        private Collider pathCollider;
+        public Collider PathCollider
         {
             get
             {
-                if (_Collider == null) _Collider = GetComponent<Collider>();
-                return _Collider;
+                if (pathCollider == null) pathCollider = GetComponent<Collider>();
+                return pathCollider;
             }
         }
 
@@ -27,11 +27,11 @@ namespace Drones.Utils
         {
             get
             {
-                if (_controller == null)
+                if (controller == null)
                 {
-                    _controller = transform.parent.GetComponent<HubCollisionController>();
+                    controller = transform.parent.GetComponent<HubCollisionController>();
                 }
-                return _controller;
+                return controller;
             }
         }
 
@@ -39,15 +39,15 @@ namespace Drones.Utils
         {
             get
             {
-                if (_Owner == null)
+                if (owner == null)
                 {
-                    _Owner = transform.parent.GetComponent<Hub>();
+                    owner = transform.parent.GetComponent<Hub>();
                 }
-                return _Owner;
+                return owner;
             }
         }
 
-        public float PERIOD = 3.0f;
+        public float period = 3.0f;
         private static int AltitudeCompare(Drone a, Drone b)
         {
             if (a.Waypoint.y < b.Waypoint.y) return -1;
@@ -75,17 +75,17 @@ namespace Drones.Utils
 
         private void OnDisable() => _deploymentQueue.Clear();
 
-        private int _Intersects;
+        private int _intersects;
 
         public Vector3 Direction { get; private set; }
 
-        public bool IsClear => _Intersects == 0;
+        public bool IsClear => _intersects == 0;
 
         private void OnTriggerEnter(Collider other)
         {
             if (other.gameObject.layer == 12)
             {
-                _Intersects++;
+                _intersects++;
                 Vector3 v;
                 if (Vector3.Distance(transform.position, other.transform.position) < 0.1f)
                 {
@@ -102,12 +102,10 @@ namespace Drones.Utils
 
         private void OnTriggerExit(Collider other)
         {
-            if (other.gameObject.layer == 12)
-            {
-                _Intersects--;
-                if (_Intersects == 0)
-                    Direction = Vector3.zero;
-            }
+            if (other.gameObject.layer != 12) return;
+            _intersects--;
+            if (_intersects == 0)
+                Direction = Vector3.zero;
         }
 
         public IEnumerator DeployDrone()
@@ -118,7 +116,7 @@ namespace Drones.Utils
             while (true)
             {
                 time.Now();
-                while (time.Timer() < PERIOD) yield return null;
+                while (time.Timer() < period) yield return null;
                 if (!IsClear || _deploymentQueue.Count <= 0) continue;
                 var outgoing = _deploymentQueue.Remove();
                 _inQueue.Remove(outgoing.UID);
