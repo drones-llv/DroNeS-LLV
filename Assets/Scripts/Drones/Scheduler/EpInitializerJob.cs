@@ -1,13 +1,14 @@
-﻿using Unity.Burst;
+﻿using Drones.Utils;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 
 namespace Drones.Scheduler
 {
     [BurstCompile]
-    public struct EPInitializerJob : IJobParallelFor
+    public struct EpInitializerJob : IJobParallelFor
     {
-        public ChronoWrapper time;
+        public TimeKeeper.Chronos time;
 
         public NativeArray<EPStruct> results;
 

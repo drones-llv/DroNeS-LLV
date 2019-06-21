@@ -303,7 +303,7 @@ namespace Drones.Objects
 
         public static Hub Load(SHub data, List<SDrone> drones, List<SBattery> batteries)
         {
-            Hub hub = PoolController.Get(ObjectPool.Instance).Get<Hub>(null, true);
+            var hub = PoolController.Get(ObjectPool.Instance).Get<Hub>(null, true);
             hub.transform.position = data.position;
             hub.transform.SetParent(null);
             hub.gameObject.SetActive(true);

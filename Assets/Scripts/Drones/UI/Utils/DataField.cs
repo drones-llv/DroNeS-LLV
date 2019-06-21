@@ -10,7 +10,7 @@ namespace Drones.UI.Utils
 {
     public class DataField : TextMeshProUGUI, IPointerEnterHandler
     {
-        string Value => text;
+        private string Value => text;
 
         [SerializeField]
         private readonly string _ToolTip = "";

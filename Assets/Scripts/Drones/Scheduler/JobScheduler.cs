@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Drones.JobSystem;
 using Drones.Managers;
 using Drones.Objects;
+using Drones.Utils;
 using UnityEngine;
 using Utils;
 
@@ -47,9 +49,11 @@ namespace Drones.Scheduler
                 case Scheduling.LLV:
                     _algorithm = new LLVScheduler(_droneQueue);
                     break;
-                default:
+                case Scheduling.FCFS:
                     _algorithm = new FCFSScheduler(_droneQueue);
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -73,7 +77,7 @@ namespace Drones.Scheduler
 
         public int JobQueueLength => _algorithm.JobQueue.Count;
 
-        public void LoadDroneQueue(List<uint> data)
+        public void LoadDroneQueue(IEnumerable<uint> data)
         {
             _droneQueue = new Queue<Drone>();
             foreach (var i in data) AddToQueue((Drone)SimManager.AllDrones[i]);
@@ -87,7 +91,7 @@ namespace Drones.Scheduler
             return l;
         }
 
-        public void LoadJobQueue(List<uint> data)
+        public void LoadJobQueue(IEnumerable<uint> data)
         {
             _algorithm.Complete();
             NewAlgorithm();
@@ -99,9 +103,9 @@ namespace Drones.Scheduler
         public List<uint> SerializeJobs()
         {
             var l = new List<uint>();
-            for (int i =0; i < _algorithm.JobQueue.Count; i++)
+            foreach (var job in _algorithm.JobQueue)
             {
-                l.Add(_algorithm.JobQueue[i].UID);
+                l.Add(job.UID);
             }
 
             return l;
@@ -120,15 +124,15 @@ namespace Drones.Scheduler
             return 1 / (Mathf.Sqrt(2 * Mathf.PI) * stdev) * Mathf.Exp(-Mathf.Pow(z - mu, 2) / (2 * stdev * stdev));
         }
 
-        public static float ExpectedValue(StrippedJob j, ChronoWrapper time)
+        public static float ExpectedValue(StrippedJob j, TimeKeeper.Chronos time)
         {
             var mu = j.expectedDuration;
             var stdev = j.stDevDuration;
 
             var h = (4 * stdev + mu) / STEPS;
-            float expected = CostFunction.Evaluate(j, time) * Normal(0, mu, stdev) / 2;
+            var expected = CostFunction.Evaluate(j, time) * Normal(0, mu, stdev) / 2;
             expected += CostFunction.Evaluate(j, time + 4 * stdev) * Normal(4 * stdev, mu, stdev) / 2;
-            for (int i = 1; i < STEPS; i++)
+            for (var i = 1; i < STEPS; i++)
             {
                 expected += CostFunction.Evaluate(j, time + i * h) * Normal(i * h, mu, stdev);
             }

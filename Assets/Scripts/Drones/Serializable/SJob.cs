@@ -40,14 +40,14 @@ namespace Drones.Serializable
         public SJob(JobData data)
         {
             uid = data.UID;
-            packageWeight = data.packageWeight;
-            costFunction = data.costFunction?.Serialize();
-            completedOn = data.completed?.Serialize();
-            deadline = data.deadline?.Serialize();
-            status = data.status;
-            pickup = data.pickup;
-            destination = data.dropoff;
-            droneUID = data.drone;
+            packageWeight = data.PackageWeight;
+            costFunction = data.CostFunction?.Serialize();
+            completedOn = data.Completed.Serialize();
+            deadline = data.Deadline.Serialize();
+            status = data.Status;
+            pickup = data.Pickup;
+            destination = data.Dropoff;
+            droneUID = data.Drone;
         }
 
     }

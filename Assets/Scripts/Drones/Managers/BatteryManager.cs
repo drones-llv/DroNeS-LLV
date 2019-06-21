@@ -20,7 +20,7 @@ namespace Drones.Managers
         }
 
         private JobHandle _energyJobHandle = new JobHandle();
-        private readonly TimeKeeper.Chronos _time = TimeKeeper.Chronos.Get();
+        private TimeKeeper.Chronos _time = TimeKeeper.Chronos.Get();
         private static SecureSortedSet<uint, Battery> Batteries => SimManager.AllBatteries;
         private NativeArray<EnergyInfo> _energyInfoArray;
 
@@ -46,7 +46,7 @@ namespace Drones.Managers
 
         private IEnumerator Operate()
         {
-            var _energyJob = new EnergyJob();
+            var energyJob = new EnergyJob();
             while (true)
             {
                 if (Batteries.Count == 0) yield return null;
@@ -58,15 +58,15 @@ namespace Drones.Managers
                     battery.GetDrone()?.UpdateEnergy(dE);
                     battery.SetEnergyInfo(_energyInfoArray[j]);
 
-                    _energyInfoArray[j] = battery.GetEnergyInfo(_energyInfoArray[j]);
+                    _energyInfoArray[j] = battery.GetEnergyInfo();
                     j++;
                 }
 
-                _energyJob.Energies = _energyInfoArray;
-                _energyJob.DeltaTime = _time.Timer();
+                energyJob.Energies = _energyInfoArray;
+                energyJob.DeltaTime = _time.Timer();
                 _time.Now();
 
-                _energyJobHandle = _energyJob.Schedule(Batteries.Count, 16);
+                _energyJobHandle = energyJob.Schedule(Batteries.Count, 16);
 
                 yield return null;
                 EnergyJobHandle.Complete();
@@ -80,10 +80,9 @@ namespace Drones.Managers
             Initialise();
 
             var j = 0;
-            foreach (var drone in Batteries.Values)
+            foreach (var battery in Batteries.Values)
             {
-                _energyInfoArray[j] = new EnergyInfo();
-                _energyInfoArray[j] = drone.GetEnergyInfo(_energyInfoArray[j]);
+                _energyInfoArray[j] = battery.GetEnergyInfo();
                 j++;
             }
 
@@ -96,10 +95,9 @@ namespace Drones.Managers
             _instance.Initialise();
 
             var j = 0;
-            foreach (var drone in Batteries.Values)
+            foreach (var battery in Batteries.Values)
             {
-                _instance._energyInfoArray[j] = new EnergyInfo();
-                _instance._energyInfoArray[j] = drone.GetEnergyInfo(_instance._energyInfoArray[j]);
+                _instance._energyInfoArray[j] = battery.GetEnergyInfo();
                 j++;
             }
         }

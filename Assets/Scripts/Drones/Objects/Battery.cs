@@ -45,8 +45,9 @@ namespace Drones.Objects
         public void Destroy() => GetHub()?.DestroyBattery(this);
         public void SetStatus(BatteryStatus status) => _data.status = status;
 
-        public EnergyInfo GetEnergyInfo(EnergyInfo info)
+        public EnergyInfo GetEnergyInfo()
         {
+            var info = new EnergyInfo();
             if (_data.drone != 0)
             {
                 GetDrone().GetEnergyInfo(ref info);

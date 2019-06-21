@@ -12,25 +12,24 @@ namespace Drones.Utils
 {
     public class TimeKeeper : MonoBehaviour
     {
-
-        public static TimeKeeper Instance { get; private set; }
+        private static TimeKeeper Instance { get; set; }
         [SerializeField]
-        private TimeSpeed _TimeSpeed = TimeSpeed.Pause;
+        private TimeSpeed timeSpeed = TimeSpeed.Pause;
         public static TimeSpeed TimeSpeed
         {
-            get => Instance._TimeSpeed;
+            get => Instance.timeSpeed;
 
             set
             {
-                if (Instance._TimeSpeed != value)
+                if (Instance.timeSpeed != value)
                 {
                     if (SimManager.Status == SimulationStatus.EditMode && value != TimeSpeed.Pause) return;
-                    Instance._TimeSpeed = value;
+                    Instance.timeSpeed = value;
                 }
                 ShowSimSpeed.OnSpeedChange();
             }
         }
-        private const float DEG_PER_DAY = 360.0f / (24 * 3600);
+        private const float DegPerDay = 360.0f / (24 * 3600);
         private static readonly Dictionary<TimeSpeed, float> _Scale = new Dictionary<TimeSpeed, float>
         {
             {TimeSpeed.Slow, 0.5f},
@@ -50,185 +49,175 @@ namespace Drones.Utils
 
         public static void SetTime(STime time)
         {
-            _Degree = time.hr / 24f * 360f + time.min / 24f / 60f * 360f + time.sec * DEG_PER_DAY;
+            _day = time.day;
+            _degree = time.hr / 24f * 360f + time.min / 24f / 60f * 360f + time.sec * DegPerDay;
         }
 
-        private static float _Degree;
+        private static float _degree;
 
-        private static int _Day;
+        private static int _day;
 
-        private static int Hour => (int)(_Degree / 360 * 24);
+        private static int Hour => (int)(_degree / 360 * 24);
 
-        private static int Minute => (int)((_Degree / 360 * 24 - Hour) * 60);
+        private static int Minute => (int)((_degree / 360 * 24 - Hour) * 60);
 
-        private static float Seconds => ((_Degree / 360 * 24 - Hour) * 60 - Minute) * 60;
+        private static float Seconds => ((_degree / 360 * 24 - Hour) * 60 - Minute) * 60;
 
-        void Awake()
+        private void Awake()
         {
             Instance = this;
-            transform.position = Vector3.up * 200;
-            transform.eulerAngles = new Vector3(90, -90, -90);
-            transform.RotateAround(Vector3.zero, new Vector3(0, 0, 1), 180);
-            transform.RotateAround(Vector3.zero, new Vector3(0, 0, 1), 135); // 9am
-            _Degree = 135;
+            var sun = transform;
+            sun.position = Vector3.up * 200;
+            sun.eulerAngles = new Vector3(90, -90, -90);
+            sun.RotateAround(Vector3.zero, new Vector3(0, 0, 1), 180);
+            sun.RotateAround(Vector3.zero, new Vector3(0, 0, 1), 135); // 9am
+            _degree = 135;
+            _day = 0;
         }
 
         private void FixedUpdate()
         {
-            float speed = _Scale[TimeSpeed] * DEG_PER_DAY;
+            var speed = _Scale[TimeSpeed] * DegPerDay;
 
-            float dTheta = Time.fixedDeltaTime * speed;
+            var dTheta = Time.fixedDeltaTime * speed;
 
             transform.RotateAround(Vector3.zero, new Vector3(0, 0, 1), dTheta);
 
-            _Degree += dTheta;
+            _degree += dTheta;
 
-            if (_Degree > 360)
-            {
-                _Day++;
-                _Degree %= 360;
-            }
+            if (!(_degree > 360)) return;
+            _day++;
+            _degree %= 360;
 
         }
 
         private void Update() => StopWatch.Restart();
 
-        public class Chronos
+        public struct Chronos
         {
-            int day;
-            int hr;
-            int min;
-            float sec;
-            bool readOnly;
+            private const float Epsilon = 0.001f;
+            private int _cDay;
+            private int _hr;
+            private int _min;
+            private float _sec;
 
             public Chronos(int d, int h, int m, float s)
             {
-                int acc;
-                sec = s % 60;
-                if (sec < 0) sec += 60;
-                acc = Mathf.FloorToInt(s / 60);
-                min = (m + acc) % 60;
-                if (min < 0) min += 60;
+                _sec = s % 60;
+                if (_sec < 0) _sec += 60;
+                var acc = Mathf.FloorToInt(s / 60);
+                _min = (m + acc) % 60;
+                if (_min < 0) _min += 60;
                 acc = Mathf.FloorToInt((m + acc) / 60f);
-                hr = (h + acc) % 24;
-                if (hr < 0) hr += 24;
+                _hr = (h + acc) % 24;
+                if (_hr < 0) _hr += 24;
                 acc = Mathf.FloorToInt((h + acc) / 24f);
-                day = d + acc;
-                readOnly = false;
+                _cDay = d + acc;
             }
 
             public Chronos(STime time)
             {
-                sec = time.sec;
-                min = time.min;
-                hr = time.hr;
-                day = time.day;
-                readOnly = time.isReadOnly;
-            }
-
-            public Chronos SetReadOnly()
-            {
-                readOnly = true;
-                return this;
+                _sec = time.sec;
+                _min = time.min;
+                _hr = time.hr;
+                _cDay = time.day;
             }
 
             public override string ToString()
             {
-                return string.Format("Day {0}, {1}:{2}", day, hr.ToString("00"), min.ToString("00"));
+                return IsNull() ? "" : $"Day {_cDay}, {_hr:00}:{_min:00}";
             }
 
             public string ToStringLong()
             {
-                return ToString() + ":" + sec.ToString("00.000");
+                return IsNull() ? "" : $"{ToString()}:{_sec:00.000}";
             }
 
             public static Chronos Get()
             {
-                return new Chronos(_Day, Hour, Minute, Seconds);
+                return new Chronos(TimeKeeper._day, Hour, Minute, Seconds);
+            }
+
+            public bool IsNull()
+            {
+                return _cDay == 0 && _hr == 0 && _min == 0 && Mathf.Abs(_sec - 0) < 0.001f;
             }
 
             public Chronos Now()
             {
-                if (!readOnly)
-                {
-                    day = _Day;
-                    hr = Hour;
-                    min = Minute;
-                    sec = Seconds;
-                }
+                _cDay = _day;
+                _hr = Hour;
+                _min = Minute;
+                _sec = Seconds;
                 return this;
             }
 
             public float Timer()
             {
-                return (_Day - day) * 24 * 3600 + (Hour - hr) * 3600 + (Minute - min) * 60 + (Seconds - sec);
+                return (_day - _cDay) * 24 * 3600 + (Hour - _hr) * 3600 + (Minute - _min) * 60 + (Seconds - _sec);
             }
 
-            public string ToCSVFormat()
+            public string ToCsvFormat()
             {
-                return (day * 24 * 3600 + (hr - 9) * 3600 + min * 60 + sec).ToString("0.0");
+                return IsNull() ? "" : (_cDay * 24 * 3600 + (_hr - 9) * 3600 + _min * 60 + _sec).ToString("0.0");
             }
 
             public STime Serialize()
             {
                 return new STime
                 {
-                    sec = this.sec,
-                    min = this.min,
-                    hr = this.hr,
-                    day = this.day,
-                    isReadOnly = readOnly
+                    sec = _sec,
+                    min = _min,
+                    hr = _hr,
+                    day = _cDay,
                 };
             }
 
-            public override bool Equals(object obj) => obj is Chronos && this == ((Chronos)obj);
-
-            public override int GetHashCode() => base.GetHashCode();
-
-            static public explicit operator ChronoWrapper(Chronos time)
+            public override bool Equals(object obj)
             {
-                return new ChronoWrapper(time.day, time.hr, time.min, time.sec);
+                if (obj is null) return false;
+                return obj is Chronos chronos && this == chronos;
+            }
+
+            public override int GetHashCode()
+            {
+                return _cDay.GetHashCode() ^ _hr.GetHashCode() << 2 ^ _min.GetHashCode() >> 2 ^ Mathf.FloorToInt(_sec).GetHashCode() >> 1;
             }
 
             #region Operators
-            public static bool operator <(Chronos t1, Chronos t2)
-            {
-                if (t1.day < t2.day) return true;
-
-                if (t1.day == t2.day)
-                {
-                    if (t1.hr < t2.hr) return true;
-                    if (t1.hr == t2.hr)
-                    {
-                        if (t1.min < t2.min) return true;
-                    }
-                }
-                return false;
-            }
-
-            public static bool operator >(Chronos t1, Chronos t2)
-            {
-                if (t1.day > t2.day) return true;
-
-                if (t1.day == t2.day)
-                {
-                    if (t1.hr > t2.hr) return true;
-
-                    if (t1.hr == t2.hr)
-                    {
-                        if (t1.min > t2.min) return true;
-                    }
-                }
-                return false;
-            }
-
             public static bool operator ==(Chronos t1, Chronos t2)
             {
+                if (t1.GetHashCode() != t2.GetHashCode()) return false;
+                return Mathf.Abs(t1._sec - t2._sec) < Epsilon;
+            }
+            
+            public static bool operator != (Chronos t1, Chronos t2)
+            {
+                return !(t1 == t2);
+            }
+            
+            public static bool operator >(Chronos t1, Chronos t2)
+            {
+                if (t1._cDay > t2._cDay) return true;
 
-                return !(t1 is null) && !(t2 is null) && t1.day == t2.day && t1.hr == t2.hr && t1.min == t2.min
-                    || (t1 is null && t2 is null);
+                if (t1._cDay != t2._cDay) return false;
+                
+                if (t1._hr > t2._hr) return true;
+
+                if (t1._hr != t2._hr) return false;
+
+                if (t1._min > t2._min) return true;
+
+                if (t1._min != t2._min) return false;
+
+                return t1._sec - t2._sec > Epsilon;
             }
 
+            public static bool operator <(Chronos t1, Chronos t2)
+            {
+                return !(t1 > t2) && t1 != t2;
+            }
+            
             public static bool operator >=(Chronos t1, Chronos t2)
             {
                 return t1 > t2 || t1 == t2;
@@ -239,24 +228,19 @@ namespace Drones.Utils
                 return t1 < t2 || t1 == t2;
             }
 
-            public static bool operator != (Chronos t1, Chronos t2)
-            {
-                return !(t1 == t2);
-            }
-
             public static Chronos operator + (Chronos t1, float s)
             {
-                return new Chronos(t1.day, t1.hr, t1.min, t1.sec + s);
+                return new Chronos(t1._cDay, t1._hr, t1._min, t1._sec + s);
             }
 
             public static Chronos operator - (Chronos t1, float s)
             {
-                return new Chronos(t1.day, t1.hr, t1.min, t1.sec - s);
+                return new Chronos(t1._cDay, t1._hr, t1._min, t1._sec - s);
             }
 
             public static float operator - (Chronos t1, Chronos t2)
             {
-                return (t1.day - t2.day) * 24f * 3600f + (t1.hr - t2.hr) * 3600 + (t1.min - t2.min) * 60 + (t1.sec - t1.sec);
+                return (t1._cDay - t2._cDay) * 24f * 3600f + (t1._hr - t2._hr) * 3600 + (t1._min - t2._min) * 60 + (t1._sec - t1._sec);
             }
             #endregion
         }

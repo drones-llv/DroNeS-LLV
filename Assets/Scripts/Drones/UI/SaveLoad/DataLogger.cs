@@ -13,48 +13,48 @@ namespace Drones.UI.SaveLoad
 {
     public class DataLogger : MonoBehaviour
     {
-        private static DataLogger _Instance;
+        private static DataLogger _instance;
         public static DataLogger New()
         {
-            _Instance = new GameObject("DataLogger").AddComponent<DataLogger>();
+            _instance = new GameObject("DataLogger").AddComponent<DataLogger>();
             Load();
-            return _Instance;
+            return _instance;
         }
         public static void Load()
         {
-            _Instance.StopAllCoroutines();
-            _Instance.LogPath = Path.Combine(SaveLoadManager.ExportPath, SimManager.Name.Replace("/", "-").Replace(":", "-"));
-            _Instance.Session = SimManager.Name.Replace("/", "-").Replace(":", "-");
+            _instance.StopAllCoroutines();
+            _instance.LogPath = Path.Combine(SaveLoadManager.ExportPath, SimManager.Name.Replace("/", "-").Replace(":", "-"));
+            _instance.session = SimManager.Name.Replace("/", "-").Replace(":", "-");
             Log();
         }
-        public string Session;
+        public string session;
         public static bool IsLogging { get; set; } = true;
         public static float LoggingPeriod { get; set; } = 60;
         public static bool IsAutosave { get; set; } = true;
         public static float AutosavePeriod { get; set; } = 300;
-        private readonly string[] _SimulationData = new string[13];
-        private readonly string[] _JobData = new string[10];
-        public string SimMemory = "";
-        public string JobMemory = "";
+        private readonly string[] _simulationData = new string[13];
+        private readonly string[] _jobData = new string[10];
+        public string simCache = "";
+        public string jobCache = "";
 
-        public string LogPath { get; private set; }
+        private string LogPath { get; set; }
 
-        public static void Log()
+        private static void Log()
         {
-            _Instance.StopAllCoroutines();
-            _Instance.StartCoroutine(_Instance.SimLog());
-            _Instance.StartCoroutine(_Instance.Autosave());
+            _instance.StopAllCoroutines();
+            _instance.StartCoroutine(_instance.SimLog());
+            _instance.StartCoroutine(_instance.Autosave());
         }
 
-        public void WriteTupleToMemory(ref string memory, params string[] data)
+        private static void WriteTupleToMemory(ref string memory, params string[] data)
         {
-            for (int i = 0; i < data.Length; i++)
+            if (!string.IsNullOrWhiteSpace(memory)) memory += "\n";
+            for (var i = 0; i < data.Length; i++)
             {
                 memory += data[i];
                 if (i < data.Length - 1)
                     memory += ",";
             }
-            memory += "\n";
         }
 
         private IEnumerator SimLog()
@@ -62,7 +62,7 @@ namespace Drones.UI.SaveLoad
             if (!IsLogging) yield break;
             yield return new WaitUntil(() => TimeKeeper.TimeSpeed != TimeSpeed.Pause);
             if (!Directory.Exists(LogPath)) Directory.CreateDirectory(LogPath);
-            string filepath = Path.Combine(LogPath, "Simulation Log.csv");
+            var filepath = Path.Combine(LogPath, "Simulation Log.csv");
             if (!File.Exists(filepath))
             {
                 string[] headers = {"Timestamp", 
@@ -78,17 +78,16 @@ namespace Drones.UI.SaveLoad
                                     "Delay (s)",
                                     "Audibility (s)",
                                     "Energy (kWh)" };
-                WriteTupleToMemory(ref SimMemory, headers);
-                Flush(filepath, ref SimMemory);
+                WriteTupleToMemory(ref simCache, headers);
+                Flush(filepath, ref simCache);
                 //WriteTupleToFile(filepath, headers);
             }
             var time = TimeKeeper.Chronos.Get();
             var wait = new WaitUntil(() => time.Timer() > LoggingPeriod);
-            string[] data = new string[12];
             while (true)
             {
                 SimManager.GetData(this, time);
-                WriteTupleToMemory(ref SimMemory, _SimulationData);
+                WriteTupleToMemory(ref simCache, _simulationData);
                 //WriteTupleToFile(filepath, _Instance._SimulationData);
                 yield return wait;
                 time.Now();
@@ -98,8 +97,8 @@ namespace Drones.UI.SaveLoad
         public static void LogJob(JobData data)
         {
             if (!IsLogging) return;
-            if (!Directory.Exists(_Instance.LogPath)) Directory.CreateDirectory(_Instance.LogPath);
-            string filepath = Path.Combine(_Instance.LogPath, "Job Log.csv");
+            if (!Directory.Exists(_instance.LogPath)) Directory.CreateDirectory(_instance.LogPath);
+            var filepath = Path.Combine(_instance.LogPath, "Job Log.csv");
             if (!File.Exists(filepath))
             {
                 string[] headers = {"Timestamp",
@@ -112,40 +111,40 @@ namespace Drones.UI.SaveLoad
                                     "Initial Price",
                                     "Final Earnings",
                                     "Failed" };
-                _Instance.WriteTupleToMemory(ref _Instance.JobMemory, headers);
-                _Instance.Flush(filepath, ref _Instance.JobMemory);
+                WriteTupleToMemory(ref _instance.jobCache, headers);
+                Flush(filepath, ref _instance.jobCache);
                 //_Instance.WriteTupleToFile(filepath, headers);
             }
-            _Instance._JobData[0] = DateTime.Now.ToString();
-            _Instance._JobData[1] = data.created.ToCSVFormat();
-            _Instance._JobData[2] = data.assignment.ToCSVFormat();
-            _Instance._JobData[3] = data.completed.ToCSVFormat();
-            _Instance._JobData[4] = data.expectedDuration.ToString("0.00");
-            _Instance._JobData[5] = data.stDevDuration.ToString("0.00");
-            _Instance._JobData[6] = (data.pickup - data.dropoff).magnitude.ToString("0.00");
-            _Instance._JobData[7] = data.costFunction.Reward.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
-            _Instance._JobData[8] = data.earnings.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
-            _Instance._JobData[9] = (data.status == JobStatus.Failed) ? "YES" : "NO";
-            _Instance.WriteTupleToMemory(ref _Instance.JobMemory, _Instance._JobData);
+            _instance._jobData[0] = DateTime.Now.ToString();
+            _instance._jobData[1] = data.Created.ToCsvFormat();
+            _instance._jobData[2] = data.Assignment.ToCsvFormat();
+            _instance._jobData[3] = data.Completed.ToCsvFormat();
+            _instance._jobData[4] = data.ExpectedDuration.ToString("0.00");
+            _instance._jobData[5] = data.StDevDuration.ToString("0.00");
+            _instance._jobData[6] = (data.Pickup - data.Dropoff).magnitude.ToString("0.00");
+            _instance._jobData[7] = data.CostFunction.Reward.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
+            _instance._jobData[8] = data.Earnings.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
+            _instance._jobData[9] = (data.Status == JobStatus.Failed) ? "YES" : "NO";
+            WriteTupleToMemory(ref _instance.jobCache, _instance._jobData);
             //_Instance.WriteTupleToFile(filepath, _Instance._JobData);
 
         }
 
         public void SetData(SimulationData data, TimeKeeper.Chronos time)
         {
-            _SimulationData[0] = DateTime.Now.ToString();
-            _SimulationData[1] = time.ToCSVFormat();
-            _SimulationData[2] = data.drones.Count.ToString();
-            _SimulationData[3] = Objects.Drone.ActiveDrones.childCount.ToString();
-            _SimulationData[4] = data.crashes.ToString();
-            _SimulationData[5] = data.queuedJobs.ToString();
-            _SimulationData[6] = data.completedCount.ToString();
-            _SimulationData[7] = data.delayedJobs.ToString();
-            _SimulationData[8] = data.failedJobs.ToString();
-            _SimulationData[9] = data.revenue.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
-            _SimulationData[10] = (data.totalDelay / data.completedCount).ToString("0.00");
-            _SimulationData[11] = data.totalAudible.ToString("0.00");
-            _SimulationData[12] = UnitConverter.Convert(Energy.kWh, data.totalEnergy);
+            _simulationData[0] = DateTime.Now.ToString();
+            _simulationData[1] = time.ToCsvFormat();
+            _simulationData[2] = data.drones.Count.ToString();
+            _simulationData[3] = Objects.Drone.ActiveDrones.childCount.ToString();
+            _simulationData[4] = data.crashes.ToString();
+            _simulationData[5] = data.queuedJobs.ToString();
+            _simulationData[6] = data.completedCount.ToString();
+            _simulationData[7] = data.delayedJobs.ToString();
+            _simulationData[8] = data.failedJobs.ToString();
+            _simulationData[9] = data.revenue.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
+            _simulationData[10] = (data.totalDelay / data.completedCount).ToString("0.00");
+            _simulationData[11] = data.totalAudible.ToString("0.00");
+            _simulationData[12] = UnitConverter.Convert(Energy.kWh, data.totalEnergy);
         }
 
         IEnumerator Autosave()
@@ -155,22 +154,20 @@ namespace Drones.UI.SaveLoad
             while (true)
             {
                 yield return wait;
-                if (IsLogging)
-                {
-                    string filepath = Path.Combine(_Instance.LogPath, "Job Log.csv");
-                    Flush(filepath, ref JobMemory);
-                    filepath = Path.Combine(LogPath, "Simulation Log.csv");
-                    Flush(filepath, ref SimMemory);
-                }
+                if (!IsLogging) continue;
+                var filepath = Path.Combine(_instance.LogPath, "Job Log.csv");
+                Flush(filepath, ref jobCache);
+                filepath = Path.Combine(LogPath, "Simulation Log.csv");
+                Flush(filepath, ref simCache);
                 //if (IsAutosave) SaveManager.Save(SaveManager.FilePath(Session));
             }
         }
         public void WriteTupleToFile(string filepath, params string[] data)
         {
-            using (StreamWriter writer = File.AppendText(filepath))
+            using (var writer = File.AppendText(filepath))
             {
-                string output = "";
-                for (int i = 0; i < data.Length; i++)
+                var output = "";
+                for (var i = 0; i < data.Length; i++)
                 {
                     output += data[i];
                     if (i < data.Length - 1)
@@ -181,9 +178,9 @@ namespace Drones.UI.SaveLoad
             }
         }
 
-        void Flush(string filepath, ref string data)
+        private static void Flush(string filepath, ref string data)
         {
-            using (StreamWriter writer = File.AppendText(filepath))
+            using (var writer = File.AppendText(filepath))
             {
                 writer.WriteLine(data);
                 writer.Close();
@@ -193,13 +190,11 @@ namespace Drones.UI.SaveLoad
 
         public static void Dump()
         {
-            if (IsLogging)
-            {
-                string filepath = Path.Combine(_Instance.LogPath, "Job Log.csv");
-                _Instance.Flush(filepath, ref _Instance.JobMemory);
-                filepath = Path.Combine(_Instance.LogPath, "Simulation Log.csv");
-                _Instance.Flush(filepath, ref _Instance.SimMemory);
-            }
+            if (!IsLogging) return;
+            var filepath = Path.Combine(_instance.LogPath, "Job Log.csv");
+            Flush(filepath, ref _instance.jobCache);
+            filepath = Path.Combine(_instance.LogPath, "Simulation Log.csv");
+            Flush(filepath, ref _instance.simCache);
             //if (IsAutosave) SaveManager.Save(SaveManager.FilePath(_Instance.Session));
         }
     }

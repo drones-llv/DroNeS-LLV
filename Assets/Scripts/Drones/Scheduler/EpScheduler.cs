@@ -35,35 +35,35 @@ namespace Drones.Scheduler
                 yield return wait;
                 while (DroneQueue.Count > 0 && JobQueue.Count > 0 && TimeKeeper.TimeSpeed != TimeSpeed.Pause)
                 {
-                    Drone drone = DroneQueue.Dequeue();
+                    var drone = DroneQueue.Dequeue();
                     if (drone.InPool) continue;
 
                     Scheduling.Complete();
-                    for (int i = jobs.Length; i < JobQueue.Count; i++)
+                    for (var i = jobs.Length; i < JobQueue.Count; i++)
                     {
                         jobs.Add(new EPStruct { job = (StrippedJob)JobQueue[i] });
                     }
-                    for (int i = precedence.Length; i < JobQueue.Count * JobQueue.Count; i++)
+                    for (var i = precedence.Length; i < JobQueue.Count * JobQueue.Count; i++)
                     {
                         precedence.Add(0);
                     }
                     var num = jobs.Length;
-                    var initializer = new EPInitializerJob
+                    var initializer = new EpInitializerJob
                     {
-                        time = (ChronoWrapper)TimeKeeper.Chronos.Get(),
+                        time = TimeKeeper.Chronos.Get(),
                         results = jobs
                     };
                     var initJob = initializer.Schedule(num, 4);
-                    var calculator = new EPCalculatorJob
+                    var calculator = new EpCalculatorJob
                     {
-                        time = (ChronoWrapper)TimeKeeper.Chronos.Get(),
-                        input = jobs,
-                        ep = precedence
+                        Time = TimeKeeper.Chronos.Get(),
+                        Input = jobs,
+                        Ep = precedence
                     };
                     Scheduling = calculator.Schedule(num, 1, initJob);
                     yield return new WaitUntil(() => Scheduling.IsCompleted);
                     Scheduling.Complete();
-                    var n = FindMax(ref calculator.ep);
+                    var n = FindMax(ref calculator.Ep);
                     var end = jobs.Length - 1;
 
                     if (drone.AssignJob((Job)jobs[n].job))
@@ -83,19 +83,17 @@ namespace Drones.Scheduler
             }
         }
 
-        int FindMax(ref NativeArray<float> ep)
+        private int FindMax(ref NativeArray<float> ep)
         {
-            float maxval = float.MinValue;
-            int maxint = 0;
-            for (int i = 0; i < ep.Length; i++)
+            var maxVal = float.MinValue;
+            var maxInt = 0;
+            for (var i = 0; i < ep.Length; i++)
             {
-                if (ep[i] < maxval)
-                {
-                    maxval = ep[i];
-                    maxint = i;
-                }
+                if (!(ep[i] < maxVal)) continue;
+                maxVal = ep[i];
+                maxInt = i;
             }
-            return maxint;
+            return maxInt;
         }
 
         public void Dispose()

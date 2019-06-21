@@ -34,11 +34,11 @@ namespace Drones.Event_System
 
         public Action OpenWindow { get; }
 
-        public TimeKeeper.Chronos Time => TimeKeeper.Chronos.Get().SetReadOnly();
+        public TimeKeeper.Chronos Time => TimeKeeper.Chronos.Get();
 
         public string Message { get; }
 
-        public Drone Server { get; }
+        private Drone Server { get; }
 
     }
 }

@@ -99,7 +99,7 @@ namespace Drones.Objects
         {
             var j = (StrippedJob)job;
             var t = j.expectedDuration;
-            if (Mathf.Min(t, 0.9f * CostFunction.GUARANTEE) > GetBattery().Charge * CostFunction.GUARANTEE)
+            if (Mathf.Min(t, 0.9f * CostFunction.Guarantee) > GetBattery().Charge * CostFunction.Guarantee)
             {
                 GetHub().Scheduler.AddToQueue(this);
                 return false;
@@ -108,7 +108,8 @@ namespace Drones.Objects
             job.AssignDrone(this);
             job.StartDelivery();
             if (_data.hub != 0) GetHub().Router.GetRoute(this, ref _data.waypoints);
-            StartDelivery();
+            job.SetAltitude(_data.waypoints.Peek().y);
+            StartMoving();
             return true;
         }
 
@@ -116,7 +117,7 @@ namespace Drones.Objects
         {
             _data.job = 0;
             if (_data.hub != 0) GetHub().Router.GetRoute(this, ref _data.waypoints);
-            StartDelivery();
+            StartMoving();
             return true;
         }
 
@@ -163,13 +164,16 @@ namespace Drones.Objects
             _data.audibleDuration += dt;
             GetHub().UpdateAudible(dt);
         }
-        public MovementInfo GetMovementInfo(MovementInfo info)
+        public MovementInfo GetMovementInfo()
         {
-            info.moveType = _data.movement;
-            info.height = Waypoint.y;
-            info.waypoint = _data.currentWaypoint;
-            info.isWaiting = _data.isWaiting ? 1 : 0;
-            info.prev_pos = PreviousPosition;
+            var info = new MovementInfo
+            {
+                moveType = _data.movement,
+                height = Waypoint.y,
+                waypoint = _data.currentWaypoint,
+                isWaiting = _data.isWaiting ? 1 : 0,
+                prev_pos = PreviousPosition
+            };
 
             return info;
         }
@@ -230,8 +234,8 @@ namespace Drones.Objects
 
         private bool ReachedWaypoint()
         {
-            Vector3 a = transform.position;
-            Vector3 b = _data.currentWaypoint;
+            var a = transform.position;
+            var b = _data.currentWaypoint;
             a.y = b.y = 0;
             return Vector3.Distance(a, b) < 0.25f;
         }
@@ -243,7 +247,7 @@ namespace Drones.Objects
                 _data.movement == DroneMovement.Descend && position.y <= Waypoint.y;
         }
 
-        private void StartDelivery()
+        private void StartMoving()
         {
             if (InHub) GetHub().AddToDeploymentQueue(this);
             StartCoroutine(Horizontal());

@@ -41,8 +41,8 @@ namespace Drones.JobSystem
         private const float NumPropellers = 4; // number of propellers
         private const float Eff = 1f; // efficiency
         private const float Epsilon = 0.001f;
-        public const float VSpeed = MovementJob.VSPEED;
-        public const float HSpeed = MovementJob.HSPEED;
+        private const float VSpeed = MovementJob.VSPEED;
+        private const float HSpeed = MovementJob.HSPEED;
 
         public float DeltaTime;
         public NativeArray<EnergyInfo> Energies;
@@ -74,6 +74,15 @@ namespace Drones.JobSystem
                             break;
                         case DroneMovement.Horizontal:
                             power += 0.5f * Rho * Mathf.Pow(HSpeed, 3) * Cd * A;
+                            break;
+                        case DroneMovement.Hover:
+                            power = 0;
+                            break;
+                        case DroneMovement.Idle:
+                            power = 0;
+                            break;
+                        case DroneMovement.Drop:
+                            power = 0;
                             break;
                         default:
                             break;

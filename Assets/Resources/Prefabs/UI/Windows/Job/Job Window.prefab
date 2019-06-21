@@ -3917,8 +3917,8 @@ MonoBehaviour:
   _Close: {fileID: 2216049042991425020}
   _MinimizeButton: {fileID: 6108658570419886004}
   _MaximizeButton: {fileID: 7003082716246104592}
-  _GoToOrigin: {fileID: 4643030147308783509}
-  _GoToDestination: {fileID: 4314587464908054486}
+  goToOrigin: {fileID: 4643030147308783509}
+  goToDestination: {fileID: 4314587464908054486}
 --- !u!1 &3941739578220241383
 GameObject:
   m_ObjectHideFlags: 0

@@ -22,7 +22,7 @@ namespace Drones.Managers
         }
 
         private JobHandle _movementJobHandle = new JobHandle();
-        private readonly TimeKeeper.Chronos _time = TimeKeeper.Chronos.Get();
+        private TimeKeeper.Chronos _time = TimeKeeper.Chronos.Get();
         private static SecureSortedSet<uint, IDataSource> Drones => SimManager.AllDrones;
         private TransformAccessArray _transforms;
         private NativeArray<MovementInfo> _movementInfoArray;
@@ -61,7 +61,7 @@ namespace Drones.Managers
                 {
                     var drone = (Drone) dataSource;
                     drone.PreviousPosition = drone.transform.position;
-                    _movementInfoArray[j] = drone.GetMovementInfo(_movementInfoArray[j]);
+                    _movementInfoArray[j] = drone.GetMovementInfo();
                     j++;
                 }
 
@@ -93,8 +93,7 @@ namespace Drones.Managers
             foreach (var dataSource in Drones.Values)
             {
                 var drone = (Drone) dataSource;
-                _movementInfoArray[j] = new MovementInfo();
-                _movementInfoArray[j] = drone.GetMovementInfo(_movementInfoArray[j]);
+                _movementInfoArray[j] = drone.GetMovementInfo();
                 j++;
             }
 
@@ -117,8 +116,7 @@ namespace Drones.Managers
             foreach (var dataSource in Drones.Values)
             {
                 var drone = (Drone) dataSource;
-                _instance._movementInfoArray[j] = new MovementInfo();
-                _instance._movementInfoArray[j] = drone.GetMovementInfo(_instance._movementInfoArray[j]);
+                _instance._movementInfoArray[j] = drone.GetMovementInfo();
                 j++;
             }
 

@@ -12,18 +12,18 @@ namespace Drones.Scheduler
 {
     public class LLVScheduler : IScheduler
     {
-        NativeList<LLVStruct> jobs;
-        NativeArray<float> loss;
-        NativeArray<float> duration;
-        NativeList<float> netlossvalue;
+        private NativeList<LLVStruct> _jobs;
+        private NativeArray<float> _loss;
+        private NativeArray<float> _duration;
+        private NativeList<float> _netLossValue;
         public LLVScheduler(Queue<Drone> drones)
         {
             DroneQueue = drones;
             JobQueue = new List<Job>();
-            jobs = new NativeList<LLVStruct>(Allocator.Persistent);
-            loss = new NativeArray<float>(1, Allocator.Persistent);
-            duration = new NativeArray<float>(1, Allocator.Persistent);
-            netlossvalue = new NativeList<float>(Allocator.Persistent);
+            _jobs = new NativeList<LLVStruct>(Allocator.Persistent);
+            _loss = new NativeArray<float>(1, Allocator.Persistent);
+            _duration = new NativeArray<float>(1, Allocator.Persistent);
+            _netLossValue = new NativeList<float>(Allocator.Persistent);
         }
 
         public JobHandle Scheduling { get; private set; }
@@ -40,49 +40,49 @@ namespace Drones.Scheduler
 
                 while (DroneQueue.Count > 0 && JobQueue.Count > 0 && TimeKeeper.TimeSpeed != TimeSpeed.Pause)
                 {
-                    Drone drone = DroneQueue.Dequeue();
+                    var drone = DroneQueue.Dequeue();
                     if (drone.InPool) continue;
 
-                    for (int i = jobs.Length; i < JobQueue.Count; i++)
+                    for (var i = _jobs.Length; i < JobQueue.Count; i++)
                     {
-                        jobs.Add(new LLVStruct { job = (StrippedJob)JobQueue[i] });
-                        netlossvalue.Add(0);
+                        _jobs.Add(new LLVStruct { job = (StrippedJob)JobQueue[i] });
+                        _netLossValue.Add(0);
                     }
 
 
-                    var num = jobs.Length;
+                    var num = _jobs.Length;
                     var initializer = new LLVInitializerJob
                     {
-                        time = (ChronoWrapper)TimeKeeper.Chronos.Get(),
-                        results = jobs
+                        Time = TimeKeeper.Chronos.Get(),
+                        Results = _jobs
                     };
                     var initJob = initializer.Schedule(num, 4);
                     var summer = new LLVSumJob
                     {
-                        jobs = jobs,
-                        totalLosses = loss,
-                        totalDuration = duration
+                        jobs = _jobs,
+                        totalLosses = _loss,
+                        totalDuration = _duration
                     };
                     var sumJob = summer.Schedule(initJob);
                     var calculator = new LLVCalculatorJob
                     {
-                        time = (ChronoWrapper)TimeKeeper.Chronos.Get(),
+                        time = TimeKeeper.Chronos.Get(),
                         input = summer.jobs,
-                        totalLosses = loss,
-                        totalDuration = duration,
-                        nlv = netlossvalue
+                        totalLosses = _loss,
+                        totalDuration = _duration,
+                        nlv = _netLossValue
                     };
                     Scheduling = calculator.Schedule(num, 4, sumJob);
                     yield return new WaitUntil(() => Scheduling.IsCompleted);
                     Scheduling.Complete();
 
                     var n = FindMin(ref calculator.nlv);
-                    var end = jobs.Length - 1;
+                    var end = _jobs.Length - 1;
 
-                    if (drone.AssignJob((Job)jobs[n].job))
+                    if (drone.AssignJob((Job)_jobs[n].job))
                     {
-                        jobs.RemoveAtSwapBack(n);
-                        netlossvalue.RemoveAtSwapBack(n);
+                        _jobs.RemoveAtSwapBack(n);
+                        _netLossValue.RemoveAtSwapBack(n);
 
                         JobQueue[n] = JobQueue[end];
                         JobQueue.RemoveAt(end);
@@ -94,27 +94,25 @@ namespace Drones.Scheduler
             }
         }
 
-        int FindMin(ref NativeArray<float> nlv)
+        private int FindMin(ref NativeArray<float> nlv)
         {
-            float minval = float.MaxValue;
-            int minint = 0;
-            for (int i = 0; i < nlv.Length; i++)
+            var minVal = float.MaxValue;
+            var minInt = 0;
+            for (var i = 0; i < nlv.Length; i++)
             {
-                if (nlv[i] < minval)
-                {
-                    minval = nlv[i];
-                    minint = i;
-                }
+                if (!(nlv[i] < minVal)) continue;
+                minVal = nlv[i];
+                minInt = i;
             }
-            return minint;
+            return minInt;
         }
 
         public void Dispose()
         {
-            jobs.Dispose();
-            loss.Dispose();
-            duration.Dispose();
-            netlossvalue.Dispose();
+            _jobs.Dispose();
+            _loss.Dispose();
+            _duration.Dispose();
+            _netLossValue.Dispose();
         }
 
         public void Complete()

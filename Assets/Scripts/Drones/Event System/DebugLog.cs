@@ -31,7 +31,7 @@ namespace Drones.Event_System
 
         public Action OpenWindow => null;
 
-        public TimeKeeper.Chronos Time => null;
+        public TimeKeeper.Chronos Time { get; } = new TimeKeeper.Chronos();
 
         public string Message { get; }
 

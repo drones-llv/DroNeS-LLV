@@ -3,6 +3,7 @@ using Drones.Data;
 using Drones.UI.Utils;
 using Drones.Utils;
 using Drones.Utils.Interfaces;
+using Drones.Objects;
 using UnityEngine;
 using UnityEngine.UI;
 using Utils;
@@ -13,31 +14,31 @@ namespace Drones.UI.Job
     {
         public static JobWindow New() => PoolController.Get(WindowPool.Instance).Get<JobWindow>(null);
         [SerializeField]
-        private Button _GoToOrigin;
+        private Button goToOrigin;
         [SerializeField]
-        private Button _GoToDestination;
+        private Button goToDestination;
 
         #region Buttons
         private Button GoToOrigin
         {
             get
             {
-                if (_GoToOrigin == null)
+                if (goToOrigin == null)
                 {
-                    _GoToOrigin = transform.Find("Origin").GetComponentInChildren<Button>();
+                    goToOrigin = transform.Find("Origin").GetComponentInChildren<Button>();
                 }
-                return _GoToOrigin;
+                return goToOrigin;
             }
         }
         private Button GoToDestination
         {
             get
             {
-                if (_GoToDestination == null)
+                if (goToDestination == null)
                 {
-                    _GoToDestination = transform.Find("Dest.").GetComponentInChildren<Button>();
+                    goToDestination = transform.Find("Dest.").GetComponentInChildren<Button>();
                 }
-                return _GoToDestination;
+                return goToDestination;
             }
 
         }
@@ -65,16 +66,16 @@ namespace Drones.UI.Job
         {
             var job = (JobData)data;
             Data[0].SetField(Source);
-            Data[1].SetField(job.pickup.ToStringXZ());
-            Data[2].SetField(job.dropoff.ToStringXZ());
-            Data[3].SetField(job.created);
-            Data[4].SetField(job.assignment);
-            Data[5].SetField(job.deadline);
-            Data[6].SetField(job.completed);
-            Data[7].SetField(UnitConverter.Convert(Mass.g, job.packageWeight));
-            Data[8].SetField(job.earnings.ToString("C", CultureInfo.CurrentCulture));
-            Data[9].SetField((job.deadline is null) ? "" : UnitConverter.Convert(Chronos.min, job.deadline.Timer()));
-            Data[10].SetField("D" + job.drone.ToString("000000"));
+            Data[1].SetField(job.Pickup.ToStringXZ());
+            Data[2].SetField(job.Dropoff.ToStringXZ());
+            Data[3].SetField(job.Created.ToString());
+            Data[4].SetField(job.Assignment.ToString());
+            Data[5].SetField(job.Deadline.ToString());
+            Data[6].SetField(job.Completed.ToString());
+            Data[7].SetField(UnitConverter.Convert(Mass.g, job.PackageWeight));
+            Data[8].SetField(job.Earnings.ToString("C", CultureInfo.CurrentCulture));
+            Data[9].SetField((job.Deadline.IsNull()) ? "" : UnitConverter.Convert(Chronos.min, job.Deadline.Timer()));
+            Data[10].SetField("D" + job.Drone.ToString("000000"));
             Data[11].SetField(((Objects.Job)Source).Progress());
         }
     }

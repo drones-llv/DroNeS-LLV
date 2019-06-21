@@ -10,7 +10,7 @@ namespace Drones.Objects
     {
         public CostFunction(TimeKeeper.Chronos startTime, float revenue, float penalty = 5)
         {
-            Start = startTime.SetReadOnly();
+            Start = startTime;
             Reward = revenue;
             Penalty = -Mathf.Abs(penalty);
         }
@@ -22,36 +22,36 @@ namespace Drones.Objects
             Penalty = sCost.penalty;
         }
 
-        public TimeKeeper.Chronos Start { get; private set; }
+        private TimeKeeper.Chronos Start { get; set; }
         public float Reward { get; private set; }
         public float Penalty { get; private set; }
-        public const float GUARANTEE = 1800; // half hour
+        public const float Guarantee = 1800; // half hour
 
         public float GetPaid(TimeKeeper.Chronos complete)
         {
-            float dt = Normalize(complete - Start);
-            float reduction = (dt > int.MaxValue) ? float.MinValue : 1 - Discretize(dt);
+            var dt = Normalize(complete - Start);
+            var reduction = (dt > int.MaxValue) ? float.MinValue : 1 - Discretize(dt);
             return (reduction > 0) ? Reward * reduction : Penalty;
         }
 
-        public static float Evaluate(StrippedJob job, ChronoWrapper complete)
+        public static float Evaluate(StrippedJob job, TimeKeeper.Chronos complete)
         {
-            float dt = Normalize(complete - job.start);
+            var dt = Normalize(complete - job.start);
 
-            float reduction = (dt > int.MaxValue) ? float.MinValue : 1 - Discretize(dt);
+            var reduction = (dt > int.MaxValue) ? float.MinValue : 1 - Discretize(dt);
             return (reduction > 0) ? job.reward * reduction : job.penalty;
         }
 
-        public static ChronoWrapper Inverse(StrippedJob job, float value)
+        public static TimeKeeper.Chronos Inverse(StrippedJob job, float value)
         {
-            if (Mathf.Abs(value - job.penalty) < 0.01f) return job.start + GUARANTEE;
+            if (Mathf.Abs(value - job.penalty) < 0.01f) return job.start + Guarantee;
 
-            return job.start + (1 - Discretize(value / job.reward)) * GUARANTEE;
+            return job.start + (1 - Discretize(value / job.reward)) * Guarantee;
         }
 
-        public static float Normalize(float dt) => dt / GUARANTEE;
+        private static float Normalize(float dt) => dt / Guarantee;
 
-        public static float Discretize(float ndt, int division = 10)
+        private static float Discretize(float ndt, int division = 10)
         {
             if (division < 1) division = 1;
 

@@ -1,4 +1,5 @@
-﻿using Unity.Burst;
+﻿using Drones.Utils;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 
@@ -7,7 +8,7 @@ namespace Drones.Scheduler
     [BurstCompile]
     public struct LLVCalculatorJob : IJobParallelFor
     {
-        public ChronoWrapper time;
+        public TimeKeeper.Chronos time;
         [ReadOnly]
         public NativeArray<float> totalLosses;
         [ReadOnly]
@@ -19,10 +20,10 @@ namespace Drones.Scheduler
 
         public void Execute(int i)
         {
-            float plost = totalLosses[0] - input[i].loss;
-            float mean = (totalDuration[0] - input[i].job.expectedDuration) / (input.Length - 1);
-            float pgain = JobScheduler.ExpectedValue(input[i].job, time) - JobScheduler.ExpectedValue(input[i].job, time + mean);
-            nlv[i] = plost - pgain;
+            var pLost = totalLosses[0] - input[i].loss;
+            var mean = (totalDuration[0] - input[i].job.expectedDuration) / (input.Length - 1);
+            var pGain = JobScheduler.ExpectedValue(input[i].job, time) - JobScheduler.ExpectedValue(input[i].job, time + mean);
+            nlv[i] = pLost - pGain;
         }
     }
 

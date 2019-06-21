@@ -18,7 +18,7 @@ namespace Drones.Utils
             StopAllCoroutines();
         }
 
-        IEnumerator Debugging()
+        private IEnumerator Debugging()
         {
             yield return new WaitUntil(() => pool != null);
             poolType = pool.GetType().ToString();

@@ -13,10 +13,10 @@ namespace Drones.UI.Job
         {
             var job = (JobData)data;
 
-            Data[0].SetField(job.pickup.ToStringXZ());
-            Data[1].SetField(job.dropoff.ToStringXZ());
-            Data[2].SetField((job.deadline is null) ? "" : UnitConverter.Convert(Chronos.min, job.deadline.Timer()));
-            Data[3].SetField(job.earnings.ToString("C", CultureInfo.CurrentCulture));
+            Data[0].SetField(job.Pickup.ToStringXZ());
+            Data[1].SetField(job.Dropoff.ToStringXZ());
+            Data[2].SetField((job.Deadline.IsNull()) ? "" : UnitConverter.Convert(Chronos.min, job.Deadline.Timer()));
+            Data[3].SetField(job.Earnings.ToString("C", CultureInfo.CurrentCulture));
 
         }
 

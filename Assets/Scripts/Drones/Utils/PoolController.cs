@@ -11,52 +11,52 @@ namespace Drones.Utils
 
     public class PoolController
     {
-        private static Dictionary<Type, PoolController> _ExistingPools; 
+        private static Dictionary<Type, PoolController> _existingPools; 
         public static PoolController Get(AbstractPool pool)
         {
             var type = pool.GetType();
-            if (_ExistingPools == null) _ExistingPools = new Dictionary<Type, PoolController>();
+            if (_existingPools == null) _existingPools = new Dictionary<Type, PoolController>();
 
-            if (_ExistingPools.TryGetValue(type, out PoolController value))
+            if (_existingPools.TryGetValue(type, out PoolController value))
             {
                 if (value != null) return value;
             }
 
-            _ExistingPools.Add(type, new PoolController(pool));
+            _existingPools.Add(type, new PoolController(pool));
 
-            return _ExistingPools[type];
+            return _existingPools[type];
         }
 
         public static void Reset()
         {
-            _ExistingPools = null;
+            _existingPools = null;
             ObjectPool.Reset();
             ListElementPool.Reset();
             WindowPool.Reset();
         }
 
-        private readonly AbstractPool _Pool;
+        private readonly AbstractPool _pool;
         private PoolController(AbstractPool pool)
         {
-            _Pool = pool;
+            _pool = pool;
             PoolParent.position = Vector3.zero;
         }
 
         public bool Initialized { get; private set; } = false;
 
-        private PoolComponent _Container;
+        private PoolComponent _container;
 
         private PoolComponent Container
         {
             get
             {
-                if (_Container == null)
+                if (_container == null)
                 {
-                    _Container = new GameObject(_Pool.GetType().ToString()).AddComponent<PoolComponent>();
-                    _Container.pool = _Pool;
-                    _Container.StartCoroutine(Initialize());
+                    _container = new GameObject(_pool.GetType().ToString()).AddComponent<PoolComponent>();
+                    _container.pool = _pool;
+                    _container.StartCoroutine(Initialize());
                 }
-                return _Container;
+                return _container;
             }
         }
 
@@ -65,80 +65,73 @@ namespace Drones.Utils
         public void Release(Type type, IPoolable item)
         {
             item.OnRelease();
-            _Pool.Pool[type].Enqueue(item);
+            _pool.Pool[type].Enqueue(item);
         }
 
         public T Get<T>(Transform parent, bool noOnGet = false) => (T)Get(typeof(T), parent, noOnGet);
 
-        public IPoolable Get(Type type, Transform parent = null, bool noOnGet = false)
+        private IPoolable Get(Type type, Transform parent = null, bool noOnGet = false)
         {
             IPoolable item = null;
-            if (_Pool.Pool.TryGetValue(type, out Queue<IPoolable> pool))
-            {
-                if (pool.Count < _Pool.StartSize[type] / 4 && !_Pool.IsBuilding[type])
-                    Container.StartCoroutine(Build(type));
+            if (!_pool.Pool.TryGetValue(type, out Queue<IPoolable> pool)) return item;
+            if (pool.Count < _pool.StartSize[type] / 4 && !_pool.IsBuilding[type])
+                Container.StartCoroutine(Build(type));
 
-                if (pool.Count == 0)
-                    item = ManualBuild(type);
-                else
-                    item = pool.Dequeue();
+            item = pool.Count == 0 ? ManualBuild(type) : pool.Dequeue();
 
-                if (!noOnGet)
-                    item.OnGet(parent);
-            }
+            if (!noOnGet)
+                item.OnGet(parent);
             return item;
         }
 
-        public IPoolable ManualBuild(Type type)
+        private IPoolable ManualBuild(Type type)
         {
-            GameObject go = Object.Instantiate(_Pool.Templates[type], PoolParent);
+            var go = Object.Instantiate(_pool.Templates[type], PoolParent);
             return go.GetComponent<IPoolable>();
         }
 
-        public GameObject GetTemplate(Type type) => _Pool.Templates[type];
+        public GameObject GetTemplate(Type type) => _pool.Templates[type];
 
         private IEnumerator Build(Type type)
         {
-            _Pool.IsBuilding[type] = true;
-            for (int i = 0; i < _Pool.StartSize[type]; i++)
+            _pool.IsBuilding[type] = true;
+            for (var i = 0; i < _pool.StartSize[type]; i++)
             {
-                GameObject go = Object.Instantiate(_Pool.Templates[type], PoolParent);
+                var go = Object.Instantiate(_pool.Templates[type], PoolParent);
 
                 Release(type, go.GetComponent<IPoolable>());
 
                 if (TimeKeeper.DeltaFrame() > Constants.CoroutineTimeSlice)
                     yield return null;
             }
-            _Pool.IsBuilding[type] = false;
+            _pool.IsBuilding[type] = false;
         }
 
-        public IEnumerator Initialize()
+        private IEnumerator Initialize()
         {
-            if (!Initialized)
+            if (Initialized) yield break;
+            foreach (var type in _pool.Paths.Keys)
             {
-                foreach (var type in _Pool.Paths.Keys)
+                try
                 {
-                    try
-                    {
-                        _Pool.Templates.Add(type, Resources.Load(_Pool.Paths[type]) as GameObject);
-                        _Pool.IsBuilding.Add(type, false);
-                    }
-                    catch (ArgumentException)
-                    {
-
-                    }
-
-                    if (TimeKeeper.DeltaFrame() > Constants.CoroutineTimeSlice)
-                    {
-                        yield return null;
-                    }
+                    _pool.Templates.Add(type, Resources.Load(_pool.Paths[type]) as GameObject);
+                    _pool.IsBuilding.Add(type, false);
                 }
-                foreach (var type in _Pool.Paths.Keys)
+                catch (ArgumentException)
                 {
-                    Container.StartCoroutine(Build(type));
+
                 }
-                Initialized = true;
+
+                if (TimeKeeper.DeltaFrame() > Constants.CoroutineTimeSlice)
+                {
+                    yield return null;
+                }
             }
+            foreach (var type in _pool.Paths.Keys)
+            {
+                Container.StartCoroutine(Build(type));
+            }
+            Initialized = true;
             yield break;
         }
     }

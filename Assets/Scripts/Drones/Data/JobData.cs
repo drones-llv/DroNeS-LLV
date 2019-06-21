@@ -11,72 +11,71 @@ namespace Drones.Data
 
     public class JobData : IData
     {
-        private static uint _Count;
-        public static void Reset() => _Count = 0;
+        private static uint _count;
+        public static void Reset() => _count = 0;
 
         public uint UID { get; }
         public bool IsDataStatic { get; set; } = false;
 
-        public uint drone;
-        public float earnings;
-        public TimeKeeper.Chronos assignment;
-        public TimeKeeper.Chronos completed;
-        public float expectedDuration;
-        public float stDevDuration;
+        public uint Drone;
+        public float Earnings;
+        public TimeKeeper.Chronos Assignment;
+        public TimeKeeper.Chronos Completed;
+        public readonly float ExpectedDuration;
+        public readonly float StDevDuration;
 
-        public JobStatus status;
-        public Vector3 dropoff;
-        public readonly TimeKeeper.Chronos created;
-        public readonly TimeKeeper.Chronos deadline;
+        public JobStatus Status;
+        public Vector3 Dropoff;
+        public TimeKeeper.Chronos Created;
+        public TimeKeeper.Chronos Deadline;
 
-        public Vector3 pickup;
-        public CostFunction costFunction;
-        public float packageWeight = 2.25f;
-        public float packageXArea = 0.16f;
+        public Vector3 Pickup;
+        public readonly CostFunction CostFunction;
+        public readonly float PackageWeight;
+        public float DeliveryAltitude;
 
         public JobData(SJob data)
         {
             UID = data.uid;
-            drone = data.droneUID;
-            status = data.status;
-            packageWeight = data.packageWeight;
-            packageXArea = data.packageXarea;
-            created = new TimeKeeper.Chronos(data.createdUnity).SetReadOnly();
-            deadline = new TimeKeeper.Chronos(data.deadline).SetReadOnly();
-            pickup = data.pickup;
-            dropoff = data.destination;
-            costFunction = new CostFunction(data.costFunction);
-            expectedDuration = (Manhattan() + Euclidean()) / (2 * MovementJob.HSPEED);
-            stDevDuration = Manhattan() / MovementJob.HSPEED - expectedDuration;
+            Drone = data.droneUID;
+            Status = data.status;
+            PackageWeight = data.packageWeight;
+            Created = new TimeKeeper.Chronos(data.createdUnity);
+            Deadline = new TimeKeeper.Chronos(data.deadline);
+            Pickup = data.pickup;
+            Dropoff = data.destination;
+            CostFunction = new CostFunction(data.costFunction);
+            ExpectedDuration = (LateralManhattan() + LateralEuclidean()) / (2 * MovementJob.HSPEED);
+            StDevDuration = LateralManhattan() / MovementJob.HSPEED - ExpectedDuration;
         }
 
         public JobData(Hub pickup, Vector3 dropoff, float weight, float penalty) 
         {
-            UID = ++_Count;
-            status = JobStatus.Assigning;
-            created = TimeKeeper.Chronos.Get().SetReadOnly();
-            deadline = created + CostFunction.GUARANTEE;
-            this.pickup = pickup.Position;
-            this.dropoff = LandingZoneIdentifier.Reposition(dropoff);
-            packageWeight = weight;
-            costFunction = new CostFunction(created, WeightToRev(Pricing.US, weight), penalty);
-            expectedDuration = (Manhattan() + Euclidean()) / (2 * MovementJob.HSPEED) + (this.pickup.y-dropoff.y) / MovementJob.VSPEED;
-            stDevDuration = Manhattan() / MovementJob.HSPEED - expectedDuration + (this.pickup.y - dropoff.y) / MovementJob.VSPEED; 
+            UID = ++_count;
+            Status = JobStatus.Assigning;
+            Created = TimeKeeper.Chronos.Get();
+            Deadline = Created + CostFunction.Guarantee;
+            Pickup = pickup.Position;
+            Dropoff = LandingZoneIdentifier.Reposition(dropoff);
+            PackageWeight = weight;
+            CostFunction = new CostFunction(Created, WeightToRev(Pricing.US, weight), penalty);
+            ExpectedDuration = (LateralManhattan() + LateralEuclidean()) / (2 * MovementJob.HSPEED) + (Pickup.y-dropoff.y) / MovementJob.VSPEED;
+            StDevDuration = LateralManhattan() / MovementJob.HSPEED - ExpectedDuration + (this.Pickup.y - dropoff.y) / MovementJob.VSPEED;
         }
 
-        private float Manhattan()
+        private float LateralManhattan()
         {
-            var v = pickup - dropoff;
+            var v = Pickup - Dropoff;
             return Mathf.Abs(v.x) + Mathf.Abs(v.z);
         }
-        private float Euclidean() 
+        private float LateralEuclidean() 
         {
-            var v = pickup - dropoff;
+            var v = Pickup - Dropoff;
             v.y = 0;
             return v.magnitude;
         }
 
-        private float WeightToRev(Pricing p, float weight)
+        private static float WeightToRev(Pricing p, float weight)
         {
             if (p == Pricing.UK)
             {
@@ -88,11 +87,11 @@ namespace Drones.Data
                 if (weight <= 4) return 3.83f;
             }
 
-            float oz = UnitConverter.ConvertValue(Mass.oz, weight);
+            var oz = UnitConverter.ConvertValue(Mass.oz, weight);
             if (oz <= 10) return Random.value < 0.5f ? 2.41f : 3.19f;
             if (oz <= 16) return Random.value < 0.5f ? 2.49f : 3.28f;
 
-            float lbs = UnitConverter.ConvertValue(Mass.lb, weight);
+            var lbs = UnitConverter.ConvertValue(Mass.lb, weight);
             if (lbs <= 2) return 4.76f;
             if (lbs <= 3) return 5.26f;
             return 5.26f + (lbs - 3) * 0.38f;

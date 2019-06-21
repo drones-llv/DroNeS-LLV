@@ -14,23 +14,23 @@ namespace Drones.Objects
 {
     public class Job : IDataSource
     {
-        public static readonly TimeKeeper.Chronos _EoT = new TimeKeeper.Chronos(int.MaxValue - 100, 23, 59, 59.99f).SetReadOnly();
+        private static readonly TimeKeeper.Chronos _EoT = new TimeKeeper.Chronos(int.MaxValue - 100, 23, 59, 59.99f);
         public Job(SJob data)
         {
-            _Data = new JobData(data);
+            _data = new JobData(data);
         }
 
         public Job(Hub pickup, Vector3 dropoff, float weight, float penalty)
         {
-            _Data = new JobData(pickup, dropoff, weight, penalty);
+            _data = new JobData(pickup, dropoff, weight, penalty);
         }
 
-        public uint UID => _Data.UID;
-        public string Name => "J" + UID.ToString("00000000");
+        public uint UID => _data.UID;
+        public string Name => $"J{UID:00000000}";
         public override string ToString() => Name;
 
         #region IDataSource
-        public void GetData(ISingleDataSourceReceiver receiver) => receiver.SetData(_Data);
+        public void GetData(ISingleDataSourceReceiver receiver) => receiver.SetData(_data);
 
         public AbstractInfoWindow InfoWindow { get; set; }
 
@@ -47,74 +47,73 @@ namespace Drones.Objects
             }
         }
 
-        public bool IsDataStatic => _Data.IsDataStatic;
+        public bool IsDataStatic => _data.IsDataStatic;
         #endregion
 
-        private readonly JobData _Data;
-        public Drone GetDrone() => (Drone)SimManager.AllDrones[_Data.drone];
-        public RetiredDrone GetRetiredDrone() => (RetiredDrone)SimManager.AllRetiredDrones[_Data.drone];
+        private readonly JobData _data;
+        private Drone GetDrone() => (Drone)SimManager.AllDrones[_data.Drone];
+        public RetiredDrone GetRetiredDrone() => (RetiredDrone)SimManager.AllRetiredDrones[_data.Drone];
 
-        public JobStatus Status => _Data.status;
-        public Vector3 DropOff => _Data.dropoff;
-        public Vector3 Pickup => _Data.pickup;
-        public float Earnings => _Data.earnings;
-        public TimeKeeper.Chronos Deadline => _Data.deadline;
-        public TimeKeeper.Chronos CompletedOn => _Data.completed;
-        public float PackageWeight => _Data.packageWeight;
-        public float PackageXArea => _Data.packageXArea;
-        public float CostFunc(TimeKeeper.Chronos time) => _Data.costFunction.GetPaid(time);
-        public float Loss => -CostFunc(_EoT);
-
+        public JobStatus Status => _data.Status;
+        public Vector3 DropOff => _data.Dropoff;
+        public Vector3 Pickup => _data.Pickup;
+        public float Earnings => _data.Earnings;
+        public TimeKeeper.Chronos Deadline => _data.Deadline;
+        public TimeKeeper.Chronos CompletedOn => _data.Completed;
+        public float PackageWeight => _data.PackageWeight;
+        public float Loss => -_data.CostFunction.GetPaid(_EoT);
+        
+        public bool IsDelayed { get; private set; }
         public void AssignDrone(Drone drone)
         {
             if (Status != JobStatus.Assigning) return;
-            _Data.drone = drone.UID;
-            _Data.assignment = TimeKeeper.Chronos.Get();
+            _data.Drone = drone.UID;
+            _data.Assignment = TimeKeeper.Chronos.Get();
         }
 
         public void FailJob()
         {
-            _Data.IsDataStatic = true;
-            _Data.status = JobStatus.Failed;
-            _Data.completed = _EoT;
-            _Data.earnings = -Loss;
+            _data.IsDataStatic = true;
+            _data.Status = JobStatus.Failed;
+            _data.Completed = _EoT;
+            _data.Earnings = -Loss;
             var drone = GetDrone();
             var hub = drone != null ? drone.GetHub() : null;
-            if (hub != null)
+            if (hub != null && !IsDelayed)
             {
                 hub.UpdateRevenue(Earnings);
                 hub.UpdateFailedCount();
             }
             drone.AssignJob();
-            _Data.drone = 0;
-            DataLogger.LogJob(_Data);
+            _data.Drone = 0;
+            DataLogger.LogJob(_data);
         }
 
         public void CompleteJob()
         {
-            _Data.completed = TimeKeeper.Chronos.Get().SetReadOnly();
-            _Data.status = JobStatus.Complete;
-            _Data.IsDataStatic = true;
-            _Data.earnings = _Data.costFunction.GetPaid(CompletedOn);
+            _data.Completed = TimeKeeper.Chronos.Get();
+            _data.Status = JobStatus.Complete;
+            _data.IsDataStatic = true;
+            _data.Earnings = _data.CostFunction.GetPaid(CompletedOn);
 
             GetDrone().CompleteJob(this);
-            _Data.drone = 0;
-            DataLogger.LogJob(_Data);
+            _data.Drone = 0;
+            DataLogger.LogJob(_data);
         }
 
-        public void StartDelivery() => _Data.status = JobStatus.Delivering;
+        public void StartDelivery() => _data.Status = JobStatus.Delivering;
+        public void SetAltitude(float alt) => _data.DeliveryAltitude = alt;
 
         public float Progress()
         {
             if (Status != JobStatus.Complete)
             {
-                if (Status != JobStatus.Delivering) return 0.00f;
-                return GetDrone().JobProgress;
+                return Status != JobStatus.Delivering ? 0.00f : GetDrone().JobProgress;
             }
             return 1.00f;
         }
 
-        public SJob Serialize() => new SJob(_Data);
+        public SJob Serialize() => new SJob(_data);
 
         public static explicit operator StrippedJob(Job job)
         {
@@ -123,11 +122,11 @@ namespace Drones.Objects
                 UID = job.UID,
                 pickup = job.Pickup,
                 dropoff = job.DropOff,
-                start = (ChronoWrapper)job._Data.created,
-                reward = job._Data.costFunction.Reward,
-                penalty = -job._Data.costFunction.Penalty,
-                expectedDuration = job._Data.expectedDuration,
-                stDevDuration = job._Data.stDevDuration
+                start = job._data.Created,
+                reward = job._data.CostFunction.Reward,
+                penalty = -job._data.CostFunction.Penalty,
+                expectedDuration = job._data.ExpectedDuration,
+                stDevDuration = job._data.StDevDuration
             };
             return j;
         }

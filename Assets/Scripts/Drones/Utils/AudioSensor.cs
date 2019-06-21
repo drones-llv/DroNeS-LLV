@@ -7,71 +7,65 @@ namespace Drones.Utils
 {
     public class AudioSensor : MonoBehaviour
     {
-        private bool _Active = false;
+        private bool _active = false;
 
-        private Drone _Drone;
+        private Drone _drone;
 
         private int _inRadius;
 
-        private TimeKeeper.Chronos _Time;
+        private TimeKeeper.Chronos _time;
 
-        private readonly WaitForSeconds _Wait = new WaitForSeconds(1 / 10f);
+        private readonly WaitForSeconds _wait = new WaitForSeconds(1 / 10f);
 
-        public Drone AssignedDrone
+        private Drone AssignedDrone
         {
             get
             {
-                if (_Drone == null)
+                if (_drone == null)
                 {
-                    _Drone = transform.parent.GetComponent<Drone>();
+                    _drone = transform.parent.GetComponent<Drone>();
                 }
-                return _Drone;
+                return _drone;
             }
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.gameObject.layer == LayerMask.NameToLayer("BuildingCollider") || 
-                other.gameObject.layer == LayerMask.NameToLayer("TileCollider"))
-            {
-                _inRadius++;
-                if (!_Active) StartCoroutine(StartTimer());
-            }
+            if (other.gameObject.layer != LayerMask.NameToLayer("BuildingCollider") &&
+                other.gameObject.layer != LayerMask.NameToLayer("TileCollider")) return;
+            _inRadius++;
+            if (!_active) StartCoroutine(StartTimer());
         }
 
         private void OnTriggerExit(Collider other)
         {
-            if (other.gameObject.layer == LayerMask.NameToLayer("BuildingCollider") ||
-                other.gameObject.layer == LayerMask.NameToLayer("TileCollider"))
-            {
-                _inRadius--;
-                if (_inRadius <= 0)
-                {
-                    _inRadius = 0;
-                    _Active = false;
-                }
-            }
+            if (other.gameObject.layer != LayerMask.NameToLayer("BuildingCollider") &&
+                other.gameObject.layer != LayerMask.NameToLayer("TileCollider")) return;
+            _inRadius--;
+            if (_inRadius > 0) return;
+            _inRadius = 0;
+            _active = false;
         }
 
         private IEnumerator StartTimer()
         {
-            _Active = true;
-            if (_Time == null) _Time = TimeKeeper.Chronos.Get();
+            _active = true;
+            _time = TimeKeeper.Chronos.Get();
             yield return new WaitUntil(() => TimeKeeper.TimeSpeed != TimeSpeed.Pause);
-            while (_Active)
+            while (_active)
             {
-                _Time.Now();
-                yield return _Wait;
-                float dt = _Time.Timer();
+                _time.Now();
+                yield return _wait;
+                var dt = _time.Timer();
                 AssignedDrone.UpdateAudible(dt);
             }
-            yield break;
 
         }
 
         public void SetSensorRadius(float radius)
         {
-            transform.localScale = transform.worldToLocalMatrix * Vector3.one * radius;
+            var t = transform;
+            t.localScale = t.worldToLocalMatrix * Vector3.one * radius;
         }
 
     }

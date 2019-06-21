@@ -12,11 +12,11 @@ namespace Drones.UI.Job
         {
             var job = (JobData)data;
 
-            Data[0].SetField(job.pickup.ToStringXZ());
-            Data[1].SetField(job.dropoff.ToStringXZ());
-            Data[2].SetField(job.created?.ToString());
-            Data[3].SetField(job.assignment?.ToString());
-            Data[4].SetField("D" + job.drone.ToString("000000"));
+            Data[0].SetField(job.Pickup.ToStringXZ());
+            Data[1].SetField(job.Dropoff.ToStringXZ());
+            Data[2].SetField(job.Created.ToString());
+            Data[3].SetField(job.Assignment.ToString());
+            Data[4].SetField("D" + job.Drone.ToString("000000"));
 
         }
 
