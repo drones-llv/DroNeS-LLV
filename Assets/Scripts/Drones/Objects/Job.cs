@@ -8,6 +8,7 @@ using Drones.UI.Utils;
 using Drones.Utils;
 using Drones.Utils.Interfaces;
 using UnityEngine;
+using System.Collections;
 using Utils;
 
 namespace Drones.Objects
@@ -15,14 +16,17 @@ namespace Drones.Objects
     public class Job : IDataSource
     {
         private static readonly TimeKeeper.Chronos _EoT = new TimeKeeper.Chronos(int.MaxValue - 100, 23, 59, 59.99f);
+        private static TimeKeeper.Chronos _clock = TimeKeeper.Chronos.Get();
         public Job(SJob data)
         {
             _data = new JobData(data);
+            SimManager.Instance.StartCoroutine(Tracker());
         }
 
         public Job(Hub pickup, Vector3 dropoff, float weight, float penalty)
         {
             _data = new JobData(pickup, dropoff, weight, penalty);
+            SimManager.Instance.StartCoroutine(Tracker());
         }
 
         public uint UID => _data.UID;
@@ -53,7 +57,7 @@ namespace Drones.Objects
         private readonly JobData _data;
         private Drone GetDrone() => (Drone)SimManager.AllDrones[_data.Drone];
         public RetiredDrone GetRetiredDrone() => (RetiredDrone)SimManager.AllRetiredDrones[_data.Drone];
-
+        
         public JobStatus Status => _data.Status;
         public Vector3 DropOff => _data.Dropoff;
         public Vector3 Pickup => _data.Pickup;
@@ -62,8 +66,8 @@ namespace Drones.Objects
         public TimeKeeper.Chronos CompletedOn => _data.Completed;
         public float PackageWeight => _data.PackageWeight;
         public float Loss => -_data.CostFunction.GetPaid(_EoT);
-        
-        public bool IsDelayed { get; private set; }
+
+        private bool IsDelayed { get; set; }
         public void AssignDrone(Drone drone)
         {
             if (Status != JobStatus.Assigning) return;
@@ -96,7 +100,16 @@ namespace Drones.Objects
             _data.IsDataStatic = true;
             _data.Earnings = _data.CostFunction.GetPaid(CompletedOn);
 
-            GetDrone().CompleteJob(this);
+            var drone = GetDrone();
+            var hub = drone.GetHub();
+            
+            hub.DeleteJob(this);
+            
+            if (!IsDelayed) hub.UpdateRevenue(Earnings);
+            
+            drone.UpdateDelay(Deadline.Timer());
+            drone.AssignJob();
+            
             _data.Drone = 0;
             DataLogger.LogJob(_data);
         }
@@ -104,6 +117,14 @@ namespace Drones.Objects
         public void StartDelivery() => _data.Status = JobStatus.Delivering;
         public void SetAltitude(float alt) => _data.DeliveryAltitude = alt;
 
+        private IEnumerator Tracker()
+        {
+            yield return new WaitUntil(() => Status == JobStatus.Delivering || Deadline > _clock.Now());
+            if (Status == JobStatus.Delivering) yield break;
+            IsDelayed = true;
+            GetDrone().GetHub().UpdateRevenue(-Loss);
+        }
+        
         public float Progress()
         {
             if (Status != JobStatus.Complete)

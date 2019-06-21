@@ -134,22 +134,13 @@ namespace Drones.Objects
             _data.hub = hub.UID;
         }
 
-        public void CompleteJob(Job job)
-        {
-            //JobHistory.Add(_Data.job, job);
-            GetHub().DeleteJob(job);
-            UpdateDelay(job.Deadline.Timer());
-            GetHub().UpdateRevenue(job.Earnings);
-            AssignJob();
-        }
-
         public Job GetJob() => (Job)SimManager.AllIncompleteJobs[_data.job];
         public Hub GetHub() => (Hub)SimManager.AllHubs[_data.hub];
         public Battery GetBattery() => SimManager.AllBatteries[_data.battery];
         public void WaitForDeployment() => _data.isWaiting = true;
         public void Deploy() => _data.isWaiting = false;
 
-        private void UpdateDelay(float dt)
+        public void UpdateDelay(float dt)
         {
             _data.totalDelay += dt;
             GetHub().UpdateDelay(dt);
