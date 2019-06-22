@@ -181,7 +181,7 @@ namespace Drones.Data
 
             freeBatteries = new SecureSortedSet<uint, Battery>((x, y) => (x.Charge <= y.Charge) ? -1 : 1)
             {
-                MemberCondition = (obj) => batteries.Contains(obj) && obj.GetDrone() == null
+                MemberCondition = (obj) => batteries.Contains(obj) && !obj.HasDrone()
             };
             chargingBatteries = new SecureSortedSet<uint, Battery>((x, y) => (x.Charge <= y.Charge) ? -1 : 1)
             {
@@ -189,11 +189,11 @@ namespace Drones.Data
             };
             drones = new SecureSortedSet<uint, IDataSource>
             {
-                MemberCondition = (obj) => { return obj is Drone; }
+                MemberCondition = (obj) => obj is Drone
             };
             freeDrones = new SecureSortedSet<uint, Drone>
             {
-                MemberCondition = (drone) => { return drones.Contains(drone) && drone.GetJob() == null; }
+                MemberCondition = (drone) => drones.Contains(drone) && drone.GetJob() == null
             };
             incompleteJobs = new SecureSortedSet<uint, IDataSource>
             {

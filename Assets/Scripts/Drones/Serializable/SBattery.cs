@@ -26,7 +26,7 @@ namespace Drones.Serializable
 
         public SBattery(BatteryData data)
         {
-            count = BatteryData.Count;
+            count = Objects.Battery.Count;
             uid = data.UID;
             status = data.status;
             capacity = data.capacity;

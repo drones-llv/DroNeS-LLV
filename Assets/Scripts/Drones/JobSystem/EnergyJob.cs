@@ -3,6 +3,7 @@ using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.UI;
 using Utils;
 using BatteryStatus = Utils.BatteryStatus;
 
@@ -25,6 +26,12 @@ namespace Drones.JobSystem
         public float chargeTarget;
 
         public int stopCharge;
+    }
+
+    public struct DroneInfo
+    {
+        public float pkgWgt;
+        public DroneMovement moveType;
     }
 
     [BurstCompile]

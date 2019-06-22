@@ -80,7 +80,7 @@ namespace Drones.Managers
             if (!_isQuitting) return;
             StopAllCoroutines();
             ClearObjects();
-            BatteryData.Reset();
+            Battery.Reset();
             DroneData.Reset();
             JobData.Reset();
             HubData.Reset();
