@@ -31,7 +31,7 @@ namespace Drones.UI.SaveLoad
         
         private readonly string[] _simulationData = new string[14];
         private readonly string[] _jobData = new string[12];
-        private readonly string[] _hubData = new string[17];
+        private readonly string[] _hubData = new string[16];
         public string simCache = "";
         public string jobCache = "";
         public string hubCache = "";
@@ -111,7 +111,6 @@ namespace Drones.UI.SaveLoad
                     "Crashed Drones",
                     "Total Batteries",
                     "Charging Batteries",
-                    "Current Maximum Charge",
                     "Job Queue Length", 
                     "Jobs Delayed in Queue",
                     "Jobs Completed",
@@ -170,8 +169,8 @@ namespace Drones.UI.SaveLoad
             _instance._jobData[10] = UnitConverter.Convert(Energy.kWh, data.EnergyUse);
             _instance._jobData[11] = (data.Status == JobStatus.Failed) ? "YES" : "NO";
             WriteTupleToMemory(ref _instance.jobCache, _instance._jobData);
-
         }
+        
         public void SetData(SimulationData data, TimeKeeper.Chronos time)
         {
             _simulationData[0] = DateTime.Now.ToString(CultureInfo.InvariantCulture);
@@ -197,17 +196,16 @@ namespace Drones.UI.SaveLoad
             _hubData[3] = Objects.Drone.ActiveDrones.childCount.ToString();
             _hubData[4] = data.crashes.ToString();
             _hubData[5] = data.batteries.Count.ToString();
-            _hubData[6] = data.chargingBatteries.Count.ToString();
-            _hubData[7] = (data.BatteriesWithNoDrones.PeekMax(true).Charge * 100).ToString("0.00");
-            _hubData[8] = data.queuedJobs.ToString();
-            _hubData[9] = data.inQueueDelayed.ToString();
-            _hubData[10] = data.completedCount.ToString();
-            _hubData[11] = data.delayedJobs.ToString();
-            _hubData[12] = data.failedJobs.ToString();
-            _hubData[13] = data.revenue.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
-            _hubData[14] = (data.delay / data.completedCount).ToString("0.00");
-            _hubData[15] = data.audibility.ToString("0.00");
-            _hubData[16] = UnitConverter.Convert(Energy.kWh, data.energyConsumption);
+            _hubData[6] = data.chargingBatteriesCount.ToString();
+            _hubData[7] = data.queuedJobs.ToString();
+            _hubData[8] = data.inQueueDelayed.ToString();
+            _hubData[9] = data.completedCount.ToString();
+            _hubData[10] = data.delayedJobs.ToString();
+            _hubData[11] = data.failedJobs.ToString();
+            _hubData[12] = data.revenue.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
+            _hubData[13] = (data.delay / data.completedCount).ToString("0.00");
+            _hubData[14] = data.audibility.ToString("0.00");
+            _hubData[15] = UnitConverter.Convert(Energy.kWh, data.energyConsumption);
         }
 
         private IEnumerator Logging()

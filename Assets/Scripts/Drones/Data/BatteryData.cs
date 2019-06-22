@@ -1,4 +1,6 @@
-﻿using Utils;
+﻿using Drones.Event_System;
+using UnityEngine;
+using BatteryStatus = Utils.BatteryStatus;
 
 namespace Drones.Data
 {
@@ -9,6 +11,7 @@ namespace Drones.Data
         public const int DesignCycles = 500;
         public const float DesignCapacity = 576000f; // 576,000 Coulombs = 160,000 mAh
         public const float ChargeTarget = 0.98f;
+        public const float ChargeRate = DesignCapacity/3600f;
 
         public BatteryData(Objects.Battery battery)
         {
@@ -19,12 +22,12 @@ namespace Drones.Data
             totalDischarge = 0;
             totalCharge = 0;
             cycles = 0;
-            charge = DesignCapacity;
+            charge = 0.1f * DesignCapacity;
             capacity = DesignCapacity;
             DeltaEnergy = 0;
         }
 
-        public uint UID { get; set; }
+        public uint UID { get; }
         public uint drone;
         public uint hub;
         

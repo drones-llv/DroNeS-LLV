@@ -31,15 +31,15 @@ namespace Drones.JobSystem
             var info = nextMove[k];
             if (info.moveType == DroneMovement.Ascend || nextMove[k].moveType == DroneMovement.Descend)
             {
-                float step = deltaTime * VSPEED;
-                Vector3 target = transform.position;
+                var step = deltaTime * VSPEED;
+                var target = transform.position;
                 target.y = nextMove[k].height;
                 info.prev_pos = transform.position;
                 transform.position = Vector3.MoveTowards(transform.position, target, step);
             }
             else if (nextMove[k].moveType == DroneMovement.Horizontal)
             {
-                float step = deltaTime * HSPEED;
+                var step = deltaTime * HSPEED;
                 info.prev_pos = transform.position;
                 transform.position = Vector3.MoveTowards(transform.position, nextMove[k].waypoint, step);
             }

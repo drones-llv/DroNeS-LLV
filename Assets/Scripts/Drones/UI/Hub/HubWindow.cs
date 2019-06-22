@@ -197,7 +197,7 @@ namespace Drones.UI.Hub
             Data[3].SetField((hub.drones.Count - hub.DronesWithNoJobs.Count).ToString());
             Data[4].SetField(hub.crashes.ToString());
             Data[5].SetField(hub.batteries.Count.ToString());
-            Data[6].SetField(hub.chargingBatteries.Count.ToString());
+            Data[6].SetField(hub.chargingBatteriesCount.ToString());
             Data[7].SetField(((Objects.Hub)Source).Scheduler.JobQueueLength.ToString());
             Data[8].SetField(hub.completedCount.ToString());
             Data[9].SetField(hub.delayedJobs.ToString());

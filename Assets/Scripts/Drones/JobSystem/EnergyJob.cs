@@ -1,4 +1,6 @@
-﻿using Unity.Burst;
+﻿using System;
+using Drones.Data;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -9,25 +11,6 @@ using BatteryStatus = Utils.BatteryStatus;
 
 namespace Drones.JobSystem
 {
-    public struct EnergyInfo
-    {
-        public float pkgWgt;
-        public float energy;
-        public DroneMovement moveType;
-        public BatteryStatus status;
-        public float totalDischarge;
-        public float totalCharge;
-        public float charge;
-        public float capacity;
-        public int cycles;
-        public float chargeRate;
-        public int designCycles;
-        public float designCapacity;
-        public float chargeTarget;
-
-        public int stopCharge;
-    }
-
     public struct DroneInfo
     {
         public float pkgWgt;
@@ -51,75 +34,79 @@ namespace Drones.JobSystem
         private const float HSpeed = MovementJob.HSPEED;
 
         public float DeltaTime;
-        public NativeArray<EnergyInfo> Energies;
+        public NativeArray<BatteryData> Energies;
+        [ReadOnly] public NativeHashMap<uint, DroneInfo> DroneInfo;
+        [WriteOnly] public NativeQueue<uint>.Concurrent DronesToDrop;
+        [WriteOnly] public NativeQueue<uint>.Concurrent ChargingInHub;
 
         public void Execute(int i)
         {
             var tmp = Energies[i];
-            tmp.stopCharge = 0;
-            if (tmp.moveType == DroneMovement.Idle)
+            if (!DroneInfo.TryGetValue(tmp.UID, out var info) || info.moveType == DroneMovement.Idle)
             {
-                tmp.energy = 0;
-                if (tmp.status == BatteryStatus.Charge) Charge(ref tmp);
+                tmp.DeltaEnergy = 0;
+                Charge(ref tmp);
             }
-            else if (tmp.status == BatteryStatus.Discharge)
+            else
             {
-                var w = (Mass + tmp.pkgWgt) * g;
+                tmp.status = BatteryStatus.Discharge;
+                var w = (Mass + info.pkgWgt) * g;
                 var power = NumPropellers * math.sqrt(math.pow(w / NumPropellers, 3) * 2 / Mathf.PI / math.pow(PropellerDiameter, 2) / Rho) / Eff;
-                if (Energies[i].moveType != DroneMovement.Hover)
+                switch (info.moveType)
                 {
-                    switch (Energies[i].moveType)
-                    {
-                        case DroneMovement.Ascend:
-                            power += 0.5f * Rho * Mathf.Pow(VSpeed, 3) * Cd * A;
-                            power += w * VSpeed;
-                            break;
-                        case DroneMovement.Descend:
-                            power += 0.5f * Rho * Mathf.Pow(VSpeed, 3) * Cd * A;
-                            power -= w * VSpeed;
-                            break;
-                        case DroneMovement.Horizontal:
-                            power += 0.5f * Rho * Mathf.Pow(HSpeed, 3) * Cd * A;
-                            break;
-                        case DroneMovement.Hover:
-                            power = 0;
-                            break;
-                        case DroneMovement.Idle:
-                            power = 0;
-                            break;
-                        case DroneMovement.Drop:
-                            power = 0;
-                            break;
-                        default:
-                            break;
-                    }
+                    case DroneMovement.Ascend:
+                        power += 0.5f * Rho * Mathf.Pow(VSpeed, 3) * Cd * A;
+                        power += w * VSpeed;
+                        break;
+                    case DroneMovement.Descend:
+                        power += 0.5f * Rho * Mathf.Pow(VSpeed, 3) * Cd * A;
+                        power -= w * VSpeed;
+                        break;
+                    case DroneMovement.Horizontal:
+                        power += 0.5f * Rho * Mathf.Pow(HSpeed, 3) * Cd * A;
+                        break;
+                    case DroneMovement.Drop:
+                        power = 0;
+                        break;
+                    case DroneMovement.Hover:
+                        break;
+                    default:
+                        break;
                 }
-                tmp.energy = power * DeltaTime;
+                tmp.DeltaEnergy = power * DeltaTime;
                 Discharge(ref tmp);
             }
             Energies[i] = tmp;
         }
 
-        private static void Discharge(ref EnergyInfo info)
+        private void Discharge(ref BatteryData info)
         {
-            var dQ = info.energy / DischargeVoltage;
+            var dQ = info.DeltaEnergy / DischargeVoltage;
             info.charge -= dQ;
             if (info.charge > 0.1f) info.totalDischarge += dQ;
-            else info.status = BatteryStatus.Dead;
+            else
+            {
+                info.status = BatteryStatus.Dead;
+                DronesToDrop.Enqueue(info.drone);
+            }
         }
 
-        private void Charge(ref EnergyInfo info)
+        private void Charge(ref BatteryData info)
         {
-            var dQ = info.chargeRate * DeltaTime;
+            var dQ = BatteryData.ChargeRate * DeltaTime;
             if (info.charge / info.capacity < 0.05f) dQ *= 0.1f;
             else if (info.charge / info.capacity > 0.55f) dQ *= (2 * (1 -  info.charge / info.capacity));
             if (info.charge < info.capacity) { info.totalCharge += dQ; }
 
-            if (math.abs(info.chargeTarget * info.capacity - info.charge) < Epsilon)
+            if (math.abs(BatteryData.ChargeTarget * info.capacity - info.charge) < Epsilon)
             {
-                info.stopCharge = 1;
+                info.status = BatteryStatus.Idle;
             }
-
+            else
+            {
+                ChargingInHub.Enqueue(info.hub);
+                info.status = BatteryStatus.Charge;
+            }
             info.charge += dQ;
             info.charge = math.clamp(info.charge, 0, info.capacity);
 
@@ -129,11 +116,11 @@ namespace Drones.JobSystem
             SetCap(ref info);
         }
 
-        private static void SetCap(ref EnergyInfo info)
+        private static void SetCap(ref BatteryData info)
         {
-            var x = info.cycles / (float)info.designCycles;
+            var x = info.cycles / (float)BatteryData.DesignCycles;
 
-            info.capacity = (-0.7199f * math.pow(x, 3) + 0.7894f * math.pow(x, 2) - 0.3007f * x + 1) * info.designCapacity;
+            info.capacity = (-0.7199f * math.pow(x, 3) + 0.7894f * math.pow(x, 2) - 0.3007f * x + 1) * BatteryData.DesignCapacity;
         }
     }
 }

@@ -26,7 +26,6 @@ namespace Drones.Data
         public SecureSortedSet<uint, IDataSource> completedJobs;
         public SecureSortedSet<uint, Drone> DronesWithNoJobs;
         public SecureSortedSet<uint, Battery> batteries;
-        public SecureSortedSet<uint, Battery> chargingBatteries;
         public SecureSortedSet<uint, Battery> BatteriesWithNoDrones;
         public Vector3 Position => _source.transform.position;
         public int crashes;
@@ -39,6 +38,7 @@ namespace Drones.Data
         public float audibility;
         public int queuedJobs;
         public int inQueueDelayed;
+        public int chargingBatteriesCount;
 
         public HubData() { }
 
@@ -59,18 +59,8 @@ namespace Drones.Data
             };
             batteries.ItemRemoved += delegate (Battery bat)
             {
-                chargingBatteries.Remove(bat.UID);
                 BatteriesWithNoDrones.Remove(bat.UID);
                 AllBatteries.Remove(bat.UID);
-            };
-            chargingBatteries.ItemAdded += delegate (Battery bat)
-            {
-                bat.SetStatus(BatteryStatus.Charge);
-            };
-            chargingBatteries.ItemRemoved += delegate (Battery bat)
-            {
-                if (bat.Status == BatteryStatus.Charge)
-                    bat.SetStatus(BatteryStatus.Idle);
             };
             drones.ItemAdded += delegate (IDataSource drone)
             {
@@ -112,10 +102,6 @@ namespace Drones.Data
             BatteriesWithNoDrones = new SecureSortedSet<uint, Battery>((x, y) => (x.Charge <= y.Charge) ? -1 : 1)
             {
                 MemberCondition = (obj) => batteries.Contains(obj) && !obj.HasDrone()
-            };
-            chargingBatteries = new SecureSortedSet<uint, Battery>((x, y) => (x.Charge <= y.Charge) ? -1 : 1)
-            {
-                MemberCondition = (obj) => batteries.Contains(obj)
             };
             drones = new SecureSortedSet<uint, IDataSource>
             {

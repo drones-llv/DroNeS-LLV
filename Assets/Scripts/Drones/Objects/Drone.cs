@@ -8,6 +8,7 @@ using Drones.UI.Drone;
 using Drones.UI.Utils;
 using Drones.Utils;
 using Drones.Utils.Interfaces;
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Serialization;
 using Utils;
@@ -97,7 +98,7 @@ namespace Drones.Objects
         {
             var i = 0;
             var hub = GetHub();
-            while (Mathf.Min(job.ExpectedDuration, 0.9f * CostFunction.Guarantee) >
+            while (Mathf.Min(job.ExpectedDuration, 0.9f * CostFunction.Guarantee) * 0 >
                    GetBattery().Charge * CostFunction.Guarantee)
             {
                 if (++i < 2)
@@ -183,11 +184,6 @@ namespace Drones.Objects
             };
 
             return info;
-        }
-        public void GetEnergyInfo(ref EnergyInfo info)
-        {
-            info.moveType = _data.movement;
-            info.pkgWgt = (_data.job == 0) ? 0 : GetJob().PackageWeight;
         }
 
         #region Fields
@@ -313,5 +309,14 @@ namespace Drones.Objects
             return Vector3.Distance(d, position) < 0.25f;
         }
 
+        public void UpdateMovement(ref NativeHashMap<uint,DroneInfo> droneMovements)
+        {
+            if (_data.battery == 0) return;
+            droneMovements.TryAdd(_data.battery, new DroneInfo
+            {
+                pkgWgt = _data.packageWeight,
+                moveType = _data.movement
+            });
+        }
     };
 }

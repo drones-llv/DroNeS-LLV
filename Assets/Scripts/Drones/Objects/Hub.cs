@@ -245,18 +245,12 @@ namespace Drones.Objects
         {
             _data.DronesWithNoJobs.Remove(drone);
             if (!GetBatteryForDrone(drone)) return;
-            var bat = drone.GetBattery();
-            StopCharging(bat);
-            bat.SetStatus(BatteryStatus.Discharge);
             drone.Deploy();
         }
 
         public void OnDroneReturn(Drone drone)
         {
-            if (_data.DronesWithNoJobs.Add(drone.UID, drone))
-            {
-                _data.chargingBatteries.Add(drone.GetBattery().UID, drone.GetBattery());
-            }
+            _data.DronesWithNoJobs.Add(drone.UID, drone);
             drone.WaitForDeployment();
             Scheduler.AddToQueue(drone);
         }
@@ -268,10 +262,9 @@ namespace Drones.Objects
             drone.AssignBattery();
             battery.AssignDrone();
             _data.BatteriesWithNoDrones.Add(battery.UID, battery);
-            _data.chargingBatteries.Add(battery.UID, battery);
         }
 
-        public void StopCharging(Battery battery) => _data.chargingBatteries.Remove(battery.UID);
+        public void StopCharging(Battery battery) => _data.chargingBatteriesCount--;
 
         public bool GetBatteryForDrone(Drone drone)
         {
@@ -344,5 +337,14 @@ namespace Drones.Objects
         }
         #endregion
 
+        public void ResetChargingBatteryCount()
+        {
+            _data.chargingBatteriesCount = 0;
+        }
+
+        public void IncrementChargingBattery()
+        {
+            _data.chargingBatteriesCount++;
+        }
     }
 }

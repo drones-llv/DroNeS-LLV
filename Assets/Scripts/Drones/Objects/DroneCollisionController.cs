@@ -36,7 +36,7 @@ namespace Drones.Objects
         private void OnEnable()
         {
             trail.enabled = true;
-            StartCoroutine(Gravity());
+//            StartCoroutine(Gravity());
         }
 
         private IEnumerator Gravity()
