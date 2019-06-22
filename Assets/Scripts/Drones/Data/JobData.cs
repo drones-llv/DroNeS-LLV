@@ -1,6 +1,5 @@
 ﻿using Drones.JobSystem;
 using Drones.Objects;
-using Drones.Serializable;
 using Drones.Utils.Interfaces;
 using UnityEngine;
 using Utils;
@@ -35,21 +34,6 @@ namespace Drones.Data
         public readonly CostFunction CostFunction;
         public readonly float PackageWeight;
         public float DeliveryAltitude;
-
-        public JobData(SJob data)
-        {
-            UID = data.uid;
-            Drone = data.droneUID;
-            Status = data.status;
-            PackageWeight = data.packageWeight;
-            Created = new TimeKeeper.Chronos(data.createdUnity);
-            Deadline = new TimeKeeper.Chronos(data.deadline);
-            Pickup = data.pickup;
-            Dropoff = data.destination;
-            CostFunction = new CostFunction(data.costFunction);
-            ExpectedDuration = (LateralManhattan() + LateralEuclidean()) / (2 * MovementJob.HSPEED);
-            StDevDuration = LateralManhattan() / MovementJob.HSPEED - ExpectedDuration;
-        }
 
         public JobData(Hub pickup, Vector3 dropoff, float weight, float penalty) 
         {

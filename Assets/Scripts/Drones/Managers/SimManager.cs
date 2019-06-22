@@ -2,7 +2,6 @@
 using System.Globalization;
 using Drones.Data;
 using Drones.Objects;
-using Drones.Serializable;
 using Drones.UI.Dahsboard;
 using Drones.UI.EditMode;
 using Drones.UI.SaveLoad;
@@ -84,7 +83,7 @@ namespace Drones.Managers
             DroneData.Reset();
             JobData.Reset();
             HubData.Reset();
-            NFZData.Reset();
+            NfzData.Reset();
             Singletons.ResetSingletons();
             UIFocus.Reset();
             PriorityFocus.Reset();
@@ -118,7 +117,6 @@ namespace Drones.Managers
         public static void UpdateEnergy(float dE) => Instance._data.totalEnergy += dE;
         public static void JobEnqueued() => Instance._data.queuedJobs++;
         public static void JobDequeued() => Instance._data.queuedJobs--;
-        public static SSimulation SerializeSimulation() => new SSimulation(Instance._data);
         public static void GetData(SimulationInfo info) => info.SetData(Instance._data);
         public static void GetData(DataLogger logger, TimeKeeper.Chronos time) => logger.SetData(Instance._data, time);
 
@@ -140,17 +138,6 @@ namespace Drones.Managers
             {
                 Drone.ActiveDrones?.GetChild(0)?.GetComponent<Drone>()?.Delete();
             }
-        }
-        public static void LoadSimulation(SSimulation data)
-        {
-            ClearObjects();
-            Instance._data = new SimulationData(data);
-            Instance._data.Load(data);
-            DataLogger.Load();
-            BatteryManager.ForceCountChange();
-            DroneManager.ForceDroneCountChange();
-            TimeKeeper.SetTime(data.currentTime);
-            SetStatus(SimulationStatus.EditMode);
         }
 
         public static void InQueueDelayed() => Instance._data.inQueueDelayed++;

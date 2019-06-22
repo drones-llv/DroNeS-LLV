@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Drones;
-using Drones.Serializable;
 using Mapbox.Utils;
 using UnityEngine;
 using UnityEngine.UI;
@@ -115,11 +114,6 @@ namespace Utils
             v.y = tmp;
 
             return v;
-        }
-
-        public static SVector3 Serialize(this Vector3 v)
-        {
-            return new SVector3(v);
         }
 
         public static bool IsEmpty<T>(this Queue<T> q) => q.Count == 0;

@@ -1,7 +1,6 @@
 ﻿using Drones.Data;
 using Drones.Managers;
 using Drones.Scheduler;
-using Drones.Serializable;
 using Drones.UI.Job;
 using Drones.UI.SaveLoad;
 using Drones.UI.Utils;
@@ -17,11 +16,6 @@ namespace Drones.Objects
     {
         private static readonly TimeKeeper.Chronos _EoT = new TimeKeeper.Chronos(int.MaxValue - 100, 23, 59, 59.99f);
         private static TimeKeeper.Chronos _clock = TimeKeeper.Chronos.Get();
-        public Job(SJob data)
-        {
-            _data = new JobData(data);
-            GetHub().StartCoroutine(Tracker());
-        }
 
         public Job(Hub pickup, Vector3 dropoff, float weight, float penalty)
         {
@@ -142,8 +136,6 @@ namespace Drones.Objects
             }
             return 1.00f;
         }
-
-        public SJob Serialize() => new SJob(_data);
 
         public static explicit operator StrippedJob(Job job)
         {

@@ -1,5 +1,4 @@
 ﻿using Drones.Objects;
-using Drones.Serializable;
 using Drones.Utils.Interfaces;
 using UnityEngine;
 using Utils;
@@ -61,29 +60,6 @@ namespace Drones.Data
             collisionLocation = drone.transform.position;
             packageWorth = job == 0 ? 0 : -j.Loss;
             otherDrone = "Retired";
-        }
-
-        public RetiredDroneData(SRetiredDrone data)
-        {
-            UID = data.uid;
-            isDroneCollision = data.isDroneCollision;
-            hub = data.hub;
-            packageWorth = data.packageworth;
-            destroyedTime = new TimeKeeper.Chronos(data.destroyed);
-            collisionLocation = data.location;
-            waypoint = data.waypoint;
-            otherUID = data.otherUID;
-            otherDrone = data.otherDroneName;
-            batteryCharge = data.charge;
-            job = data.assignedJob;
-            completedJobs = new SecureSortedSet<uint, IDataSource>((x, y) => (((Job)x).CompletedOn >= ((Job)y).CompletedOn) ? -1 : 1)
-            {
-                MemberCondition = (IDataSource obj) => { return obj is Job; }
-            };
-            foreach (uint j in data.completedJobs)
-            {
-                completedJobs.Add(j, AllCompleteJobs[j]);
-            }
         }
 
     }

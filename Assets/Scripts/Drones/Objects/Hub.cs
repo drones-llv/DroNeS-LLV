@@ -3,7 +3,6 @@ using Drones.Data;
 using Drones.Managers;
 using Drones.Router;
 using Drones.Scheduler;
-using Drones.Serializable;
 using Drones.UI.Hub;
 using Drones.UI.SaveLoad;
 using Drones.UI.Utils;
@@ -337,27 +336,6 @@ namespace Drones.Objects
             _data.batteries.Remove(bat);
         }
         #endregion
-
-        public SHub Serialize() => new SHub(_data, this);
-
-        public static Hub Load(SHub data, List<SDrone> drones, List<SBattery> batteries)
-        {
-            var hub = PoolController.Get(ObjectPool.Instance).Get<Hub>(null, true);
-            hub.transform.position = data.position;
-            hub.transform.SetParent(null);
-            hub.gameObject.SetActive(true);
-            hub.InPool = false;
-            SimManager.AllHubs.Add(data.uid, hub);
-            hub._data = new HubData(data, hub, drones, batteries);
-            hub._jobGenerator = new JobGenerator(hub, data.generationRate);
-            hub.JobGenerationRate = data.generationRate;
-            hub.StartCoroutine(hub._jobGenerator.Generate());
-            foreach (var d in hub._data.freeDrones.Values)
-            {
-                hub.Scheduler.AddToQueue(d);
-            }
-            return hub;
-        }
 
     }
 }

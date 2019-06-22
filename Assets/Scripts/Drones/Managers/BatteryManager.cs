@@ -55,9 +55,11 @@ namespace Drones.Managers
                 foreach (var battery in Batteries.Values)
                 {
                     var dE = _energyInfoArray[j].energy;
-                    battery.GetDrone()?.UpdateEnergy(dE);
+                    if (battery.GetDrone(out var d))
+                    {
+                        d.UpdateEnergy(dE);
+                    }
                     battery.SetEnergyInfo(_energyInfoArray[j]);
-
                     _energyInfoArray[j] = battery.GetEnergyInfo();
                     j++;
                 }

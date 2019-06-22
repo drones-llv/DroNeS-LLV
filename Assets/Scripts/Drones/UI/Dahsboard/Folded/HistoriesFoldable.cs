@@ -4,7 +4,7 @@ using Drones.UI.Job;
 
 namespace Drones.UI.Dahsboard.Folded
 {
-    public class HistoriesFoldable : FoldableMenu
+    public class HistoriesFoldable : FoldableTaskBar
     {
         private JobHistoryWindow _JobHistory;
         private RetiredDroneListWindow _RetiredDrones;

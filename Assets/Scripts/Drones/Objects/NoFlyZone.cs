@@ -1,7 +1,6 @@
 ﻿using Drones.Data;
 using Drones.Event_System;
 using Drones.Managers;
-using Drones.Serializable;
 using Drones.UI.Console;
 using Drones.UI.Utils;
 using Drones.Utils;
@@ -13,34 +12,24 @@ namespace Drones.Objects
     public class NoFlyZone : MonoBehaviour, IPoolable, IDataSource
     {
         public static NoFlyZone New() => PoolController.Get(ObjectPool.Instance).Get<NoFlyZone>(null);
-        public static NoFlyZone Load(SNoFlyZone data)
-        {
-            var nfz = PoolController.Get(ObjectPool.Instance).Get<NoFlyZone>(null, true);
-            nfz.InPool = false;
-            nfz._data = new NFZData(data, nfz);
-            SimManager.AllNfz.Add(nfz.UID, nfz);
-            return nfz;
-        }
 
         public string Name => $"NFZ{UID:000000}";
         public override string ToString() => Name;
 
-        private NFZData _data;
+        private NfzData _data;
         private void OnTriggerEnter(Collider other)
         {
             var obj = other.GetComponent<IDataSource>();
-            if (obj != null)
+            if (obj == null) return;
+            if (obj is Drone)
             {
-                if (obj is Drone)
-                {
-                    _data.droneEntryCount++;
-                    ConsoleLog.WriteToConsole(new NoFlyZoneEntry(obj, this));
-                }
-                else if (obj is Hub)
-                {
-                    _data.hubEntryCount++;
-                    ConsoleLog.WriteToConsole(new NoFlyZoneEntry(obj, this));
-                }
+                _data.droneEntryCount++;
+                ConsoleLog.WriteToConsole(new NoFlyZoneEntry(obj, this));
+            }
+            else if (obj is Hub)
+            {
+                _data.hubEntryCount++;
+                ConsoleLog.WriteToConsole(new NoFlyZoneEntry(obj, this));
             }
         }
         public Vector3 Position => transform.position;
@@ -62,7 +51,7 @@ namespace Drones.Objects
         public void OnGet(Transform parent = null)
         {
             InPool = false;
-            _data = new NFZData(this);
+            _data = new NfzData(this);
             gameObject.SetActive(true);
             transform.SetParent(parent);
             SimManager.AllNfz.Add(UID, this);
@@ -80,8 +69,6 @@ namespace Drones.Objects
 
         public void OpenInfoWindow() { return; }
         #endregion
-
-        public SNoFlyZone Serialize() => new SNoFlyZone(_data);
 
     }
 

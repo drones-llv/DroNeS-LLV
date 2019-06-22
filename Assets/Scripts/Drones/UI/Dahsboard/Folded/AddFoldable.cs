@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Drones.UI.Dahsboard.Folded
 {
-    public class AddFoldable : FoldableMenu
+    public class AddFoldable : FoldableTaskBar
     {
         protected override void Start()
         {

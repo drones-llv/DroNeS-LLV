@@ -150,7 +150,7 @@ namespace Drones.UI.SaveLoad
         private void OnSave()
         {
             if (string.IsNullOrWhiteSpace(_InputName.text)) return;
-            string path = SaveLoadManager.FilePath(_InputName.text);
+            var path = SaveLoadManager.FilePath(_InputName.text);
 
             if (File.Exists(path))
             {
@@ -158,7 +158,6 @@ namespace Drones.UI.SaveLoad
             }
             else
             {
-                SaveLoadManager.Save(path);
                 Destroy(gameObject);
             }
         }
@@ -166,11 +165,10 @@ namespace Drones.UI.SaveLoad
         private void OnLoad()
         {
             if (string.IsNullOrWhiteSpace(_InputName.text)) return;
-            string path = SaveLoadManager.FilePath(_InputName.text);
+            var path = SaveLoadManager.FilePath(_InputName.text);
 
             if (File.Exists(path))
             {
-                SaveLoadManager.Load(path);
                 Destroy(gameObject);
             }
         }

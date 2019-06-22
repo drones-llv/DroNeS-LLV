@@ -9,7 +9,7 @@ using Utils;
 
 namespace Drones.UI.Dahsboard.Folded
 {
-    public class MenuFoldable : FoldableMenu
+    public class MenuFoldable : FoldableTaskBar
     {
 
         protected override void Start()
@@ -22,27 +22,18 @@ namespace Drones.UI.Dahsboard.Folded
             base.Start();
         }
 
-        private void ExportToCSV()
+        private static void ExportToCSV()
         {
-            string path;
-            if (!Directory.Exists(SaveLoadManager.DronesPath))
-            {
-                Directory.CreateDirectory(SaveLoadManager.DronesPath);
-            }
-            if (!Directory.Exists(SaveLoadManager.ExportPath))
-            {
-                Directory.CreateDirectory(SaveLoadManager.ExportPath);
-            }
-            string filename = DateTime.Now.ToString() + ".json";
-            filename = filename.Replace("/", "-");
-            filename = filename.Replace(@"\", "-");
-            filename = filename.Replace(@":", "-");
-            path = Path.Combine(SaveLoadManager.ExportPath, filename);
-            File.WriteAllText(path, JsonUtility.ToJson(SimManager.SerializeSimulation()));
         }
 
-        private void LoadSimulation() => SaveLoadManager.OpenLoadWindow();
-        private void SaveSimulation() => SaveLoadManager.OpenSaveWindow();
+        private static void LoadSimulation()
+        {
+            
+        }
+        private static void SaveSimulation() 
+        {
+        
+        }
 
         private void QuitToMainMenu()
         {

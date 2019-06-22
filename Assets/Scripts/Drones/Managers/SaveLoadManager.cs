@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using Drones.Serializable;
 using Drones.UI.Console;
 using Drones.UI.SaveLoad;
 using UnityEngine;
@@ -112,18 +111,6 @@ namespace Drones.Managers
             var win = UnityEngine.Object.Instantiate(
                 Resources.Load("Prefabs/UI/Windows/SaveLoad/Overwrite Dialog") as GameObject, UIManager.Transform, false);
             win.GetComponent<OverwriteConfirmation>().SetFilepath(filepath);
-        }
-
-        public static void Save(string filepath)
-        {
-            Obfuscate(filepath, JsonUtility.ToJson(SimManager.SerializeSimulation()));
-        }
-
-        public static void Load(string filepath)
-        {
-            var data = Deobfuscate(filepath);
-            SimManager.LoadSimulation(JsonUtility.FromJson<SSimulation>(data));
-            ConsoleLog.Clear();
         }
 
     }

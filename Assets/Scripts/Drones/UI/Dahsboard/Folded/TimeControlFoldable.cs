@@ -4,7 +4,7 @@ using Utils;
 
 namespace Drones.UI.Dahsboard.Folded
 {
-    public class TimeControlFoldable : FoldableMenu
+    public class TimeControlFoldable : FoldableTaskBar
     {
         protected override void Start()
         {

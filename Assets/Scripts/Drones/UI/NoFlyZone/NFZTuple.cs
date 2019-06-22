@@ -10,7 +10,7 @@ namespace Drones.UI.NoFlyZone
     {
         public override void SetData(IData data)
         {
-            var nfz = (NFZData)data;
+            var nfz = (NfzData)data;
 
             Data[0].SetField(nfz.Position.ToStringXZ());
             Data[1].SetField(nfz.droneEntryCount);

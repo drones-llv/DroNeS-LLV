@@ -23,7 +23,7 @@ namespace Drones.UI.Dahsboard
             {
                 OwnerToButton[_ActiveFoldable.transform.parent].onClick.Invoke();
             }
-            _ActiveFoldable = button.GetComponentInChildren<FoldableMenu>(true).gameObject;
+            _ActiveFoldable = button.GetComponentInChildren<FoldableTaskBar>(true).gameObject;
             _ActiveFoldable.SetActive(true);
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(delegate { DisableFoldable(button); });

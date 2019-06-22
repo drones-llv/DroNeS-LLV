@@ -4,7 +4,6 @@ using Drones.Data;
 using Drones.JobSystem;
 using Drones.Managers;
 using Drones.Scheduler;
-using Drones.Serializable;
 using Drones.UI.Drone;
 using Drones.UI.Utils;
 using Drones.Utils;
@@ -34,14 +33,6 @@ namespace Drones.Objects
         }
 
         public static Drone New() => PoolController.Get(ObjectPool.Instance).Get<Drone>(null);
-
-        public static Drone Load(SDrone data)
-        {
-            var d = PoolController.Get(ObjectPool.Instance).Get<Drone>(null, true);
-            d.gameObject.SetActive(true);
-
-            return d.LoadState(data);
-        }
 
         #region IPoolable
 
@@ -320,20 +311,6 @@ namespace Drones.Objects
             var position = transform.position;
             d.y = position.y;
             return Vector3.Distance(d, position) < 0.25f;
-        }
-
-        public SDrone Serialize() => new SDrone(_data, this);
-
-        public StrippedDrone Strip() => new StrippedDrone(_data, this);
-
-        private Drone LoadState(SDrone data)
-        {
-            _data = new DroneData(data, this);
-            InPool = false;
-            if (_data.battery != 0) GetBattery().AssignDrone(this);
-            StartCoroutine(Horizontal(true));
-            if (data.isActive) transform.SetParent(ActiveDrones);
-            return this;
         }
 
     };

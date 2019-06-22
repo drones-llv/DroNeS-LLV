@@ -2,7 +2,6 @@
 using Drones.Data;
 using Drones.JobSystem;
 using Drones.Managers;
-using Drones.Serializable;
 using Unity.Collections;
 using UnityEngine;
 using Utils;
@@ -13,7 +12,6 @@ namespace Drones.Objects
     [Serializable]
     public class Battery
     {
-        
         public static uint Count { get; private set; }
         public static void Reset() => Count = 0;
         public Battery(Drone drone, Hub hub)
@@ -23,13 +21,6 @@ namespace Drones.Objects
             if (drone is null) AssignDrone(); 
             else AssignDrone(drone);
             AssignHub(hub);
-        }
-        
-        public Battery(SBattery data)
-        {
-            UID = data.uid;
-            Count = data.count;
-            _data = new BatteryData(data);
         }
 
         #region Properties
@@ -46,13 +37,11 @@ namespace Drones.Objects
         
         private BatteryData _data;
 
-        public Hub GetHub()
+        private Hub GetHub()
         {
             return (Hub)SimManager.AllHubs[_data.hub];
         }
-        
-        public Drone GetDrone() => (Drone)SimManager.AllDrones[_data.drone];
-        
+
         public bool GetDrone(out Drone drone)
         {
             if (_data.drone == 0)
@@ -114,8 +103,6 @@ namespace Drones.Objects
                 GetHub()?.StopCharging(this);
             }
         }
-
-        public SBattery Serialize() => new SBattery(_data);
     }
 
 }

@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using Drones.Managers;
 using Drones.Scheduler;
-using Drones.Serializable;
 using Drones.UI.Utils;
 using Utils;
 
@@ -45,12 +44,6 @@ namespace Drones.Utils
         private void OnDestroy()
         {
             Instance = null;
-        }
-
-        public static void SetTime(STime time)
-        {
-            _day = time.day;
-            _degree = time.hr / 24f * 360f + time.min / 24f / 60f * 360f + time.sec * DegPerDay;
         }
 
         private static float _degree;
@@ -115,14 +108,6 @@ namespace Drones.Utils
                 _cDay = d + acc;
             }
 
-            public Chronos(STime time)
-            {
-                _sec = time.sec;
-                _min = time.min;
-                _hr = time.hr;
-                _cDay = time.day;
-            }
-
             public override string ToString()
             {
                 return IsNull() ? "" : $"Day {_cDay}, {_hr:00}:{_min:00}";
@@ -160,17 +145,6 @@ namespace Drones.Utils
             public string ToCsvFormat()
             {
                 return IsNull() ? "" : (_cDay * 24 * 3600 + (_hr - 9) * 3600 + _min * 60 + _sec).ToString("0.0");
-            }
-
-            public STime Serialize()
-            {
-                return new STime
-                {
-                    sec = _sec,
-                    min = _min,
-                    hr = _hr,
-                    day = _cDay,
-                };
             }
 
             public override bool Equals(object obj)

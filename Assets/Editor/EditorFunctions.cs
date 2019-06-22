@@ -10,7 +10,6 @@ using System;
 using Drones.Managers;
 using Drones.Mapbox;
 using Drones.Router;
-using Drones.Serializable;
 using Mapbox.Unity.Map.TileProviders;
 using Utils;
 

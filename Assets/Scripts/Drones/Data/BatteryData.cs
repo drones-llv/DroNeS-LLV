@@ -1,5 +1,4 @@
-﻿using Drones.Serializable;
-using Utils;
+﻿using Utils;
 
 namespace Drones.Data
 {
@@ -22,20 +21,6 @@ namespace Drones.Data
             cycles = 0;
             charge = DesignCapacity;
             capacity = DesignCapacity;
-            DeltaEnergy = 0;
-        }
-
-        public BatteryData(SBattery data)
-        {
-            UID = data.uid;
-            drone = data.drone;
-            hub = data.hub;
-            charge = data.charge;
-            capacity = data.capacity;
-            totalCharge = data.totalCharge;
-            totalDischarge = data.totalDischarge;
-            cycles = data.cycles;
-            status = data.status;
             DeltaEnergy = 0;
         }
 

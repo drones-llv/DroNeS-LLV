@@ -1,11 +1,9 @@
-﻿using System;
+using System;
 using Drones.Objects;
-using Drones.Router;
 using Drones.Utils.Interfaces;
-using UnityEngine;
 using Utils;
 
-namespace Drones.Serializable
+namespace Drones.Data
 {
     public class SimulationData : IData
     {
@@ -50,28 +48,9 @@ namespace Drones.Serializable
                 MemberCondition = (item) => item is Hub
             };
 
-            hubs.ItemAdded += (obj) =>
-            {
-                var hub = obj as Hub;
-                Pathfinder.Hubs.Add(obj.UID, new Obstacle((BoxCollider)hub.HubCollider, 2));
-            };
-            hubs.ItemRemoved += (obj) =>
-            {
-                Pathfinder.Hubs.Remove(obj.UID);
-            };
-
             noFlyZones = new SecureSortedSet<uint, IDataSource>
             {
                 MemberCondition = (item) => item is NoFlyZone
-            };
-
-            noFlyZones.ItemAdded += (obj) =>
-            {
-                Pathfinder.NoFlyZones.Add(obj.UID, new Obstacle(((NoFlyZone)obj).transform, 2));
-            };
-            noFlyZones.ItemRemoved += (obj) =>
-            {
-                Pathfinder.NoFlyZones.Remove(obj.UID);
             };
 
             incompleteJobs = new SecureSortedSet<uint, IDataSource>
@@ -87,8 +66,6 @@ namespace Drones.Serializable
             batteries = new SecureSortedSet<uint, Battery>();
 
             jobs = new SecureSortedSet<uint, Job>();
-
-
         }
 
         private void SetUpCallbacks()
@@ -105,59 +82,6 @@ namespace Drones.Serializable
         {
             simulation = DateTime.Now;
             InitializeCollections();
-            SetUpCallbacks();
-        }
-
-        public SimulationData(SSimulation data)
-        {
-            InitializeCollections();
-        }
-
-        public void Load(SSimulation data)
-        {
-            simulation = data.simulation;
-            revenue = data.revenue;
-            totalDelay = data.totalDelay;
-            totalAudible = data.totalAudible;
-            totalEnergy = data.totalEnergy;
-            queuedJobs = data.queuedJobs;
-            completedCount = data.completedCount;
-            crashes = data.crashes;
-            delayedJobs = data.delayedJobs;
-            failedJobs = data.failedJobs;
-            foreach (var job in data.completedJobs)
-            {
-                var loaded = new Job(job);
-                completeJobs.Add(loaded.UID, loaded);
-                jobs.Add(loaded.UID, loaded);
-            }
-            foreach (var job in data.incompleteJobs)
-            {
-                var loaded = new Job(job);
-                incompleteJobs.Add(loaded.UID, loaded);
-                jobs.Add(loaded.UID, loaded);
-            }
-            noFlyZones.ItemAdded += (obj) =>
-            {
-                Pathfinder.NoFlyZones.Add(obj.UID, new Obstacle(((NoFlyZone)obj).transform, 2));
-            };
-            noFlyZones.ItemRemoved += (obj) =>
-            {
-                Pathfinder.NoFlyZones.Remove(obj.UID);
-            };
-            foreach (var nfz in data.noFlyZones)
-            {
-                noFlyZones.Add(nfz.uid, NoFlyZone.Load(nfz));
-            }
-
-            foreach (var rDrone in data.retiredDrones)
-            {
-                var loaded = new RetiredDrone(rDrone);
-            }
-            foreach (var hub in data.hubs)
-            {
-                var h = Hub.Load(hub, data.drones, data.batteries);
-            }
             SetUpCallbacks();
         }
     }

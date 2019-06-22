@@ -1,6 +1,5 @@
 ﻿using System;
 using Drones.Scheduler;
-using Drones.Serializable;
 using Drones.Utils;
 using UnityEngine;
 
@@ -13,13 +12,6 @@ namespace Drones.Objects
             Start = startTime;
             Reward = revenue;
             Penalty = -Mathf.Abs(penalty);
-        }
-
-        public CostFunction(SCostFunction sCost)
-        {
-            Start = new TimeKeeper.Chronos(sCost.start);
-            Reward = sCost.reward;
-            Penalty = sCost.penalty;
         }
 
         private TimeKeeper.Chronos Start { get; set; }
@@ -56,16 +48,6 @@ namespace Drones.Objects
             if (division < 1) division = 1;
 
             return ((int)(ndt * division)) / (float)division;
-        }
-
-        public SCostFunction Serialize()
-        {
-            return new SCostFunction
-            {
-                start = Start.Serialize(),
-                reward = Reward,
-                penalty = Penalty
-            };
         }
 
         public float Step(float x, float n, float yU = 1, float yD = -1) => (x <= n) ? yU : yD;

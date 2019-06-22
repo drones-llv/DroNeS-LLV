@@ -1,7 +1,6 @@
 ﻿using Drones.Data;
 using Drones.Event_System;
 using Drones.Managers;
-using Drones.Serializable;
 using Drones.UI.Console;
 using Drones.UI.Drone;
 using Drones.UI.Utils;
@@ -24,12 +23,6 @@ namespace Drones.Objects
             _data = new RetiredDroneData(drone);
             ConsoleLog.WriteToConsole(new DroneRetired(this));
 
-        }
-
-        public RetiredDrone(SRetiredDrone data)
-        {
-            _data = new RetiredDroneData(data);
-            SimManager.AllRetiredDrones.Add(UID, this);
         }
 
         public string Name => "D" + _data.UID.ToString("000000");
@@ -78,8 +71,6 @@ namespace Drones.Objects
                 return null;
             }
         }
-
-        public SRetiredDrone Serialize() => new SRetiredDrone(_data);
 
 
     }

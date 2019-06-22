@@ -6,7 +6,7 @@ using Drones.UI.NoFlyZone;
 
 namespace Drones.UI.Dahsboard.Folded
 {
-    public class ListsFoldable : FoldableMenu
+    public class ListsFoldable : FoldableTaskBar
     {
         private JobQueueWindow _JobQueue;
         private HubListWindow _HubList;

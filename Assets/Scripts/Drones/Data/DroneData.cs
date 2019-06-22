@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using Drones.Objects;
-using Drones.Serializable;
 using Drones.Utils.Interfaces;
 using Utils;
 
@@ -25,40 +24,6 @@ namespace Drones.Data
             movement = DroneMovement.Idle;
             previousPosition = CurrentPosition;
             isWaiting = true;
-        }
-
-        public DroneData(SDrone data, Drone src)
-        {
-            _source = src;
-            Count = data.count;
-            UID = data.uid;
-            battery = data.battery;
-            job = data.job;
-            hub = data.hub;
-            batterySwaps = data.totalBatterySwaps;
-            hubsAssigned = data.totalHubHandovers;
-            isWaiting = data.isWaiting;
-            movement = data.movement;
-            totalDelay = data.totalDelay;
-            audibleDuration = data.totalAudibleDuration;
-            packageWeight = data.totalPackageWeight;
-            distanceTravelled = data.totalDistanceTravelled;
-            totalEnergy = data.totalEnergy;
-            targetAltitude = data.targetAltitude;
-            
-            var transform = _source.transform;
-            previousPosition = transform.position;
-            transform.position = data.position;
-            waypoints = new Queue<Vector3>();
-            foreach (Vector3 point in data.waypointsQueue)
-            {
-                waypoints.Enqueue(point);
-            }
-            currentWaypoint = data.waypoint;
-            previousWaypoint = data.previousWaypoint;
-            foreach (uint id in data.completedJobs)
-                completedJobs.Add(id, AllCompleteJobs[id]);
-           
         }
         public uint UID { get; }
         public bool IsDataStatic { get; set; } = false;

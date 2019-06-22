@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 namespace Drones.UI.Dahsboard.Folded
 {
-    public abstract class FoldableMenu : UIFocus
+    public abstract class FoldableTaskBar : UIFocus
     {
         [SerializeField]
         private Button _Opener;

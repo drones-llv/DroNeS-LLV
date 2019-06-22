@@ -48,7 +48,7 @@ namespace Drones.UI.SaveLoad
             Confirm.onClick.AddListener(delegate
             {
                 if (string.IsNullOrEmpty(_filepath)) return;
-                SaveLoadManager.Save(_filepath);
+//                SaveLoadManager.Save(_filepath);
                 Destroy(gameObject);
                 Destroy(SaveLoadWindow.Instance.gameObject);
             });
