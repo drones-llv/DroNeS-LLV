@@ -16,8 +16,10 @@ namespace Drones.Data
 
         public uint UID { get; }
         public bool IsDataStatic { get; set; } = false;
+        public float EnergyUse { get; set; }
 
         public uint Drone;
+        public uint Hub;
         public float Earnings;
         public TimeKeeper.Chronos Assignment;
         public TimeKeeper.Chronos Completed;
@@ -52,6 +54,7 @@ namespace Drones.Data
         public JobData(Hub pickup, Vector3 dropoff, float weight, float penalty) 
         {
             UID = ++_count;
+            Hub = pickup.UID;
             Status = JobStatus.Assigning;
             Created = TimeKeeper.Chronos.Get();
             Deadline = Created + CostFunction.Guarantee;
@@ -60,7 +63,7 @@ namespace Drones.Data
             PackageWeight = weight;
             CostFunction = new CostFunction(Created, WeightToRev(Pricing.US, weight), penalty);
             ExpectedDuration = (LateralManhattan() + LateralEuclidean()) / (2 * MovementJob.HSPEED) + (Pickup.y-dropoff.y) / MovementJob.VSPEED;
-            StDevDuration = LateralManhattan() / MovementJob.HSPEED - ExpectedDuration + (this.Pickup.y - dropoff.y) / MovementJob.VSPEED;
+            StDevDuration = LateralManhattan() / MovementJob.HSPEED - ExpectedDuration + (this.Pickup.y - Dropoff.y) / MovementJob.VSPEED;
         }
 
         private float LateralManhattan()

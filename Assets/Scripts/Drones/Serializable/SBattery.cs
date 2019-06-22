@@ -37,9 +37,6 @@ namespace Drones.Serializable
             designCycles = BatteryData.DesignCycles;
             designCapacity = BatteryData.DesignCapacity;
             chargeTarget = BatteryData.ChargeTarget;
-            chargeRate = data.chargeRate;
-            chargeVoltage = data.chargeVoltage;
-            dischargeVoltage = data.dischargeVoltage;
             totalCharge = data.totalCharge;
             totalDischarge = data.totalDischarge;
 

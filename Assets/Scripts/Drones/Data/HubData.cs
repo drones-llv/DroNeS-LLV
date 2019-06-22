@@ -40,6 +40,8 @@ namespace Drones.Data
         public float delay;
         public float energyConsumption;
         public float audibility;
+        public int queuedJobs;
+        public int inQueueDelayed;
 
         public HubData() { }
 
@@ -51,7 +53,7 @@ namespace Drones.Data
             SetUpCollectionEvents();
         }
 
-        public HubData(SHub data, Hub hub, List<SDrone> droneData, List<SBattery> batteryData)
+        public HubData(SHub data, Hub hub, IList<SDrone> droneData, IList<SBattery> batteryData)
         {
             _source = hub;
             UID = data.count;
@@ -69,58 +71,52 @@ namespace Drones.Data
             SetUpCollectionEvents();
         }
 
-        private void LoadAssignments(SHub hubData, List<SDrone> droneData, List<SBattery> batteryData)
+        private void LoadAssignments(SHub hubData, IList<SDrone> droneData, IList<SBattery> batteryData)
         {
             var fd = new HashSet<uint>(hubData.freeDrones);
             var fb = new HashSet<uint>(hubData.freeBatteries);
             var cb = new HashSet<uint>(hubData.chargingBatteries);
-            foreach (uint i in hubData.completedJobs) 
+            foreach (var i in hubData.completedJobs) 
                 completedJobs.Add(i, AllJobs[i]);
-            foreach (uint i in hubData.incompleteJobs)
+            foreach (var i in hubData.incompleteJobs)
                 incompleteJobs.Add(i, AllJobs[i]);
 
-            for (int i = batteryData.Count - 1; i >= 0; i--)
+            for (var i = batteryData.Count - 1; i >= 0; i--)
             {
                 if (LoadBattery(batteryData[i], fb, cb)) 
                     batteryData.RemoveAt(i);
             }
-            for (int i = droneData.Count - 1; i >= 0; i--)
+            for (var i = droneData.Count - 1; i >= 0; i--)
             {
                 if (LoadDrone(droneData[i], fd)) 
                     droneData.RemoveAt(i);
             }
-            foreach(uint uid in hubData.exitingDrones)
+            foreach(var uid in hubData.exitingDrones)
             {
                 deploymentQueue.Enqueue((Drone)drones[uid]);
             }
         }
 
-        private bool LoadBattery(SBattery data, HashSet<uint> free, HashSet<uint> charging)
+        private bool LoadBattery(SBattery data, ICollection<uint> free, ICollection<uint> charging)
         {
-            if (data.hub == UID)
-            {
-                var bat = new Battery(data);
-                AllBatteries.Add(bat.UID, bat);
-                batteries.Add(bat.UID, bat);
-                if (free.Contains(bat.UID)) freeBatteries.Add(bat.UID, bat);
-                if (charging.Contains(bat.UID)) chargingBatteries.Add(bat.UID, bat);
-                return true;
-            }
-            return false;
+            if (data.hub != UID) return false;
+            var bat = new Battery(data);
+            AllBatteries.Add(bat.UID, bat);
+            batteries.Add(bat.UID, bat);
+            if (free.Contains(bat.UID)) freeBatteries.Add(bat.UID, bat);
+            if (charging.Contains(bat.UID)) chargingBatteries.Add(bat.UID, bat);
+            return true;
         }
 
-        private bool LoadDrone(SDrone data, HashSet<uint> free)
+        private bool LoadDrone(SDrone data, ICollection<uint> free)
         {
-            if (data.hub == UID)
-            {
-                Drone drone = Drone.Load(data);
-                AllDrones.Add(drone.UID, drone);
-                drones.Add(drone.UID, drone);
-                if (!data.inHub) drone.transform.SetParent(Drone.ActiveDrones);
-                if (free.Contains(drone.UID)) freeDrones.Add(drone.UID, drone);
-                return true;
-            }
-            return false;
+            if (data.hub != UID) return false;
+            var drone = Drone.Load(data);
+            AllDrones.Add(drone.UID, drone);
+            drones.Add(drone.UID, drone);
+            if (!data.inHub) drone.transform.SetParent(Drone.ActiveDrones);
+            if (free.Contains(drone.UID)) freeDrones.Add(drone.UID, drone);
+            return true;
         }
 
         private void SetUpCollectionEvents()
@@ -185,11 +181,11 @@ namespace Drones.Data
 
             freeBatteries = new SecureSortedSet<uint, Battery>((x, y) => (x.Charge <= y.Charge) ? -1 : 1)
             {
-                MemberCondition = (Battery obj) => { return batteries.Contains(obj) && obj.GetDrone() == null; }
+                MemberCondition = (obj) => batteries.Contains(obj) && obj.GetDrone() == null
             };
             chargingBatteries = new SecureSortedSet<uint, Battery>((x, y) => (x.Charge <= y.Charge) ? -1 : 1)
             {
-                MemberCondition = (Battery obj) => { return batteries.Contains(obj); }
+                MemberCondition = (obj) => batteries.Contains(obj)
             };
             drones = new SecureSortedSet<uint, IDataSource>
             {

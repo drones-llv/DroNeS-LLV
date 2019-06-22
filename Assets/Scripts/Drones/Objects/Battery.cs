@@ -3,6 +3,7 @@ using Drones.Data;
 using Drones.JobSystem;
 using Drones.Managers;
 using Drones.Serializable;
+using Unity.Collections;
 using UnityEngine;
 using Utils;
 using BatteryStatus = Utils.BatteryStatus;
@@ -12,43 +13,82 @@ namespace Drones.Objects
     [Serializable]
     public class Battery
     {
+        private static NativeHashMap<uint, BatteryData> _allData;
         public Battery(Drone drone, Hub hub)
         {
-            _data = new BatteryData();
-            AssignDrone(drone);
+            var data = new BatteryData(this);
+            _allData.TryAdd(data.UID, data);
+            UID = data.UID;
+            if (drone is null) AssignDrone(); 
+            else AssignDrone(drone);
             AssignHub(hub);
         }
-
         public Battery(SBattery data)
         {
-            _data = new BatteryData(data);
+            _allData.TryAdd(data.uid, new BatteryData(data));
+            UID = data.uid;
         }
 
         #region Properties
-        public string Name => "B" + UID.ToString("000000");
+        public string Name => $"B{UID:000000}";
 
-        public BatteryStatus Status => _data.status;
+        public BatteryStatus Status => Data.status;
 
-        public float Charge => _data.charge / _data.capacity;
+        public float Charge => Data.charge / Data.capacity;
 
-        public float Capacity => _data.capacity / BatteryData.DesignCapacity;
+        public float Capacity => Data.capacity / BatteryData.DesignCapacity;
         #endregion
 
-        public uint UID => _data.UID;
-        private readonly BatteryData _data;
+        public uint UID { get; }
+        private BatteryData Data => _allData[UID];
 
-        public Hub GetHub() => (Hub)SimManager.AllHubs[_data.hub];
-        public Drone GetDrone() => (Drone)SimManager.AllDrones[_data.drone];
-        public void AssignHub(Hub hub) => _data.hub = hub.UID;
-        public void AssignDrone(Drone drone) => _data.drone = drone.UID;
-        public void AssignDrone() => _data.drone = 0;
+        public Hub GetHub()
+        {
+            return (Hub)SimManager.AllHubs[_allData[UID].hub];
+        } 
+        public Drone GetDrone() => (Drone)SimManager.AllDrones[Data.drone];
+        public bool GetDrone(out Drone drone)
+        {
+            if (Data.drone == 0)
+            {
+                drone = null;
+                return false;
+            }
+            drone = (Drone)SimManager.AllDrones[Data.drone];
+            return true;
+        }
+
+        public void AssignHub(Hub hub)
+        {
+            // Complete Job here
+            var tmp = _allData[UID]; 
+            tmp.hub = hub.UID;
+            _allData.Remove(UID);
+            _allData.TryAdd(UID, tmp);
+        }
+        public void AssignDrone(Drone drone)
+        {
+            var tmp = _allData[UID]; 
+            tmp.drone = drone.UID;
+            _allData.Remove(UID);
+            _allData.TryAdd(UID, tmp);
+        } 
+        public void AssignDrone()
+        {
+            var tmp = _allData[UID]; 
+            tmp.drone = 0;
+            _allData.Remove(UID);
+            _allData.TryAdd(UID, tmp);
+        }
+        public void SetStatus(BatteryStatus status)
+        {
+            Data.status = status;   
+        }
         public void Destroy() => GetHub()?.DestroyBattery(this);
-        public void SetStatus(BatteryStatus status) => _data.status = status;
-
         public EnergyInfo GetEnergyInfo()
         {
             var info = new EnergyInfo();
-            if (_data.drone != 0)
+            if (Data.drone != 0)
             {
                 GetDrone().GetEnergyInfo(ref info);
             }
@@ -57,15 +97,13 @@ namespace Drones.Objects
                 info.pkgWgt = 0;
                 info.moveType = DroneMovement.Idle;
             }
-            info.charge = _data.charge;
-            info.capacity = _data.capacity;
-            info.totalCharge = _data.totalCharge;
-            info.totalDischarge = _data.totalDischarge;
-            info.cycles = _data.cycles;
-            info.status = _data.status;
+            info.charge = Data.charge;
+            info.capacity = Data.capacity;
+            info.totalCharge = Data.totalCharge;
+            info.totalDischarge = Data.totalDischarge;
+            info.cycles = Data.cycles;
+            info.status = Data.status;
             info.chargeRate = BatteryData.DesignCapacity/3600f;
-            info.dischargeVoltage = 23f;
-            info.chargeVoltage = 3.7f;
             info.designCycles = BatteryData.DesignCycles;
             info.designCapacity = BatteryData.DesignCapacity;
             info.chargeTarget = BatteryData.ChargeTarget;
@@ -75,20 +113,18 @@ namespace Drones.Objects
 
         public void SetEnergyInfo(EnergyInfo info)
         {
-            _data.charge = info.charge;
-            _data.capacity = info.capacity;
-            _data.totalCharge = info.totalCharge;
-            _data.totalDischarge = info.totalDischarge;
-            _data.cycles = info.cycles;
-            _data.dischargeVoltage = info.dischargeVoltage;
-            _data.chargeVoltage = info.chargeVoltage;
+            Data.charge = info.charge;
+            Data.capacity = info.capacity;
+            Data.totalCharge = info.totalCharge;
+            Data.totalDischarge = info.totalDischarge;
+            Data.cycles = info.cycles;
             if (info.stopCharge == 1)
             {
                 GetHub()?.StopCharging(this);
             }
         }
 
-        public SBattery Serialize() => new SBattery(_data);
+        public SBattery Serialize() => new SBattery(Data);
     }
 
 }

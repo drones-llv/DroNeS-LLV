@@ -15,6 +15,7 @@ namespace Drones.Router
         protected const float MaxAlt = 200;
         protected const float MinAlt = 60;
         protected const int AltDivision = 10; // Altitude interval
+        protected const int Rd = 2; // drone Radius
         protected readonly int[] HubAlt = { 480, 490 };
         public static Dictionary<uint, Obstacle> Hubs => _hubs ?? (_hubs = new Dictionary<uint, Obstacle>());
 
@@ -34,8 +35,6 @@ namespace Drones.Router
                 return _buildings;
             }
         }
-
-        protected const int Rd = 2; // drone Radius
 
         public abstract void GetRoute(Drone drone, ref Queue<Vector3> waypoints);
 

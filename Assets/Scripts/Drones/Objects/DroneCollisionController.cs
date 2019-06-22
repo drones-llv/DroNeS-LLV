@@ -10,44 +10,44 @@ namespace Drones.Objects
     public class DroneCollisionController : MonoBehaviour
     {
         [SerializeField]
-        private Drone _Owner;
+        private Drone owner;
         [SerializeField]
-        private TrailRenderer _Trail;
+        private TrailRenderer trail;
         private DeploymentPath Descent => DroneHub.DronePath;
         private Hub _hub;
         private Hub DroneHub
         {
             get
             {
-                if (_hub == null) _hub = _Owner.GetHub();
+                if (_hub == null) _hub = owner.GetHub();
                 return _hub;
             }
         }
 
-        private bool _CollisionOn;
-        public bool InHub => !_CollisionOn;
+        private bool _collisionOn;
+        public bool InHub => !_collisionOn;
 
-        void Awake()
+        private void Awake()
         {
-            if (_Owner == null) _Owner = GetComponent<Drone>();
-            if (_Trail == null) _Trail = GetComponent<TrailRenderer>();
+            if (owner == null) owner = GetComponent<Drone>();
+            if (trail == null) trail = GetComponent<TrailRenderer>();
         }
 
         private void OnEnable()
         {
-            _Trail.enabled = true;
+            trail.enabled = true;
             StartCoroutine(Gravity());
         }
 
         private IEnumerator Gravity()
         {
-            var battery = _Owner.GetBattery();
+            var battery = owner.GetBattery();
             while (true)
             {
-                if (_Owner.Movement != DroneMovement.Idle && battery != null && battery.Status == BatteryStatus.Dead)
+                if (owner.Movement != DroneMovement.Idle && battery != null && battery.Status == BatteryStatus.Dead)
                 {
-                    _Trail.enabled = false;
-                    _Owner.Drop();
+                    trail.enabled = false;
+                    owner.Drop();
                     yield break;
                 }
                 yield return null;
@@ -58,32 +58,32 @@ namespace Drones.Objects
         {
             if (other.gameObject.layer == LayerMask.NameToLayer("IgnoreCollision")) return;
 
-            if (other.gameObject.layer != LayerMask.NameToLayer("Hub") && _CollisionOn)
+            if (other.gameObject.layer != LayerMask.NameToLayer("Hub") && _collisionOn)
             {
                 DroneManager.MovementJobHandle.Complete();
                 Collide(other);
             }
-            else _CollisionOn &= other.GetComponent<Hub>() != _Owner.GetHub();
+            else _collisionOn &= other.GetComponent<Hub>() != owner.GetHub();
         }
 
         public void OnTriggerExit(Collider other)
         {
             if (other.gameObject.layer == LayerMask.NameToLayer("IgnoreCollision")) return;
 
-            _CollisionOn |= (other.gameObject.layer == LayerMask.NameToLayer("Hub")
-                && other.GetComponent<Hub>() == _Owner.GetHub());
+            _collisionOn |= (other.gameObject.layer == LayerMask.NameToLayer("Hub")
+                && other.GetComponent<Hub>() == DroneHub);
         }
 
         private void Collide(Collider other)
         {
-            _Owner.GetHub().UpdateCrashCount();
-            _Owner.GetJob()?.FailJob();
+            owner.GetHub().UpdateCrashCount();
+            owner.GetJob()?.FailJob();
             if (gameObject == AbstractCamera.Followee)
                 AbstractCamera.ActiveCamera.BreakFollow();
             Explosion.New(transform.position);
-            var dd = new RetiredDrone(_Owner, other);
+            var dd = new RetiredDrone(owner, other);
             SimManager.AllRetiredDrones.Add(dd.UID, dd);
-            _Owner.Delete();
+            owner.Delete();
         }
     }
 

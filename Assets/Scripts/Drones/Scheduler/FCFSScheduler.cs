@@ -11,8 +11,11 @@ namespace Drones.Scheduler
 {
     public class FCFSScheduler : IScheduler
     {
-        public FCFSScheduler(Queue<Drone> drones)
+        private Hub _owner;
+
+        public FCFSScheduler(Queue<Drone> drones, Hub owner)
         {
+            _owner = owner;
             DroneQueue = drones;
             JobQueue = new List<Job>();
         }
@@ -29,13 +32,13 @@ namespace Drones.Scheduler
                 yield return wait;
                 while (DroneQueue.Count > 0 && JobQueue.Count > 0 && TimeKeeper.TimeSpeed != TimeSpeed.Pause)
                 {
-                    Drone drone = DroneQueue.Dequeue();
+                    var drone = DroneQueue.Dequeue();
                     if (drone.InPool) continue;
-
+                    
                     if (drone.AssignJob(JobQueue[0]))
                     {
+                        _owner.JobDequeued(JobQueue[0].IsDelayed);
                         JobQueue.RemoveAt(0);
-                        SimManager.JobDequeued();
                     }
                     yield return null;
                 }

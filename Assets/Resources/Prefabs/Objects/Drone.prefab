@@ -206,7 +206,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b6621c17dafc495bb08bd1f52aae1c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _CollisionController: {fileID: 1332466217295087735}
+  collisionController: {fileID: 1332466217295087735}
 --- !u!114 &1332466217295087735
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -219,8 +219,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f16ad93238e0346668c27e2ffaa32680, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _Owner: {fileID: 2079472781481971951}
-  _Trail: {fileID: 9154689185247105066}
+  owner: {fileID: 2079472781481971951}
+  trail: {fileID: 9154689185247105066}
 --- !u!1 &3156218167152454400
 GameObject:
   m_ObjectHideFlags: 0

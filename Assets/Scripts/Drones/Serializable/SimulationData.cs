@@ -31,6 +31,7 @@ namespace Drones.Serializable
         public int delayedJobs;
         public int failedJobs;
         public int completedCount;
+        public int inQueueDelayed;
 
         private void InitializeCollections()
         {

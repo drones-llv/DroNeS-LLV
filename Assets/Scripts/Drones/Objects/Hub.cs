@@ -5,6 +5,7 @@ using Drones.Router;
 using Drones.Scheduler;
 using Drones.Serializable;
 using Drones.UI.Hub;
+using Drones.UI.SaveLoad;
 using Drones.UI.Utils;
 using Drones.Utils;
 using Drones.Utils.Interfaces;
@@ -18,6 +19,9 @@ namespace Drones.Objects
     public class Hub : MonoBehaviour, IDataSource, IPoolable
     {
         public static Hub New() => PoolController.Get(ObjectPool.Instance).Get<Hub>(null);
+        public static int BatteryPerDrone { get; set; } = 4;
+        
+        public void GetData(DataLogger logger, TimeKeeper.Chronos time) => logger.SetData(_data, time);
 
         #region IDataSource
         public override string ToString() => Name;
@@ -97,6 +101,7 @@ namespace Drones.Objects
             gameObject.SetActive(true);
             _jobGenerator = new JobGenerator(this, JobGenerationRate);
             StartCoroutine(_jobGenerator.Generate());
+            DataLogger.LogHub(this);
         }
         #endregion
 
@@ -141,11 +146,35 @@ namespace Drones.Objects
                 return _scheduler;
             }
         }
-
-        public void AddToDeploymentQueue(Drone drone) => DronePath.AddToDeploymentQueue(drone);
+        
         public Vector3 Position => transform.position;
         #endregion
 
+        public void JobEnqueued()
+        {
+            _data.queuedJobs++;
+            SimManager.JobEnqueued();
+        }
+
+        public void JobDequeued(bool isDelayed)
+        {
+            _data.queuedJobs--;
+            SimManager.JobDequeued();
+            if (isDelayed) DequeuedDelay();
+        }
+
+        public void InQueueDelayed()
+        { 
+            _data.inQueueDelayed++;
+            SimManager.InQueueDelayed();
+        }
+
+        public void DequeuedDelay()
+        {
+            _data.inQueueDelayed--;
+            SimManager.DequeuedDelay();
+        } 
+        
         public void UpdateEnergy(float dE)
         {
             _data.energyConsumption += dE;
@@ -210,12 +239,13 @@ namespace Drones.Objects
         }
 
         private void Awake() => _data = new HubData();
-
+        
         #region Drone/Battery Interface
+        public void AddToDeploymentQueue(Drone drone) => DronePath.AddToDeploymentQueue(drone);
         public void DeployDrone(Drone drone)
         {
             _data.freeDrones.Remove(drone);
-            GetBatteryForDrone(drone);
+            if (!GetBatteryForDrone(drone)) return;
             var bat = drone.GetBattery();
             StopCharging(bat);
             bat.SetStatus(BatteryStatus.Discharge);
@@ -232,40 +262,49 @@ namespace Drones.Objects
             Scheduler.AddToQueue(drone);
         }
 
-        private void RemoveBatteryFromDrone(Drone drone)
+        public void RemoveBatteryFromDrone(Drone drone)
         {
+            if (drone.GetHub() != this) return;
             var battery = drone.GetBattery();
-            if (drone.GetHub() != this || !_data.freeBatteries.Add(battery.UID, battery)) return;
-            _data.chargingBatteries.Add(battery.UID, battery);
             drone.AssignBattery();
             battery.AssignDrone();
+            _data.freeBatteries.Add(battery.UID, battery);
+            _data.chargingBatteries.Add(battery.UID, battery);
         }
 
         public void StopCharging(Battery battery) => _data.chargingBatteries.Remove(battery.UID);
 
-        private void GetBatteryForDrone(Drone drone)
+        public bool GetBatteryForDrone(Drone drone)
         {
-            if (drone.GetBattery() != null) return;
+            if (drone.GetBattery() != null) return true;
 
-            if (_data.drones.Count >= _data.batteries.Count)
+            if (_data.batteries.Count / _data.drones.Count < BatteryPerDrone)
             {
                 drone.AssignBattery(BuyBattery(drone));
             }
             else
             {
-                drone.AssignBattery(_data.freeBatteries.GetMax(true));
-                drone.GetBattery().AssignDrone(drone);
+                var battery = _data.freeBatteries.GetMax(true);
+                if (battery == null) return false;
+                drone.AssignBattery(battery);
+                battery.AssignDrone(drone);
             }
+            return true;
         }
 
         public Drone BuyDrone()
         {
             var drone = Drone.New();
-            Scheduler.AddToQueue(drone);
-            drone.transform.position = transform.position;
-            GetBatteryForDrone(drone);
             _data.drones.Add(drone.UID, drone);
             _data.freeDrones.Add(drone.UID, drone);
+            GetBatteryForDrone(drone);
+            Scheduler.AddToQueue(drone);
+            drone.transform.position = transform.position;
+            
+            while (_data.batteries.Count / _data.drones.Count < BatteryPerDrone)
+            {
+                BuyBattery();
+            }
             return drone;
         }
 

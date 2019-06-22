@@ -45,8 +45,10 @@ namespace Drones.Data
             distanceTravelled = data.totalDistanceTravelled;
             totalEnergy = data.totalEnergy;
             targetAltitude = data.targetAltitude;
-            previousPosition = _source.transform.position;
-            _source.transform.position = data.position;
+            
+            var transform = _source.transform;
+            previousPosition = transform.position;
+            transform.position = data.position;
             waypoints = new Queue<Vector3>();
             foreach (Vector3 point in data.waypointsQueue)
             {
@@ -81,17 +83,13 @@ namespace Drones.Data
         {
             get
             {
-                if (job != 0)
-                {
-                    Job j = (Job)AllIncompleteJobs[job];
-                    if (j != null && j.Status == JobStatus.Delivering)
-                    {
-                        float a = Vector3.Distance(CurrentPosition, j.Pickup);
-                        float b = Vector3.Distance(j.Pickup, j.DropOff);
-                        return Mathf.Clamp(a / b, 0, 1);
-                    }
-                }
-                return 0;
+                if (job == 0) return 0;
+                var j = (Job)AllIncompleteJobs[job];
+                if (j == null || j.Status != JobStatus.Delivering) return 0;
+                
+                var a = Vector3.Distance(CurrentPosition, j.Pickup);
+                var b = Vector3.Distance(j.Pickup, j.DropOff);
+                return Mathf.Clamp(a / b, 0, 1);
             }
         }
         public bool wasGoingDown;
@@ -105,6 +103,7 @@ namespace Drones.Data
         private Vector3 CurrentPosition => _source.transform.position;
         public Vector3 Direction => Vector3.Normalize(previousPosition - CurrentPosition);
         public bool frequentRequests;
+        public float energyOnJobStart;
     }
 
 }

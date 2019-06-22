@@ -5,15 +5,15 @@ namespace Drones.Data
 {
     using Utils;
 
-    public class BatteryData
+    public struct BatteryData
     {
         public static uint Count { get; private set; }
         public static void Reset() => Count = 0;
-        public static int DesignCycles = 500;
-        public static float DesignCapacity = 576000f; // 576,000 Coulombs = 160,000 mAh
-        public static float ChargeTarget = 0.98f;
+        public const int DesignCycles = 500;
+        public const float DesignCapacity = 576000f; // 576,000 Coulombs = 160,000 mAh
+        public const float ChargeTarget = 0.98f;
 
-        public BatteryData()
+        public BatteryData(Objects.Battery battery)
         {
             UID = ++Count;
             drone = 0;
@@ -25,9 +25,6 @@ namespace Drones.Data
             cycles = 0;
             charge = DesignCapacity;
             capacity = DesignCapacity;
-            chargeRate = 0.5f * DesignCapacity;
-            dischargeVoltage = 23f;
-            chargeVoltage = 3.7f;
         }
 
         public BatteryData(SBattery data)
@@ -42,24 +39,18 @@ namespace Drones.Data
             totalDischarge = data.totalDischarge;
             cycles = data.cycles;
             status = data.status;
-            chargeRate = 0.5f * DesignCapacity;
-            dischargeVoltage = 23f;
-            chargeVoltage = 3.7f;
         }
 
         public uint UID { get; set; }
         public uint drone;
         public uint hub;
-
-        public BatteryStatus status;
-        public float totalDischarge;
-        public float totalCharge;
+        
         public float charge;
         public float capacity;
+        public float totalCharge;
+        public float totalDischarge;
         public int cycles;
-        public float chargeRate;
-        public float dischargeVoltage;
-        public float chargeVoltage;
+        public BatteryStatus status;
     }
 
 }

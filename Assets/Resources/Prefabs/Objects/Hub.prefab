@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1894888684}
   - component: {fileID: 1554713034384435974}
   - component: {fileID: 4229716372336963008}
-  m_Layer: 10
+  m_Layer: 14
   m_Name: Descent Path
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -29,7 +29,7 @@ Transform:
   m_GameObject: {fileID: 1894888682}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 10, y: 495, z: 10}
+  m_LocalScale: {x: 16, y: 495, z: 16}
   m_Children: []
   m_Father: {fileID: 1563700628764203956}
   m_RootOrder: 0
@@ -210,7 +210,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90d4f08a553c54f23ac3512967956a71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _Owner: {fileID: 3541644756125382526}
+  owner: {fileID: 3541644756125382526}
 --- !u!1 &2286206718568683367
 GameObject:
   m_ObjectHideFlags: 0

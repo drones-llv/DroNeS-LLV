@@ -12,12 +12,14 @@ namespace Drones.Scheduler
 {
     public class LLVScheduler : IScheduler
     {
+        private Hub _owner;
         private NativeList<LLVStruct> _jobs;
         private NativeArray<float> _loss;
         private NativeArray<float> _duration;
         private NativeList<float> _netLossValue;
-        public LLVScheduler(Queue<Drone> drones)
+        public LLVScheduler(Queue<Drone> drones, Hub owner)
         {
+            _owner = owner;
             DroneQueue = drones;
             JobQueue = new List<Job>();
             _jobs = new NativeList<LLVStruct>(Allocator.Persistent);
@@ -78,15 +80,15 @@ namespace Drones.Scheduler
 
                     var n = FindMin(ref calculator.nlv);
                     var end = _jobs.Length - 1;
-
-                    if (drone.AssignJob((Job)_jobs[n].job))
+                    var j = (Job) _jobs[n].job;
+                    if (drone.AssignJob(j))
                     {
                         _jobs.RemoveAtSwapBack(n);
                         _netLossValue.RemoveAtSwapBack(n);
 
                         JobQueue[n] = JobQueue[end];
                         JobQueue.RemoveAt(end);
-                        SimManager.JobDequeued();
+                        _owner.JobDequeued(j.IsDelayed);
                     }
 
                     yield return null;

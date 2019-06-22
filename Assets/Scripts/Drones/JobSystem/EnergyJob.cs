@@ -20,8 +20,6 @@ namespace Drones.JobSystem
         public float capacity;
         public int cycles;
         public float chargeRate;
-        public float dischargeVoltage;
-        public float chargeVoltage;
         public int designCycles;
         public float designCapacity;
         public float chargeTarget;
@@ -32,6 +30,7 @@ namespace Drones.JobSystem
     [BurstCompile]
     public struct EnergyJob : IJobParallelFor
     {
+        private const float DischargeVoltage = 23;
         private const float Mass = 22.5f;
         private const float Cd = 0.1f;
         private const float g = 9.81f;
@@ -96,7 +95,7 @@ namespace Drones.JobSystem
 
         private static void Discharge(ref EnergyInfo info)
         {
-            var dQ = info.energy / info.dischargeVoltage;
+            var dQ = info.energy / DischargeVoltage;
             info.charge -= dQ;
             if (info.charge > 0.1f) info.totalDischarge += dQ;
             else info.status = BatteryStatus.Dead;

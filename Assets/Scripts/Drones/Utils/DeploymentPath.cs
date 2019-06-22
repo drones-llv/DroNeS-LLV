@@ -83,21 +83,19 @@ namespace Drones.Utils
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.gameObject.layer == 12)
+            if (other.gameObject.layer != 12) return;
+            _intersects++;
+            Vector3 v;
+            if (Vector3.Distance(transform.position, other.transform.position) < 0.1f)
             {
-                _intersects++;
-                Vector3 v;
-                if (Vector3.Distance(transform.position, other.transform.position) < 0.1f)
-                {
-                    v = Random.insideUnitSphere;
-                    v.y = 0;
-                    transform.parent.position += v;
-                }
-                v = (transform.position - other.transform.position).normalized;
+                v = Random.insideUnitSphere;
                 v.y = 0;
-                Direction += v;
-                StartCoroutine(Controller.Reposition(Vector3.zero));
-            } 
+                transform.parent.position += v;
+            }
+            v = (transform.position - other.transform.position).normalized;
+            v.y = 0;
+            Direction += v;
+            StartCoroutine(Controller.Reposition(Vector3.zero));
         }
 
         private void OnTriggerExit(Collider other)

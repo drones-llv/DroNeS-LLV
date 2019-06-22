@@ -18,6 +18,7 @@ namespace Drones.Objects
     public class Drone : MonoBehaviour, IDataSource, IPoolable
     {
         private static Transform _activeDrones;
+
         public static Transform ActiveDrones
         {
             get
@@ -43,12 +44,15 @@ namespace Drones.Objects
         }
 
         #region IPoolable
+
         public PoolController PC() => PoolController.Get(ObjectPool.Instance);
         public void Delete() => PC().Release(GetType(), this);
+
         public void Awake()
         {
             _data = new DroneData();
         }
+
         public void OnRelease()
         {
             StopAllCoroutines();
@@ -70,9 +74,11 @@ namespace Drones.Objects
         }
 
         public bool InPool { get; private set; }
+
         #endregion
 
         #region IDataSource
+
         public bool IsDataStatic => _data.IsDataStatic;
 
         public AbstractInfoWindow InfoWindow { get; set; }
@@ -89,6 +95,7 @@ namespace Drones.Objects
             else
                 InfoWindow.transform.SetAsLastSibling();
         }
+
         #endregion
 
         public override string ToString() => Name;
@@ -97,19 +104,30 @@ namespace Drones.Objects
 
         public bool AssignJob(Job job)
         {
-            var j = (StrippedJob)job;
-            var t = j.expectedDuration;
-            if (Mathf.Min(t, 0.9f * CostFunction.Guarantee) > GetBattery().Charge * CostFunction.Guarantee)
+            var i = 0;
+            var hub = GetHub();
+            while (Mathf.Min(job.ExpectedDuration, 0.9f * CostFunction.Guarantee) >
+                   GetBattery().Charge * CostFunction.Guarantee)
             {
-                GetHub().Scheduler.AddToQueue(this);
+                if (++i < 2)
+                {
+                    hub.RemoveBatteryFromDrone(this);
+                    if (!hub.GetBatteryForDrone(this)) return false;
+                    continue;
+                }
+                hub.Scheduler.AddToQueue(this);
                 return false;
             }
+
             _data.job = job.UID;
             job.AssignDrone(this);
             job.StartDelivery();
-            if (_data.hub != 0) GetHub().Router.GetRoute(this, ref _data.waypoints);
+
+            hub.Router.GetRoute(this, ref _data.waypoints);
             job.SetAltitude(_data.waypoints.Peek().y);
             StartMoving();
+            _data.energyOnJobStart = _data.totalEnergy;
+
             return true;
         }
 
@@ -121,20 +139,27 @@ namespace Drones.Objects
             return true;
         }
 
-        public void AssignBattery(Battery battery) =>_data.battery = battery.UID;
+        public float DeltaEnergy() => _data.energyOnJobStart - _data.totalEnergy;
+
+        public void AssignBattery(Battery battery) => _data.battery = battery.UID;
+
         public void AssignBattery()
         {
             _data.batterySwaps++;
             _data.battery = 0;
         }
-        
-        public void AssignHub(Hub hub) 
+
+        public void AssignHub(Hub hub)
         {
             _data.hubsAssigned++;
             _data.hub = hub.UID;
         }
 
-        public Job GetJob() => (Job)SimManager.AllIncompleteJobs[_data.job];
+        public Job GetJob()
+        {
+            return (Job) SimManager.AllIncompleteJobs[_data.job];
+        }
+
         public Hub GetHub() => (Hub)SimManager.AllHubs[_data.hub];
         public Battery GetBattery() => SimManager.AllBatteries[_data.battery];
         public void WaitForDeployment() => _data.isWaiting = true;

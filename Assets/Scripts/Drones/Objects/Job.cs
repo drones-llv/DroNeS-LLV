@@ -20,13 +20,13 @@ namespace Drones.Objects
         public Job(SJob data)
         {
             _data = new JobData(data);
-            SimManager.Instance.StartCoroutine(Tracker());
+            GetHub().StartCoroutine(Tracker());
         }
 
         public Job(Hub pickup, Vector3 dropoff, float weight, float penalty)
         {
             _data = new JobData(pickup, dropoff, weight, penalty);
-            SimManager.Instance.StartCoroutine(Tracker());
+            GetHub().StartCoroutine(Tracker());
         }
 
         public uint UID => _data.UID;
@@ -56,6 +56,7 @@ namespace Drones.Objects
 
         private readonly JobData _data;
         private Drone GetDrone() => (Drone)SimManager.AllDrones[_data.Drone];
+        private Hub GetHub() => (Hub) SimManager.AllHubs[_data.Hub];
         public RetiredDrone GetRetiredDrone() => (RetiredDrone)SimManager.AllRetiredDrones[_data.Drone];
         
         public JobStatus Status => _data.Status;
@@ -67,7 +68,9 @@ namespace Drones.Objects
         public float PackageWeight => _data.PackageWeight;
         public float Loss => -_data.CostFunction.GetPaid(_EoT);
 
-        private bool IsDelayed { get; set; }
+        public float ExpectedDuration => _data.ExpectedDuration;
+
+        public bool IsDelayed { get; private set; }
         public void AssignDrone(Drone drone)
         {
             if (Status != JobStatus.Assigning) return;
@@ -88,6 +91,7 @@ namespace Drones.Objects
                 hub.UpdateRevenue(Earnings);
                 hub.UpdateFailedCount();
             }
+            _data.EnergyUse = drone.DeltaEnergy();
             drone.AssignJob();
             _data.Drone = 0;
             DataLogger.LogJob(_data);
@@ -108,8 +112,8 @@ namespace Drones.Objects
             if (!IsDelayed) hub.UpdateRevenue(Earnings);
             
             drone.UpdateDelay(Deadline.Timer());
+            _data.EnergyUse = drone.DeltaEnergy();
             drone.AssignJob();
-            
             _data.Drone = 0;
             DataLogger.LogJob(_data);
         }
@@ -119,10 +123,15 @@ namespace Drones.Objects
 
         private IEnumerator Tracker()
         {
-            yield return new WaitUntil(() => Status == JobStatus.Delivering || Deadline > _clock.Now());
-            if (Status == JobStatus.Delivering) yield break;
+            yield return new WaitUntil(() => Status == JobStatus.Delivering || Deadline < _clock.Now());
+            if (Status == JobStatus.Delivering)
+            {
+                IsDelayed = false;
+                yield break;
+            }
             IsDelayed = true;
-            GetDrone().GetHub().UpdateRevenue(-Loss);
+            GetHub().InQueueDelayed();
+            GetHub().UpdateRevenue(-Loss);
         }
         
         public float Progress()

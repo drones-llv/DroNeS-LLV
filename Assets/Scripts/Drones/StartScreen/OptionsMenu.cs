@@ -3,6 +3,7 @@ using UnityEngine.Networking;
 using UnityEngine.UI;
 using System.Collections;
 using Drones.Mapbox;
+using Drones.Objects;
 using Drones.Scheduler;
 using Drones.UI.SaveLoad;
 using TMPro;
@@ -19,49 +20,27 @@ namespace Drones.StartScreen
 
         public TextMeshProUGUI RLDisplay;
         public TextMeshProUGUI LPDisplay;
-        public TextMeshProUGUI ASDisplay;
+        public TextMeshProUGUI batteryDroneRatioDisplay;
 
         private void OnDestroy()
         {
             Instance = null;
         }
-        [SerializeField]
-        Toggle _RenderToggle;
-        [SerializeField]
-        Slider _RenderLimit;
-        [SerializeField]
-        Toggle _LogToggle;
-        [SerializeField]
-        Slider _LogPeriod;
-        [SerializeField]
-        Toggle _SaveToggle;
-        [SerializeField]
-        Slider _SavePeriod;
-        [SerializeField]
-        Button _Back;
-        [SerializeField]
-        Button _Reset;
-        [SerializeField]
-        TMP_Dropdown _Schdeuler;
+        [SerializeField] private Toggle renderToggle;
+        [SerializeField] private Slider renderLimit;
+        [SerializeField] private Toggle logToggle;
+        [SerializeField] private Slider logPeriod;
+        [SerializeField] private Slider batteryToDroneRatioSlider;
+        [SerializeField] private Button back;
+        [SerializeField] private Button reset;
+        [SerializeField] private TMP_Dropdown scheduler;
 
-        public Toggle SaveToggle
+        public Slider BatteryToDroneRatioSlider
         {
             get
             {
-                if (_SaveToggle == null)
-                {
-                    _SaveToggle = GetComponentsInChildren<Toggle>(true)[1];
-                }
-                return _SaveToggle;
-            }
-        }
-
-        public Slider SavePeriod
-        {
-            get
-            {
-                if (_SavePeriod == null) _SavePeriod = GetComponentsInChildren<Slider>(true)[1];
-                return _SavePeriod;
+                if (batteryToDroneRatioSlider == null) batteryToDroneRatioSlider = GetComponentsInChildren<Slider>(true)[1];
+                return batteryToDroneRatioSlider;
             }
         }
 
@@ -70,11 +49,11 @@ namespace Drones.StartScreen
         {
             get
             {
-                if (_LogToggle == null)
+                if (logToggle == null)
                 {
-                    _LogToggle = GetComponentsInChildren<Toggle>(true)[0];
+                    logToggle = GetComponentsInChildren<Toggle>(true)[0];
                 }
-                return _LogToggle;
+                return logToggle;
             }
         }
 
@@ -82,8 +61,8 @@ namespace Drones.StartScreen
         {
             get
             {
-                if (_LogPeriod == null) _LogPeriod = GetComponentsInChildren<Slider>(true)[0];
-                return _LogPeriod;
+                if (logPeriod == null) logPeriod = GetComponentsInChildren<Slider>(true)[0];
+                return logPeriod;
             }
         }
 
@@ -91,11 +70,11 @@ namespace Drones.StartScreen
         {
             get
             {
-                if (_RenderToggle == null)
+                if (renderToggle == null)
                 {
-                    _RenderToggle = GetComponentsInChildren<Toggle>(true)[2];
+                    renderToggle = GetComponentsInChildren<Toggle>(true)[2];
                 }
-                return _RenderToggle;
+                return renderToggle;
             }
         }
 
@@ -103,8 +82,8 @@ namespace Drones.StartScreen
         {
             get
             {
-                if (_RenderLimit == null) _RenderLimit = GetComponentsInChildren<Slider>(true)[2];
-                return _RenderLimit;
+                if (renderLimit == null) renderLimit = GetComponentsInChildren<Slider>(true)[2];
+                return renderLimit;
             }
         }
 
@@ -112,11 +91,11 @@ namespace Drones.StartScreen
         {
             get
             {
-                if (_Back == null)
+                if (back == null)
                 {
-                    _Back = transform.FindDescendant("Back").GetComponent<Button>();
+                    back = transform.FindDescendant("Back").GetComponent<Button>();
                 }
-                return _Back;
+                return back;
             }
         }
 
@@ -124,11 +103,11 @@ namespace Drones.StartScreen
         {
             get
             {
-                if (_Reset == null)
+                if (reset == null)
                 {
-                    _Reset = transform.FindDescendant("Reset").GetComponent<Button>();
+                    reset = transform.FindDescendant("Reset").GetComponent<Button>();
                 }
-                return _Reset;
+                return reset;
             }
         }
 
@@ -136,8 +115,8 @@ namespace Drones.StartScreen
         {
             get
             {
-                if (_Schdeuler) _Schdeuler = GetComponentInChildren<TMP_Dropdown>();
-                return _Schdeuler;
+                if (scheduler) scheduler = GetComponentInChildren<TMP_Dropdown>();
+                return scheduler;
             }
         }
 
@@ -164,16 +143,10 @@ namespace Drones.StartScreen
                 DataLogger.LoggingPeriod = value;
             });
 
-            SaveToggle.onValueChanged.AddListener((bool value) =>
+            BatteryToDroneRatioSlider.onValueChanged.AddListener((float value) =>
             {
-                DataLogger.IsAutosave = value;
-                SavePeriod.enabled = value;
-            });
-
-            SavePeriod.onValueChanged.AddListener((float value) =>
-            {
-                ASDisplay.SetText(value.ToString());
-                DataLogger.AutosavePeriod = value;
+                batteryDroneRatioDisplay.SetText(value.ToString());
+                Hub.BatteryPerDrone = Mathf.FloorToInt(value);
             });
 
             Scheduler.onValueChanged.AddListener((int arg0) =>
@@ -191,12 +164,11 @@ namespace Drones.StartScreen
             RenderToggle.onValueChanged.Invoke(RenderToggle.isOn);
             LogToggle.onValueChanged.Invoke(DataLogger.IsLogging);
             LogPeriod.onValueChanged.Invoke(DataLogger.LoggingPeriod);
-            SaveToggle.onValueChanged.Invoke(DataLogger.IsAutosave);
-            SavePeriod.onValueChanged.Invoke(DataLogger.AutosavePeriod);
+            BatteryToDroneRatioSlider.onValueChanged.Invoke(Hub.BatteryPerDrone);
             Scheduler.onValueChanged.Invoke(Scheduler.value);
         }
 
-        private void GoBack() => StartScreen.ShowMain();
+        private static void GoBack() => StartScreen.ShowMain();
 
         private void OnReset()
         {
@@ -204,15 +176,13 @@ namespace Drones.StartScreen
             RenderLimit.value = 0;
             LogToggle.isOn = true;
             LogPeriod.value = 60;
-            SaveToggle.isOn = true;
-            SavePeriod.value = 300;
+            BatteryToDroneRatioSlider.value = 300;
             Scheduler.value = (int)Scheduling.FCFS;
             RenderLimit.onValueChanged.Invoke(RenderLimit.value);
             RenderToggle.onValueChanged.Invoke(RenderToggle.isOn);
             LogToggle.onValueChanged.Invoke(LogToggle.isOn);
             LogPeriod.onValueChanged.Invoke(LogPeriod.value);
-            SaveToggle.onValueChanged.Invoke(SaveToggle.isOn);
-            SavePeriod.onValueChanged.Invoke(SavePeriod.value);
+            BatteryToDroneRatioSlider.onValueChanged.Invoke(BatteryToDroneRatioSlider.value);
             Scheduler.onValueChanged.Invoke(Scheduler.value);
         }
 

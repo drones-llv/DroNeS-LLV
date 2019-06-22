@@ -14,16 +14,16 @@ namespace Drones.Scheduler
         const int STEPS = 200;
         public static Scheduling ALGORITHM { get; set; } = Scheduling.FCFS;
         [SerializeField]
-        private Hub _Owner;
+        private Hub owner;
         private Hub Owner
         {
             get
             {
-                if (_Owner == null) _Owner = GetComponent<Hub>();
-                return _Owner;
+                if (owner == null) owner = GetComponent<Hub>();
+                return owner;
             }
         }
-        private JobGenerator _Generator;
+        private JobGenerator _generator;
         private Queue<Drone> _droneQueue = new Queue<Drone>();
         private IScheduler _algorithm;
 
@@ -34,8 +34,8 @@ namespace Drones.Scheduler
 
         private void OnEnable()
         {
-            _Generator = new JobGenerator(Owner, Owner.JobGenerationRate);
-            StartCoroutine(_Generator.Generate());
+            _generator = new JobGenerator(Owner, Owner.JobGenerationRate);
+            StartCoroutine(_generator.Generate());
             NewAlgorithm();
         }
 
@@ -44,13 +44,13 @@ namespace Drones.Scheduler
             switch (ALGORITHM)
             {
                 case Scheduling.EP:
-                    _algorithm = new EPScheduler(_droneQueue);
+                    _algorithm = new EPScheduler(_droneQueue, owner);
                     break;
                 case Scheduling.LLV:
-                    _algorithm = new LLVScheduler(_droneQueue);
+                    _algorithm = new LLVScheduler(_droneQueue, owner);
                     break;
                 case Scheduling.FCFS:
-                    _algorithm = new FCFSScheduler(_droneQueue);
+                    _algorithm = new FCFSScheduler(_droneQueue, owner);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -72,7 +72,7 @@ namespace Drones.Scheduler
         public void AddToQueue(Job job)
         {
             _algorithm.JobQueue.Add(job);
-            SimManager.JobEnqueued();
+            owner.JobEnqueued();
         }
 
         public int JobQueueLength => _algorithm.JobQueue.Count;

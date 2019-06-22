@@ -9,6 +9,7 @@ using Drones.UI.SaveLoad;
 using Drones.UI.Utils;
 using Drones.Utils;
 using Drones.Utils.Interfaces;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Utils;
@@ -152,5 +153,7 @@ namespace Drones.Managers
             SetStatus(SimulationStatus.EditMode);
         }
 
+        public static void InQueueDelayed() => Instance._data.inQueueDelayed++;
+        public static void DequeuedDelay() => Instance._data.inQueueDelayed--;
     }
 }

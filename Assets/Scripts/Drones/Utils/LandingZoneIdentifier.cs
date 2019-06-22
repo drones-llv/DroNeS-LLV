@@ -6,16 +6,16 @@ namespace Drones.Utils
 {
     public static class LandingZoneIdentifier
     {
-        private static Texture2D _Bitmap;
+        private static Texture2D _bitmap;
         private static Texture2D Bitmap
         {
             get
             {
-                if (_Bitmap == null)
+                if (_bitmap == null)
                 {
-                    _Bitmap = Resources.Load("Textures/bitmap") as Texture2D;
+                    _bitmap = Resources.Load("Textures/bitmap") as Texture2D;
                 }
-                return _Bitmap;
+                return _bitmap;
             }
         }
 
@@ -57,18 +57,18 @@ namespace Drones.Utils
             return new Vector3(pixel.x * 4 - Width * 2, area.y, pixel.y * 4 - Height * 2);
         }
 
-        public static Vector3 Reposition(Vector3 area)
+        public static Vector3 Reposition(Vector3 position)
         {
-            var cache = area;
+            var cache = position;
             var v = Random.insideUnitSphere;
             v.y = 0;
             Vector3.Normalize(v);
             v *= 4;
-            int i = 0;
-            while (!IsClear(area))
+            var i = 0;
+            while (!IsClear(position))
             {
-                area += v;
-                if (OutOfRange(area))
+                position += v;
+                if (OutOfRange(position))
                 {
                     v = Random.insideUnitSphere;
                     v.y = 0;
@@ -76,22 +76,22 @@ namespace Drones.Utils
                     v *= 4;
                     if (i == 0)
                     {
-                        area = Random.insideUnitSphere * 2000;
-                        area.y = cache.y;
+                        position = Random.insideUnitSphere * 2000;
+                        position.y = cache.y;
                     }
                     else
                     {
-                        area = cache;
+                        position = cache;
                     }
                 }
                 i++;
             }
-            area = ToWorld(ToPixel(area), area);
+            position = ToWorld(ToPixel(position), position);
             v /= 4;
             v *= 0.2f;
-            area += v;
-            area.y = 0;
-            return area;
+            position += v;
+            position.y = 0;
+            return position;
         }
 
     }
