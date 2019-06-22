@@ -12,24 +12,22 @@ namespace Drones.Data
     using static Managers.SimManager;
     public class HubData : IData
     {
-        public static uint Count { get; private set; }
+        private static uint Count { get; set; }
         public static void Reset() => Count = 0;
-        public const float deploymentPeriod = 0.75f;
+        public const float DeploymentPeriod = 0.75f;
         private readonly Hub _source;
 
         public uint UID { get; }
 
         public bool IsDataStatic => false;
 
-        public Queue<Drone> deploymentQueue;
-
         public SecureSortedSet<uint, IDataSource> drones;
         public SecureSortedSet<uint, IDataSource> incompleteJobs;
         public SecureSortedSet<uint, IDataSource> completedJobs;
-        public SecureSortedSet<uint, Drone> freeDrones;
+        public SecureSortedSet<uint, Drone> DronesWithNoJobs;
         public SecureSortedSet<uint, Battery> batteries;
         public SecureSortedSet<uint, Battery> chargingBatteries;
-        public SecureSortedSet<uint, Battery> freeBatteries;
+        public SecureSortedSet<uint, Battery> BatteriesWithNoDrones;
         public Vector3 Position => _source.transform.position;
         public int crashes;
         public int delayedJobs;
@@ -62,7 +60,7 @@ namespace Drones.Data
             batteries.ItemRemoved += delegate (Battery bat)
             {
                 chargingBatteries.Remove(bat.UID);
-                freeBatteries.Remove(bat.UID);
+                BatteriesWithNoDrones.Remove(bat.UID);
                 AllBatteries.Remove(bat.UID);
             };
             chargingBatteries.ItemAdded += delegate (Battery bat)
@@ -78,18 +76,18 @@ namespace Drones.Data
             {
                 ((Drone)drone).AssignHub(_source);
                 AllDrones.Add(drone.UID, drone);
-                freeDrones.Add(drone.UID, (Drone)drone);
+                DronesWithNoJobs.Add(drone.UID, (Drone)drone);
             };
             drones.ItemRemoved += delegate (IDataSource drone)
             {
                 AllDrones.Remove(drone);
-                freeDrones.Remove((Drone)drone);
+                DronesWithNoJobs.Remove((Drone)drone);
             };
-            freeDrones.ItemAdded += (drone) =>
+            DronesWithNoJobs.ItemAdded += (drone) =>
             {
                 drone.transform.SetParent(_source.transform);
             };
-            freeDrones.ItemRemoved += (drone) =>
+            DronesWithNoJobs.ItemRemoved += (drone) =>
             {
                 drone.transform.SetParent(Drone.ActiveDrones);
             };
@@ -109,10 +107,9 @@ namespace Drones.Data
 
         private void InitializeCollections()
         {
-            deploymentQueue = new Queue<Drone>();
             batteries = new SecureSortedSet<uint, Battery>();
 
-            freeBatteries = new SecureSortedSet<uint, Battery>((x, y) => (x.Charge <= y.Charge) ? -1 : 1)
+            BatteriesWithNoDrones = new SecureSortedSet<uint, Battery>((x, y) => (x.Charge <= y.Charge) ? -1 : 1)
             {
                 MemberCondition = (obj) => batteries.Contains(obj) && !obj.HasDrone()
             };
@@ -124,7 +121,7 @@ namespace Drones.Data
             {
                 MemberCondition = (obj) => obj is Drone
             };
-            freeDrones = new SecureSortedSet<uint, Drone>
+            DronesWithNoJobs = new SecureSortedSet<uint, Drone>
             {
                 MemberCondition = (drone) => drones.Contains(drone) && drone.GetJob() == null
             };

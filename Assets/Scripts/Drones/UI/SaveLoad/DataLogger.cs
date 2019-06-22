@@ -18,16 +18,13 @@ namespace Drones.UI.SaveLoad
         public static DataLogger New()
         {
             _instance = new GameObject("DataLogger").AddComponent<DataLogger>();
-            Load();
-            return _instance;
-        }
-        public static void Load()
-        {
             _instance.StopAllCoroutines();
             _instance.session = JobScheduler.ALGORITHM + " " + SimManager.Name.Replace("/", "-").Replace(":", "-");
             _instance.LogPath = Path.Combine(SaveLoadManager.ExportPath, _instance.session);
             Log();
+            return _instance;
         }
+
         public string session;
         public static bool IsLogging { get; set; } = true;
         public static float LoggingPeriod { get; set; } = 60;
@@ -201,7 +198,7 @@ namespace Drones.UI.SaveLoad
             _hubData[4] = data.crashes.ToString();
             _hubData[5] = data.batteries.Count.ToString();
             _hubData[6] = data.chargingBatteries.Count.ToString();
-            _hubData[7] = (data.freeBatteries.PeekMax(true).Charge * 100).ToString("0.00");
+            _hubData[7] = (data.BatteriesWithNoDrones.PeekMax(true).Charge * 100).ToString("0.00");
             _hubData[8] = data.queuedJobs.ToString();
             _hubData[9] = data.inQueueDelayed.ToString();
             _hubData[10] = data.completedCount.ToString();

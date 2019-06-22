@@ -89,21 +89,6 @@ namespace Drones.Managers
             }
 
         }
-
-        public static void ForceCountChange()
-        {
-            _instance._energyJobHandle.Complete();
-            _instance._energyInfoArray.Dispose();
-            _instance.Initialise();
-
-            var j = 0;
-            foreach (var battery in Batteries.Values)
-            {
-                _instance._energyInfoArray[j] = battery.GetEnergyInfo();
-                j++;
-            }
-        }
-
     }
 
 

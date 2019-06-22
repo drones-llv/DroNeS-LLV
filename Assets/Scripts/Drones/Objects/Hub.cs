@@ -243,7 +243,7 @@ namespace Drones.Objects
         public void AddToDeploymentQueue(Drone drone) => DronePath.AddToDeploymentQueue(drone);
         public void DeployDrone(Drone drone)
         {
-            _data.freeDrones.Remove(drone);
+            _data.DronesWithNoJobs.Remove(drone);
             if (!GetBatteryForDrone(drone)) return;
             var bat = drone.GetBattery();
             StopCharging(bat);
@@ -253,7 +253,7 @@ namespace Drones.Objects
 
         public void OnDroneReturn(Drone drone)
         {
-            if (_data.freeDrones.Add(drone.UID, drone))
+            if (_data.DronesWithNoJobs.Add(drone.UID, drone))
             {
                 _data.chargingBatteries.Add(drone.GetBattery().UID, drone.GetBattery());
             }
@@ -267,7 +267,7 @@ namespace Drones.Objects
             var battery = drone.GetBattery();
             drone.AssignBattery();
             battery.AssignDrone();
-            _data.freeBatteries.Add(battery.UID, battery);
+            _data.BatteriesWithNoDrones.Add(battery.UID, battery);
             _data.chargingBatteries.Add(battery.UID, battery);
         }
 
@@ -283,7 +283,7 @@ namespace Drones.Objects
             }
             else
             {
-                var battery = _data.freeBatteries.GetMax(true);
+                var battery = _data.BatteriesWithNoDrones.GetMax(true);
                 if (battery == null) return false;
                 drone.AssignBattery(battery);
                 battery.AssignDrone(drone);
@@ -295,7 +295,7 @@ namespace Drones.Objects
         {
             var drone = Drone.New();
             _data.drones.Add(drone.UID, drone);
-            _data.freeDrones.Add(drone.UID, drone);
+            _data.DronesWithNoJobs.Add(drone.UID, drone);
             GetBatteryForDrone(drone);
             Scheduler.AddToQueue(drone);
             drone.transform.position = transform.position;
@@ -309,8 +309,8 @@ namespace Drones.Objects
 
         public void SellDrone()
         {
-            if (_data.freeDrones.Count <= 0) return;
-            var drone = _data.freeDrones.GetMin(false);
+            if (_data.DronesWithNoJobs.Count <= 0) return;
+            var drone = _data.DronesWithNoJobs.GetMin(false);
             var dd = new RetiredDrone(drone);
             SimManager.AllRetiredDrones.Add(dd.UID, dd);
             _data.drones.Remove(drone);
@@ -319,20 +319,27 @@ namespace Drones.Objects
 
         public void DestroyBattery(Battery battery) => _data.batteries.Remove(battery);
 
-        public Battery BuyBattery(Drone drone = null)
+        private Battery BuyBattery(Drone drone)
         {
             // ReSharper disable once HeapView.ObjectAllocation.Evident
             var bat = new Battery(drone, this);
             _data.batteries.Add(bat.UID, bat);
-
-            if (drone is null) _data.freeBatteries.Add(bat.UID, bat);
+            _data.BatteriesWithNoDrones.Add(bat.UID, bat);
             return bat;
+        }
+
+        public void BuyBattery()
+        {
+            var bat = new Battery(this);
+            _data.batteries.Add(bat.UID, bat);
+
+            _data.BatteriesWithNoDrones.Add(bat.UID, bat);
         }
 
         public void SellBattery()
         {
-            if (_data.freeBatteries.Count <= 0) return;
-            var bat = _data.freeBatteries.GetMin(true);
+            if (_data.BatteriesWithNoDrones.Count <= 0) return;
+            var bat = _data.BatteriesWithNoDrones.GetMin(true);
             _data.batteries.Remove(bat);
         }
         #endregion

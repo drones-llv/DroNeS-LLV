@@ -20,8 +20,7 @@ namespace Drones.Managers
             _instance = new GameObject("DroneManager").AddComponent<DroneManager>();
             return _instance;
         }
-
-        private JobHandle _movementJobHandle = new JobHandle();
+        private JobHandle _movementJobHandle;
         private TimeKeeper.Chronos _time = TimeKeeper.Chronos.Get();
         private static SecureSortedSet<uint, IDataSource> Drones => SimManager.AllDrones;
         private TransformAccessArray _transforms;
@@ -30,8 +29,8 @@ namespace Drones.Managers
         private void OnDisable()
         {
             MovementJobHandle.Complete();
-            if (_transforms.isCreated) _transforms.Dispose();
-            if (_movementInfoArray.IsCreated) _movementInfoArray.Dispose();
+            _transforms.Dispose();
+             _movementInfoArray.Dispose();
             _instance = null;
         }
 
@@ -72,7 +71,7 @@ namespace Drones.Managers
                 _movementJobHandle = movementJob.Schedule(_transforms);
 
                 yield return null;
-                MovementJobHandle.Complete();
+                _movementJobHandle.Complete();
             }
         }
 
@@ -98,30 +97,6 @@ namespace Drones.Managers
             }
 
         }
-
-        public static void ForceDroneCountChange()
-        {
-            _instance._movementJobHandle.Complete();
-            _instance._transforms.Dispose();
-            _instance._transforms = new TransformAccessArray(0);
-            foreach (var dataSource in Drones.Values)
-            {
-                var drone = (Drone) dataSource;
-                _instance._transforms.Add(drone.transform);
-            }
-            _instance._movementInfoArray.Dispose();
-            _instance._movementInfoArray = new NativeArray<MovementInfo>(_instance._transforms.length, Allocator.Persistent);
-
-            var j = 0;
-            foreach (var dataSource in Drones.Values)
-            {
-                var drone = (Drone) dataSource;
-                _instance._movementInfoArray[j] = drone.GetMovementInfo();
-                j++;
-            }
-
-        }
-
     }
 
 

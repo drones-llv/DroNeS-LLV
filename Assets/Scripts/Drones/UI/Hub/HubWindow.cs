@@ -194,7 +194,7 @@ namespace Drones.UI.Hub
             Data[0].SetField(Source.ToString());
             Data[1].SetField(hub.Position.ToStringXZ());
             Data[2].SetField(hub.drones.Count.ToString());
-            Data[3].SetField((hub.drones.Count - hub.freeDrones.Count).ToString());
+            Data[3].SetField((hub.drones.Count - hub.DronesWithNoJobs.Count).ToString());
             Data[4].SetField(hub.crashes.ToString());
             Data[5].SetField(hub.batteries.Count.ToString());
             Data[6].SetField(hub.chargingBatteries.Count.ToString());

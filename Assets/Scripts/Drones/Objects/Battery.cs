@@ -13,13 +13,20 @@ namespace Drones.Objects
     public class Battery
     {
         public static uint Count { get; private set; }
+        private int _accessIndex;
         public static void Reset() => Count = 0;
         public Battery(Drone drone, Hub hub)
         {
             UID = ++Count;
             _data = new BatteryData(this);
-            if (drone is null) AssignDrone(); 
-            else AssignDrone(drone);
+            AssignDrone(drone);
+            AssignHub(hub);
+        }
+        public Battery(Hub hub)
+        {
+            UID = ++Count;
+            _data = new BatteryData(this);
+            AssignDrone();
             AssignHub(hub);
         }
 
