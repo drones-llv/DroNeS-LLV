@@ -28,7 +28,6 @@ namespace Drones.JobSystem
         private const float PropellerDiameter = 0.3f; // propeller radius
         private const float NumPropellers = 4; // number of propellers
         private const float Eff = 1f; // efficiency
-        private const float Epsilon = 0.001f;
         private const float VSpeed = DroneMovementJob.VSPEED;
         private const float HSpeed = DroneMovementJob.HSPEED;
 
@@ -92,12 +91,16 @@ namespace Drones.JobSystem
 
         private void Charge(ref BatteryData info)
         {
+            if (info.charge > BatteryData.ChargeTarget * info.capacity)
+            {
+                info.status = BatteryStatus.Idle;
+                return;
+            }
+            info.status = BatteryStatus.Charge;
             var dQ = BatteryData.ChargeRate * DeltaTime;
             if (info.charge / info.capacity < 0.05f) dQ *= 0.1f;
             else if (info.charge / info.capacity > 0.55f) dQ *= (2 * (1 -  info.charge / info.capacity));
             if (info.charge < info.capacity) { info.totalCharge += dQ; }
-
-            info.status = math.abs(BatteryData.ChargeTarget * info.capacity - info.charge) < Epsilon ? BatteryStatus.Idle : BatteryStatus.Charge;
             info.charge += dQ;
             info.charge = math.clamp(info.charge, 0, info.capacity);
 
