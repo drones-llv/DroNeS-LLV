@@ -51,31 +51,31 @@ namespace Drones.Mapbox.Tile_Providers
             {40.814f,-73.934f},
             {40.83f,-73.958f},
             {40.83f,-73.934f}};
-        public static List<UnwrappedTileId> leftTiles = new List<UnwrappedTileId>();
-        public static List<UnwrappedTileId> rightTiles = new List<UnwrappedTileId>();
+        public static readonly List<UnwrappedTileId> leftTiles = new List<UnwrappedTileId>();
+        public static readonly List<UnwrappedTileId> rightTiles = new List<UnwrappedTileId>();
 
         public static void SetUpTiles(IMap map)
         {
             tiles = new HashSet<UnwrappedTileId>();
-            int end = coordinates.GetUpperBound(0);
+            var end = coordinates.GetUpperBound(0);
       
-            for (int k = 0; k <= end; k += 2)
+            for (var k = 0; k <= end; k += 2)
             {
                 leftTiles.Add(TileCover.CoordinateToTileId(new Vector2d(coordinates[k, 0], coordinates[k, 1]), map.AbsoluteZoom));
             }
-            for (int k = 1; k <= end; k += 2)
+            for (var k = 1; k <= end; k += 2)
             {
                 rightTiles.Add(TileCover.CoordinateToTileId(new Vector2d(coordinates[k, 0], coordinates[k, 1]), map.AbsoluteZoom));
             }
 
-            int j = 0;
-            for (int i = 0; i < leftTiles.Count; i++)
+            var j = 0;
+            for (var i = 0; i < leftTiles.Count; i++)
             {
                 if (i != leftTiles.Count - 1) j = i + 1;
                 else j = i;
-                for (int y = leftTiles[j].Y; y <= leftTiles[i].Y; y++)
+                for (var y = leftTiles[j].Y; y <= leftTiles[i].Y; y++)
                 {
-                    for (int x = leftTiles[i].X; x <= rightTiles[i].X; x++)
+                    for (var x = leftTiles[i].X; x <= rightTiles[i].X; x++)
                     {
                         tiles.Add(new UnwrappedTileId(map.AbsoluteZoom, x, y));
                     }

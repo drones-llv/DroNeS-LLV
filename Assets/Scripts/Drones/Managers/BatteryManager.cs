@@ -56,7 +56,7 @@ namespace Drones.Managers
         
         private IEnumerator Operate()
         {
-            var energyJob = new EnergyJob();
+            var energyJob = new EnergyConsumptionJob();
             var countingJob = new ChargingCounterJob();
             while (true)
             {

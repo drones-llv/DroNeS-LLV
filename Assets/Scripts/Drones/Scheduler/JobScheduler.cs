@@ -141,6 +141,6 @@ namespace Drones.Scheduler
             return expected;
         }
 
-        public static float ExpectedDuration(StrippedJob job) => (ManhattanDist(job) + EuclideanDist(job)) / (2 * MovementJob.HSPEED);
+        public static float ExpectedDuration(StrippedJob job) => (ManhattanDist(job) + EuclideanDist(job)) / (2 * DroneMovementJob.HSPEED);
     }
 }

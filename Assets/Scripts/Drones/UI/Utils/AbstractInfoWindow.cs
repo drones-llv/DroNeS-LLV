@@ -14,13 +14,7 @@ namespace Drones.UI.Utils
 
         private DataField[] _Data;
 
-        protected override Vector2 MinimizedSize 
-        {
-            get
-            {
-                return Decoration.ToRect().rect.size + Close.transform.ToRect().rect.size.x * 2 * Vector2.right;
-            }
-        }
+        protected override Vector2 MinimizedSize => Decoration.ToRect().rect.size + Close.transform.ToRect().rect.size.x * 2 * Vector2.right;
 
         #region IPoolable
         public override void OnRelease()
@@ -91,7 +85,6 @@ namespace Drones.UI.Utils
                 yield return wait;
             }
 
-            yield break;
         }
 
         public abstract void SetData(IData data);

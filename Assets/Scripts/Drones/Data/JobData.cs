@@ -46,8 +46,8 @@ namespace Drones.Data
             Dropoff = LandingZoneIdentifier.Reposition(dropoff);
             PackageWeight = weight;
             CostFunction = new CostFunction(Created, WeightToRev(Pricing.US, weight), penalty);
-            ExpectedDuration = (LateralManhattan() + LateralEuclidean()) / (2 * MovementJob.HSPEED) + (Pickup.y-dropoff.y) / MovementJob.VSPEED;
-            StDevDuration = LateralManhattan() / MovementJob.HSPEED - ExpectedDuration + (this.Pickup.y - Dropoff.y) / MovementJob.VSPEED;
+            ExpectedDuration = (LateralManhattan() + LateralEuclidean()) / (2 * DroneMovementJob.HSPEED) + (Pickup.y-dropoff.y) / DroneMovementJob.VSPEED;
+            StDevDuration = LateralManhattan() / DroneMovementJob.HSPEED - ExpectedDuration + (this.Pickup.y - Dropoff.y) / DroneMovementJob.VSPEED;
         }
 
         private float LateralManhattan()

@@ -1,0 +1,228 @@
+using System;
+using System.Collections.Generic;
+
+public enum Length{m, km, mi, yd, ft, inch};
+public enum Weight{kg, g, mt, lt, sht, lb, oz};
+public enum Energy{J, kWh, Wh, BTU};
+public enum Temperature{C,K};
+public enum Area{sqm, sqmi, sqyd, sqft, sqin};
+public enum Time{s, min, h};
+public enum Force{N, kgf, lbf};
+public enum Current{A, mA, uA};
+public enum Charge{C,mC, uC};
+public enum Voltage{V, mV, uV};
+
+public static class UnitConverter
+{   
+    //Length{m, km, mi, yd, ft, inch}
+    public static Dictionary<Length, float> LengthFactor = new Dictionary<Length, float>
+    {
+        {Length.m, 1f},
+        {Length.km, 0.001f},
+        {Length.mi, 0.0006213712f},
+        {Length.yd, 1.0936132983f},
+        {Length.ft, 3.280839895f},
+        {Length.inch, 39.37007874f}
+    };
+
+    public static string[] Converterfun(this Length unit, float length)
+    {
+        string[] toUnit = new string[2];
+
+        length *= LengthFactor[unit];
+        toUnit[0] = length.ToString();
+		toUnit[1] = unit.ToString();
+        return toUnit;
+    }
+
+    //Weight{kg, g, mt, lt, sht, lb, oz}
+    public static Dictionary<Weight, float> WeightFactor = new Dictionary<Weight, float>
+    {
+        {Weight.kg, 1f},
+        {Weight.g, 1000f},
+        {Weight.mt, 0.001f},
+        {Weight.lt, 0.0009842073f},
+        {Weight.sht, 0.0011023122f},
+        {Weight.lb, 2.2046244202f},
+        {Weight.oz, 35.273990723f}
+    };
+
+    public static string[] Converterfun(this Weight unit, float weight)
+    {
+        string[] toUnit = new string[2];
+
+        weight *= WeightFactor[unit];
+        toUnit[0] = weight.ToString();
+		toUnit[1] = unit.ToString();
+        return toUnit;
+    }
+    
+    //Energy{J, kWh, Wh, BTU}
+    public static Dictionary<Energy, float> EnergyFactor = new Dictionary<Energy, float>
+    {
+        {Energy.J, 1f},
+        {Energy.kWh, 0.000000278f},
+        {Energy.Wh, 0.000277778f},
+        {Energy.BTU, 0.0009478672986f}
+    };
+
+    public static string[] Converterfun(this Energy unit, float energy)
+    {
+        string[] toUnit = new string[2];
+
+        energy *= EnergyFactor[unit];
+        toUnit[0] = energy.ToString();
+		toUnit[1] = unit.ToString();
+        return toUnit;
+    }
+
+    //Temperature{C,K};
+    public static Dictionary<Temperature, float> TemperatureFactor = new Dictionary<Temperature, float>
+    {
+        {Temperature.C, 1f},
+        {Temperature.K, 273.15f}
+    };
+
+    public static string[] Converterfun(this Temperature unit, float temp)
+    {
+        string[] toUnit = new string[2];
+
+        temp *= TemperatureFactor[unit];
+        toUnit[0] = temp.ToString();
+		toUnit[1] = unit.ToString();
+        return toUnit;
+    }
+
+    //Area{sqm, sqmi, sqyd, sqft, sqin};
+    public static Dictionary<Area, float> AreaFactor = new Dictionary<Area, float>
+    {
+        {Area.sqm, 1f},
+        {Area.sqmi, 0.0000003861f},
+        {Area.sqyd, 1.1959900463f},
+        {Area.sqft, 10.763910417f},
+        {Area.sqin, 1550.0031f}
+    };
+
+    public static string[] Converterfun(this Area unit, float area)
+    {
+        string[] toUnit = new string[2];
+
+        area *= AreaFactor[unit];
+        toUnit[0] = area.ToString();
+		toUnit[1] = unit.ToString();
+        return toUnit;
+    }
+
+    //Time{s, min, h};
+    public static Dictionary<Time, float> TimeFactor = new Dictionary<Time, float>
+    {
+        {Time.s, 1f},
+        {Time.min, 0.0166666667f},
+        {Time.h, 0.000277777778f}
+    };
+
+    public static string[] Converterfun(this Time unit, float time)
+    {
+        string[] toUnit = new string[2];
+
+        time *= TimeFactor[unit];
+        toUnit[0] = time.ToString();
+		toUnit[1] = unit.ToString();
+        return toUnit;
+    }
+
+    //Force{N, kgf, lbf};
+    public static Dictionary<Force, float> ForceFactor = new Dictionary<Force, float>
+    {
+        {Force.N, 1f},
+        {Force.kgf, 0.101972f},
+        {Force.lbf, 0.224808f},
+    };
+
+    public static string[] Converterfun(this Force unit, float force)
+    {
+        string[] toUnit = new string[2];
+
+        force *= ForceFactor[unit];
+        toUnit[0] = force.ToString();
+		toUnit[1] = unit.ToString();
+        return toUnit;
+    }
+
+    //Current{A, mA, uA};
+    public static Dictionary<Current, float> CurrentFactor = new Dictionary<Current, float>
+    {
+        {Current.A, 1f},
+        {Current.mA, 1000f},
+        {Current.uA, 1000000f},
+    };
+
+    public static string[] Converterfun(this Current unit, float current)
+    {
+        string[] toUnit = new string[2];
+
+        current *= CurrentFactor[unit];
+        toUnit[0] = current.ToString();
+		toUnit[1] = unit.ToString();
+        return toUnit;
+    }
+
+    //Charge{C,mC, uC};
+    public static Dictionary<Charge, float> ChargeFactor = new Dictionary<Charge, float>
+    {
+        {Charge.C, 1f},
+        {Charge.mC, 1000f},
+        {Charge.uC, 1000000f},
+    };
+
+    public static string[] Converterfun(this Charge unit, float charge)
+    {
+        string[] toUnit = new string[2];
+
+        charge *= ChargeFactor[unit];
+        toUnit[0] = charge.ToString();
+		toUnit[1] = unit.ToString();
+        return toUnit;
+    }
+
+    //Voltage{V, mV, uV};
+    public static Dictionary<Voltage, float> VoltageFactor = new Dictionary<Voltage, float>
+    {
+        {Voltage.V, 1f},
+        {Voltage.mV, 1000f},
+        {Voltage.uV, 1000000f},
+    };
+
+    public static string[] Converterfun(this Voltage unit, float voltage)
+    {
+        string[] toUnit = new string[2];
+
+        voltage *= VoltageFactor[unit];
+        toUnit[0] = voltage.ToString();
+		toUnit[1] = unit.ToString();
+        return toUnit;
+    }
+}
+
+
+public class Program
+{
+       
+    public static void Main(string[] args)
+    {   
+        string[] a = new string[2];
+        //Temperature temp = Temperature.K;
+        //a = temp.Converterfun(10.11f);
+		
+        //Length length = Length.mi;
+		//a = length.Converterfun(10.11f);
+
+        Area area = Area.sqft;
+        a = area.Converterfun(1000.11f);
+
+        for(int i = 0; i < 2; i++)
+        {
+        Console.Write(a[i]);
+        }
+    }
+}

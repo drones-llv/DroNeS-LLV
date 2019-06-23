@@ -50,7 +50,7 @@ namespace Drones.Managers
 
         private IEnumerator Operate()
         {
-            var movementJob = new MovementJob();
+            var movementJob = new DroneMovementJob();
             while (true)
             {
                 if (_transforms.length == 0) yield return null;
