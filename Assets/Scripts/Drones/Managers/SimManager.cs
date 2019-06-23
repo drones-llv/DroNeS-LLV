@@ -72,6 +72,7 @@ namespace Drones.Managers
             BatteryManager.New();
             ShortcutManager.New();
             DataLogger.New();
+            
         }
 
         public void OnDestroy()
@@ -80,9 +81,9 @@ namespace Drones.Managers
             StopAllCoroutines();
             ClearObjects();
             Battery.Reset();
+            Hub.Reset();
             DroneData.Reset();
             JobData.Reset();
-            HubData.Reset();
             NfzData.Reset();
             Singletons.ResetSingletons();
             UIFocus.Reset();

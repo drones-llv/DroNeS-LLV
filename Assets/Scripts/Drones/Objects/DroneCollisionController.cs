@@ -25,7 +25,7 @@ namespace Drones.Objects
         }
 
         private bool _collisionOn;
-        public bool InHub => !_collisionOn;
+        public bool InHub => !_collisionOn && Vector3.Distance(DroneHub.Position, transform.position) < 0.5f;
 
         private void Awake()
         {
@@ -36,22 +36,6 @@ namespace Drones.Objects
         private void OnEnable()
         {
             trail.enabled = true;
-//            StartCoroutine(Gravity());
-        }
-
-        private IEnumerator Gravity()
-        {
-            var battery = owner.GetBattery();
-            while (true)
-            {
-                if (owner.Movement != DroneMovement.Idle && battery != null && battery.Status == BatteryStatus.Dead)
-                {
-                    trail.enabled = false;
-                    owner.Drop();
-                    yield break;
-                }
-                yield return null;
-            }
         }
 
         public void OnTriggerEnter(Collider other)

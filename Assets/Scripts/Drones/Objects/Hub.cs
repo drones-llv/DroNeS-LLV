@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Drones.Data;
+using Drones.JobSystem;
 using Drones.Managers;
 using Drones.Router;
 using Drones.Scheduler;
@@ -8,15 +9,30 @@ using Drones.UI.SaveLoad;
 using Drones.UI.Utils;
 using Drones.Utils;
 using Drones.Utils.Interfaces;
+using Unity.Collections;
 using UnityEngine;
-using UnityEngine.Serialization;
 using Utils;
-using BatteryStatus = Utils.BatteryStatus;
 
 namespace Drones.Objects
 {
     public class Hub : MonoBehaviour, IDataSource, IPoolable
     {
+        public static NativeList<ChargeCount> ChargingBatteryCounts;
+
+        public static void DeleteData(Hub removed)
+        {
+            BatteryManager.ChargeCountJobHandle.Complete();
+            var j = removed._accessIndex;
+            ChargingBatteryCounts.RemoveAtSwapBack(j);
+            ((Hub)SimManager.AllHubs[ChargingBatteryCounts[j].Uid])._accessIndex = j;
+        }
+        
+        private int _accessIndex;
+        private static uint Count { get; set; }
+        public static void Reset()
+        {
+            Count = 0;
+        }
         public static Hub New() => PoolController.Get(ObjectPool.Instance).Get<Hub>(null);
         public static int BatteryPerDrone { get; set; } = 4;
         
@@ -45,7 +61,7 @@ namespace Drones.Objects
         }
         #endregion
 
-        public uint UID => _data.UID;
+        public uint UID { get; private set; }
 
         public string Name => $"H{UID:000000}";
 
@@ -94,7 +110,17 @@ namespace Drones.Objects
         public void OnGet(Transform parent = null)
         {
             InPool = false;
+            UID = ++Count;
             _data = new HubData(this);
+            
+            BatteryManager.ChargeCountJobHandle.Complete();
+            _accessIndex = ChargingBatteryCounts.Length;
+            ChargingBatteryCounts.Add(new ChargeCount
+            {
+                Count = 0,
+                Uid = UID
+            });
+            
             SimManager.AllHubs.Add(UID, this);
             transform.SetParent(parent);
             gameObject.SetActive(true);
@@ -149,41 +175,47 @@ namespace Drones.Objects
         public Vector3 Position => transform.position;
         #endregion
 
+        public int GetChargingBatteryCount()
+        {
+            BatteryManager.ChargeCountJobHandle.Complete();
+            return ChargingBatteryCounts[_accessIndex].Count;
+        }
+        
         public void JobEnqueued()
         {
-            _data.queuedJobs++;
+            _data.NumberOfJobsInQueue++;
             SimManager.JobEnqueued();
         }
 
         public void JobDequeued(bool isDelayed)
         {
-            _data.queuedJobs--;
+            _data.NumberOfJobsInQueue--;
             SimManager.JobDequeued();
             if (isDelayed) DequeuedDelay();
         }
 
         public void InQueueDelayed()
         { 
-            _data.inQueueDelayed++;
+            _data.NumberOfJobsDelayedInQueue++;
             SimManager.InQueueDelayed();
         }
 
         public void DequeuedDelay()
         {
-            _data.inQueueDelayed--;
+            _data.NumberOfJobsDelayedInQueue--;
             SimManager.DequeuedDelay();
         } 
         
         public void UpdateEnergy(float dE)
         {
-            _data.energyConsumption += dE;
+            _data.EnergyConsumption += dE;
             SimManager.UpdateEnergy(dE);
         }
 
         internal void DeleteJob(Job job)
         {
             _data.incompleteJobs.Remove(job);
-            _data.completedCount++;
+            _data.CompletedJobCount++;
             SimManager.UpdateCompleteCount();
             SimManager.AllIncompleteJobs.Remove(job);
             SimManager.AllJobs.Remove(job);
@@ -191,29 +223,29 @@ namespace Drones.Objects
 
         public void UpdateRevenue(float value)
         {
-            _data.revenue += value;
+            _data.Earnings += value;
             SimManager.UpdateRevenue(value);
         }
         public void UpdateDelay(float dt)
         {
-            _data.delay += dt;
+            _data.TotalDelayOfCompletedJobs += dt;
             if (dt > 0) UpdateDelayCount();
             SimManager.UpdateDelay(dt);
         }
-        private void UpdateDelayCount() => _data.delayedJobs++;
+        private void UpdateDelayCount() => _data.DelayedCompletedJobs++;
         public void UpdateFailedCount() 
         { 
-            _data.failedJobs++;
+            _data.FailedJobs++;
             SimManager.UpdateFailedCount();
         }
         public void UpdateCrashCount() 
         {
-            _data.crashes++;
+            _data.NumberOfDroneCrashes++;
             SimManager.UpdateCrashCount();
         }
         public void UpdateAudible(float dt)
         {
-            _data.audibility += dt;
+            _data.AudibleDuration += dt;
             SimManager.UpdateAudible(dt);
         }
         public void JobComplete(Job job) => _data.completedJobs.Add(job.UID, job);
@@ -263,8 +295,6 @@ namespace Drones.Objects
             battery.AssignDrone();
             _data.BatteriesWithNoDrones.Add(battery.UID, battery);
         }
-
-        public void StopCharging(Battery battery) => _data.chargingBatteriesCount--;
 
         public bool GetBatteryForDrone(Drone drone)
         {
@@ -336,15 +366,5 @@ namespace Drones.Objects
             _data.batteries.Remove(bat);
         }
         #endregion
-
-        public void ResetChargingBatteryCount()
-        {
-            _data.chargingBatteriesCount = 0;
-        }
-
-        public void IncrementChargingBattery()
-        {
-            _data.chargingBatteriesCount++;
-        }
     }
 }

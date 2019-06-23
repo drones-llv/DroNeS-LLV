@@ -3,6 +3,7 @@ using Drones.Data;
 using Drones.JobSystem;
 using Drones.Objects;
 using Drones.Utils;
+using Drones.Utils.Interfaces;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
@@ -12,7 +13,8 @@ namespace Drones.Managers
 {
     public class BatteryManager : MonoBehaviour
     {
-        public static JobHandle EnergyJobHandle => _instance._energyJobHandle;
+        public static JobHandle ConsumptionJobHandle => _instance._consumptionJobHandle;
+        public static JobHandle ChargeCountJobHandle => _instance._chargeCountJobHandle;
 
         private static BatteryManager _instance;
         public static BatteryManager New()
@@ -21,31 +23,33 @@ namespace Drones.Managers
             return _instance;
         }
         
-        private JobHandle _energyJobHandle;
+        private JobHandle _consumptionJobHandle;
+        private JobHandle _chargeCountJobHandle;
         private TimeKeeper.Chronos _time = TimeKeeper.Chronos.Get();
         private static SecureSortedSet<uint, Battery> Batteries => SimManager.AllBatteries;
-        public static NativeList<BatteryData> BatteryInfo;
+        private static SecureSortedSet<uint, IDataSource> Hubs => SimManager.AllHubs;
         private NativeHashMap<uint, DroneInfo> _droneInfo;
         private NativeQueue<uint> _dronesToDrop;
-        private NativeQueue<uint> _chargingInHub;
 
         private void OnDisable()
         {
-            EnergyJobHandle.Complete();
-            BatteryInfo.Dispose();
+//            EnergyJobHandle.Complete();
+            ChargeCountJobHandle.Complete();
+            Hub.ChargingBatteryCounts.Dispose();
+            Battery.AllData.Dispose();
             _droneInfo.Dispose();
             _dronesToDrop.Dispose();
-            _chargingInHub.Dispose();
             _instance = null;
         }
 
         private void Start()
         {
-            Batteries.ItemRemoved += OnRemove;
-            BatteryInfo = new NativeList<BatteryData>(Allocator.Persistent);
+            Batteries.ItemRemoved += OnBatteryRemove;
+            Hubs.ItemRemoved += OnHubRemove;
+            Battery.AllData = new NativeList<BatteryData>(Allocator.Persistent);
+            Hub.ChargingBatteryCounts = new NativeList<ChargeCount>(Allocator.Persistent);
             _droneInfo = new NativeHashMap<uint, DroneInfo>(SimManager.AllDrones.Count, Allocator.Persistent);
             _dronesToDrop = new NativeQueue<uint>(Allocator.Persistent);
-            _chargingInHub = new NativeQueue<uint>(Allocator.Persistent);
             _time.Now();
             StartCoroutine(Operate());
         }
@@ -53,42 +57,34 @@ namespace Drones.Managers
         private IEnumerator Operate()
         {
             var energyJob = new EnergyJob();
+            var countingJob = new ChargingCounterJob();
             while (true)
             {
                 if (Batteries.Count == 0) yield return null;
                 
-                for (var j = 0; j < BatteryInfo.Length; j++)
+                for (var j = 0; j < Battery.AllData.Length; j++)
                 {
-                    var dE = BatteryInfo[j].DeltaEnergy;
-                    if (SimManager.AllBatteries[BatteryInfo[j].UID].GetDrone(out var d))
+                    var dE = Battery.AllData[j].DeltaEnergy;
+                    if (SimManager.AllBatteries[Battery.AllData[j].UID].GetDrone(out var d))
                     {
                         d.UpdateEnergy(dE);
                     }
                 }
                 UpdateDroneInfo();
-                DropDeadDrones();
-                UpdateHub();
-                energyJob.Energies = BatteryInfo;
+                energyJob.Energies = Battery.AllData;
                 energyJob.DronesToDrop = _dronesToDrop.ToConcurrent();
                 energyJob.DroneInfo = _droneInfo;
-                energyJob.ChargingInHub = _chargingInHub.ToConcurrent();
                 energyJob.DeltaTime = _time.Timer();
+                countingJob.HubData = Hub.ChargingBatteryCounts;
+                countingJob.BatteryData = Battery.AllData;
                 _time.Now();
 
-                _energyJobHandle = energyJob.Schedule(BatteryInfo.Length, 32);
+                _consumptionJobHandle = energyJob.Schedule(Battery.AllData.Length, 32);
+                _chargeCountJobHandle =
+                    countingJob.Schedule(Hub.ChargingBatteryCounts.Length, 4, _consumptionJobHandle);
                 yield return null;
-                _energyJobHandle.Complete();
-            }
-        }
+                _chargeCountJobHandle.Complete();
 
-        private void DropDeadDrones()
-        {
-            while (_dronesToDrop.Count > 0)
-            {
-                if (SimManager.AllDrones.TryGet(_dronesToDrop.Dequeue(), out var d))
-                {
-                    ((Drone)d).Drop();
-                }
             }
         }
 
@@ -100,29 +96,28 @@ namespace Drones.Managers
                 var drone = (Drone) dataSource;
                 drone.UpdateMovement(ref _droneInfo);
             }
-        }
-
-        private void UpdateHub()
-        {
-            foreach (var dataSource in SimManager.AllHubs.Values)
+            while (_dronesToDrop.Count > 0)
             {
-                var hub = (Hub) dataSource;
-                hub.ResetChargingBatteryCount();
-            }
-
-            while (_chargingInHub.Count > 0)
-            {
-                ((Hub)SimManager.AllHubs[_chargingInHub.Dequeue()]).IncrementChargingBattery();
+                if (SimManager.AllDrones.TryGet(_dronesToDrop.Dequeue(), out var d))
+                {
+                    ((Drone)d).Drop();
+                }
             }
         }
 
-        private void OnRemove(Battery removed)
+        private void OnBatteryRemove(Battery removed)
         {
-            _energyJobHandle.Complete();
+            _chargeCountJobHandle.Complete();
             _droneInfo.Dispose();
             _droneInfo = new NativeHashMap<uint, DroneInfo>(SimManager.AllDrones.Count, Allocator.Persistent);
             Battery.DeleteData(removed);
             _time.Now();
+        }
+
+        private void OnHubRemove(IDataSource removed)
+        {
+            _chargeCountJobHandle.Complete();
+            Hub.DeleteData((Hub)removed);
         }
     }
 

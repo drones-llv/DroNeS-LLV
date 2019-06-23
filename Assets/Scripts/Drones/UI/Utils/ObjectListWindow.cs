@@ -9,19 +9,13 @@ namespace Drones.UI.Utils
 {
     public abstract class ObjectListWindow : AbstractWindow, IMultiDataSourceReceiver, IListWindow
     {
-        private ListTupleContainer _TupleContainer;
+        private ListTupleContainer _tupleContainer;
 
-        private Dictionary<IDataSource, ObjectTuple> _DataReceivers;
+        private Dictionary<IDataSource, ObjectTuple> _dataReceivers;
 
         private event ListChangeHandler ContentChanged;
 
-        protected override Vector2 MinimizedSize
-        {
-            get
-            {
-                return Decoration.ToRect().rect.size + Close.transform.ToRect().rect.size.x * 2 * Vector2.right;
-            }
-        }
+        protected override Vector2 MinimizedSize => Decoration.ToRect().rect.size + Close.transform.ToRect().rect.size.x * 2 * Vector2.right;
 
         protected override void Awake()
         {
@@ -66,11 +60,11 @@ namespace Drones.UI.Utils
         {
             get
             {
-                if (_TupleContainer == null)
+                if (_tupleContainer == null)
                 {
-                    _TupleContainer = ContentPanel.GetComponentInChildren<ListTupleContainer>();
+                    _tupleContainer = ContentPanel.GetComponentInChildren<ListTupleContainer>();
                 }
-                return _TupleContainer;
+                return _tupleContainer;
             }
         }
 
@@ -85,10 +79,7 @@ namespace Drones.UI.Utils
                     ContentChanged += value;
                 }
             }
-            remove
-            {
-                ContentChanged -= value;
-            }
+            remove => ContentChanged -= value;
         }
         #endregion
 
@@ -104,17 +95,7 @@ namespace Drones.UI.Utils
 
         public bool IsClearing { get; set; }
 
-        public Dictionary<IDataSource, ObjectTuple> DataReceivers
-        {
-            get
-            {
-                if (_DataReceivers == null)
-                {
-                    _DataReceivers = new Dictionary<IDataSource, ObjectTuple>();
-                }
-                return _DataReceivers;
-            }
-        }
+        public Dictionary<IDataSource, ObjectTuple> DataReceivers => _dataReceivers ?? (_dataReceivers = new Dictionary<IDataSource, ObjectTuple>());
 
         public IEnumerator WaitForAssignment()
         {
@@ -124,15 +105,13 @@ namespace Drones.UI.Utils
             yield return second;
             gameObject.SetActive(true);
 
-            foreach (IDataSource source in Sources.Values)
+            foreach (var source in Sources.Values)
             {
                 OnNewSource(source);
             }
-
-            // If any new IDronesObject is created that this Window cares about it'll notfy this Window
+            
             Sources.ItemAdded += OnNewSource;
             Sources.ItemRemoved += OnLooseSource;
-            yield break;
         }
 
         public void ClearDataReceivers()

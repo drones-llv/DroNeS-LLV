@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Globalization;
 using Drones.Data;
+using Drones.Managers;
 using Drones.UI.Drone;
 using Drones.UI.Utils;
 using Drones.Utils;
@@ -195,17 +196,17 @@ namespace Drones.UI.Hub
             Data[1].SetField(hub.Position.ToStringXZ());
             Data[2].SetField(hub.drones.Count.ToString());
             Data[3].SetField((hub.drones.Count - hub.DronesWithNoJobs.Count).ToString());
-            Data[4].SetField(hub.crashes.ToString());
+            Data[4].SetField(hub.NumberOfDroneCrashes.ToString());
             Data[5].SetField(hub.batteries.Count.ToString());
-            Data[6].SetField(hub.chargingBatteriesCount.ToString());
+            Data[6].SetField(((Objects.Hub)Source).GetChargingBatteryCount().ToString());
             Data[7].SetField(((Objects.Hub)Source).Scheduler.JobQueueLength.ToString());
-            Data[8].SetField(hub.completedCount.ToString());
-            Data[9].SetField(hub.delayedJobs.ToString());
-            Data[10].SetField(hub.failedJobs.ToString());
-            Data[11].SetField(hub.revenue.ToString("C", CultureInfo.CurrentCulture));
-            Data[12].SetField(UnitConverter.Convert(Chronos.min, hub.delay / hub.completedCount));
-            Data[13].SetField(UnitConverter.Convert(Energy.kWh, hub.energyConsumption));
-            Data[14].SetField(UnitConverter.Convert(Chronos.min, hub.audibility));
+            Data[8].SetField(hub.CompletedJobCount.ToString());
+            Data[9].SetField(hub.DelayedCompletedJobs.ToString());
+            Data[10].SetField(hub.FailedJobs.ToString());
+            Data[11].SetField(hub.Earnings.ToString("C", CultureInfo.CurrentCulture));
+            Data[12].SetField(UnitConverter.Convert(Chronos.min, hub.TotalDelayOfCompletedJobs / hub.CompletedJobCount));
+            Data[13].SetField(UnitConverter.Convert(Energy.kWh, hub.EnergyConsumption));
+            Data[14].SetField(UnitConverter.Convert(Chronos.min, hub.AudibleDuration));
         }
 
     }

@@ -20,7 +20,6 @@ namespace Drones.JobSystem
     [BurstCompile]
     public struct EnergyJob : IJobParallelFor
     {
-        private const float DischargeVoltage = 23;
         private const float Mass = 22.5f;
         private const float Cd = 0.1f;
         private const float g = 9.81f;
@@ -35,9 +34,9 @@ namespace Drones.JobSystem
 
         public float DeltaTime;
         public NativeArray<BatteryData> Energies;
+        
         [ReadOnly] public NativeHashMap<uint, DroneInfo> DroneInfo;
         [WriteOnly] public NativeQueue<uint>.Concurrent DronesToDrop;
-        [WriteOnly] public NativeQueue<uint>.Concurrent ChargingInHub;
 
         public void Execute(int i)
         {
@@ -81,7 +80,7 @@ namespace Drones.JobSystem
 
         private void Discharge(ref BatteryData info)
         {
-            var dQ = info.DeltaEnergy / DischargeVoltage;
+            var dQ = info.DeltaEnergy / BatteryData.DischargeVoltage;
             info.charge -= dQ;
             if (info.charge > 0.1f) info.totalDischarge += dQ;
             else
@@ -98,15 +97,7 @@ namespace Drones.JobSystem
             else if (info.charge / info.capacity > 0.55f) dQ *= (2 * (1 -  info.charge / info.capacity));
             if (info.charge < info.capacity) { info.totalCharge += dQ; }
 
-            if (math.abs(BatteryData.ChargeTarget * info.capacity - info.charge) < Epsilon)
-            {
-                info.status = BatteryStatus.Idle;
-            }
-            else
-            {
-                ChargingInHub.Enqueue(info.hub);
-                info.status = BatteryStatus.Charge;
-            }
+            info.status = math.abs(BatteryData.ChargeTarget * info.capacity - info.charge) < Epsilon ? BatteryStatus.Idle : BatteryStatus.Charge;
             info.charge += dQ;
             info.charge = math.clamp(info.charge, 0, info.capacity);
 

@@ -1,23 +1,20 @@
 ﻿using System;
 using Drones.Data;
-using Drones.JobSystem;
 using Drones.Managers;
 using Unity.Collections;
-using UnityEngine;
-using Utils;
-using BatteryStatus = Utils.BatteryStatus;
 
 namespace Drones.Objects
 {
     [Serializable]
     public class Battery
     {
+        public static NativeList<BatteryData> AllData;
         public static void DeleteData(Battery removed)
         {
-            BatteryManager.EnergyJobHandle.Complete();
+            BatteryManager.ConsumptionJobHandle.Complete();
             var j = removed._accessIndex;
-            BatteryManager.BatteryInfo.RemoveAtSwapBack(j);
-            SimManager.AllBatteries[BatteryManager.BatteryInfo[j].UID]._accessIndex = j;
+            AllData.RemoveAtSwapBack(j);
+            SimManager.AllBatteries[AllData[j].UID]._accessIndex = j;
         }
         private static uint Count { get; set; }
         private int _accessIndex;
@@ -25,9 +22,9 @@ namespace Drones.Objects
         public Battery(Drone drone, Hub hub)
         {
             UID = ++Count;
-            BatteryManager.EnergyJobHandle.Complete();
-            _accessIndex = BatteryManager.BatteryInfo.Length;
-            BatteryManager.BatteryInfo.Add(new BatteryData(this)
+            BatteryManager.ChargeCountJobHandle.Complete();
+            _accessIndex = AllData.Length;
+            AllData.Add(new BatteryData(this)
             {
                 drone = drone.UID,
                 hub = hub.UID
@@ -35,10 +32,10 @@ namespace Drones.Objects
         }
         public Battery(Hub hub)
         {
-            UID = ++Count;
-            BatteryManager.EnergyJobHandle.Complete();
-            _accessIndex = BatteryManager.BatteryInfo.Length;
-            BatteryManager.BatteryInfo.Add(new BatteryData(this)
+            UID = ++Count; 
+            BatteryManager.ChargeCountJobHandle.Complete();
+            _accessIndex = AllData.Length;
+            AllData.Add(new BatteryData(this)
             {
                 drone = 0,
                 hub = hub.UID
@@ -48,21 +45,12 @@ namespace Drones.Objects
         #region Properties
         public string Name => $"B{UID:000000}";
 
-        public BatteryStatus Status 
-        {
-            get
-            {
-                BatteryManager.EnergyJobHandle.Complete();
-                return BatteryManager.BatteryInfo[_accessIndex].status;
-            }
-        }
-
         public float Charge
         {
             get
             {
-                BatteryManager.EnergyJobHandle.Complete();
-                return BatteryManager.BatteryInfo[_accessIndex].charge / BatteryManager.BatteryInfo[_accessIndex].capacity;
+                BatteryManager.ChargeCountJobHandle.Complete();
+                return AllData[_accessIndex].charge / AllData[_accessIndex].capacity;
             }
         }
 
@@ -70,8 +58,8 @@ namespace Drones.Objects
         {
             get
             {
-                BatteryManager.EnergyJobHandle.Complete();
-                return BatteryManager.BatteryInfo[_accessIndex].capacity / BatteryData.DesignCapacity;
+                BatteryManager.ChargeCountJobHandle.Complete();
+                return AllData[_accessIndex].capacity / BatteryData.DesignCapacity;
             }
         }
         
@@ -83,8 +71,8 @@ namespace Drones.Objects
 
         public bool GetDrone(out Drone drone)
         {
-            BatteryManager.EnergyJobHandle.Complete();
-            var j = BatteryManager.BatteryInfo[_accessIndex].drone;
+            BatteryManager.ChargeCountJobHandle.Complete();
+            var j = AllData[_accessIndex].drone;
             if (j == 0)
             {
                 drone = null;
@@ -95,36 +83,36 @@ namespace Drones.Objects
         }
         public bool HasDrone()
         {
-            BatteryManager.EnergyJobHandle.Complete();
-            return BatteryManager.BatteryInfo[_accessIndex].drone != 0;   
+            BatteryManager.ChargeCountJobHandle.Complete();
+            return AllData[_accessIndex].drone != 0;   
         }
 
         public void AssignHub(Hub hub)
         {
-            BatteryManager.EnergyJobHandle.Complete();
-            var tmp = BatteryManager.BatteryInfo[_accessIndex];
+            BatteryManager.ChargeCountJobHandle.Complete();
+            var tmp = AllData[_accessIndex];
             tmp.hub = hub.UID;
-            BatteryManager.BatteryInfo[_accessIndex] = tmp;
+            AllData[_accessIndex] = tmp;
         }
         public void AssignDrone(Drone drone)
         {
-            BatteryManager.EnergyJobHandle.Complete();
-            var tmp = BatteryManager.BatteryInfo[_accessIndex];
+            BatteryManager.ChargeCountJobHandle.Complete();
+            var tmp = AllData[_accessIndex];
             tmp.drone = drone.UID;
-            BatteryManager.BatteryInfo[_accessIndex] = tmp;
+            AllData[_accessIndex] = tmp;
         }
         public void AssignDrone()
         {
-            BatteryManager.EnergyJobHandle.Complete();
-            var tmp = BatteryManager.BatteryInfo[_accessIndex];
+            BatteryManager.ChargeCountJobHandle.Complete();
+            var tmp = AllData[_accessIndex];
             tmp.drone = 0;
-            BatteryManager.BatteryInfo[_accessIndex] = tmp;
+            AllData[_accessIndex] = tmp;
         }
 
         public void Destroy()
         {
-            BatteryManager.EnergyJobHandle.Complete();
-            var h = BatteryManager.BatteryInfo[_accessIndex].hub;
+            BatteryManager.ChargeCountJobHandle.Complete();
+            var h = AllData[_accessIndex].hub;
             if (h == 0) return;
             ((Hub)SimManager.AllHubs[h]).DestroyBattery(this);  
         } 

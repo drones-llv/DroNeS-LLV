@@ -18,7 +18,7 @@ namespace Drones.Data
         public float EnergyUse { get; set; }
 
         public uint Drone;
-        public uint Hub;
+        public readonly uint Hub;
         public float Earnings;
         public TimeKeeper.Chronos Assignment;
         public TimeKeeper.Chronos Completed;

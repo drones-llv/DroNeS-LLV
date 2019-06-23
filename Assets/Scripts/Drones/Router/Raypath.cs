@@ -15,6 +15,7 @@ namespace Drones.Router
         private const int Ra = 200; // Corridor width
         private const float Epsilon = 0.01f;
         private static float DroneCount => SimManager.AllDrones.Count;
+        private float[] _hubAlts;
         private float[] _altitudes;
         private int[] _assigned;
         private Vector3 _origin;
@@ -28,6 +29,17 @@ namespace Drones.Router
                 _altitudes = new float[size];
                 for (var i = 0; i < size; i++) _altitudes[i] = MinAlt + i * AltDivision;
                 return _altitudes;
+            }
+        }
+        private float[] HubAlt
+        {
+            get
+            {
+                if (_hubAlts != null) return _hubAlts;
+                const int size = (int)((HubMaxAlt - HubMinAlt) / AltDivision) + 1;
+                _hubAlts = new float[size];
+                for (var i = 0; i < size; i++) _hubAlts[i] = HubMinAlt + i * AltDivision;
+                return _hubAlts;
             }
         }
         private int[] Assigned

@@ -1,24 +1,16 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using Drones.Managers;
 using Drones.Objects;
 using Drones.Utils.Interfaces;
 using UnityEngine;
 using Utils;
-using BatteryStatus = Utils.BatteryStatus;
 
 namespace Drones.Data
 {
-    using Utils;
     using static Managers.SimManager;
     public class HubData : IData
     {
-        private static uint Count { get; set; }
-        public static void Reset() => Count = 0;
-        public const float DeploymentPeriod = 0.75f;
         private readonly Hub _source;
-
         public uint UID { get; }
-
         public bool IsDataStatic => false;
 
         public SecureSortedSet<uint, IDataSource> drones;
@@ -28,24 +20,23 @@ namespace Drones.Data
         public SecureSortedSet<uint, Battery> batteries;
         public SecureSortedSet<uint, Battery> BatteriesWithNoDrones;
         public Vector3 Position => _source.transform.position;
-        public int crashes;
-        public int delayedJobs;
-        public int failedJobs;
-        public int completedCount;
-        public float revenue;
-        public float delay;
-        public float energyConsumption;
-        public float audibility;
-        public int queuedJobs;
-        public int inQueueDelayed;
-        public int chargingBatteriesCount;
+        public int NumberOfDroneCrashes;
+        public int DelayedCompletedJobs;
+        public int FailedJobs;
+        public int CompletedJobCount;
+        public float Earnings;
+        public float TotalDelayOfCompletedJobs;
+        public float EnergyConsumption;
+        public float AudibleDuration;
+        public int NumberOfJobsInQueue;
+        public int NumberOfJobsDelayedInQueue;
 
         public HubData() { }
 
         public HubData(Hub hub)
         {
             _source = hub;
-            UID = ++Count;
+            UID = hub.UID;
             InitializeCollections();
             SetUpCollectionEvents();
         }

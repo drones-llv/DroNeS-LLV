@@ -98,7 +98,7 @@ namespace Drones.Objects
         {
             var i = 0;
             var hub = GetHub();
-            while (Mathf.Min(job.ExpectedDuration, 0.9f * CostFunction.Guarantee) * 0 >
+            while (Mathf.Min(job.ExpectedDuration, 0.9f * CostFunction.Guarantee) >
                    GetBattery().Charge * CostFunction.Guarantee)
             {
                 if (++i < 2)
@@ -131,7 +131,7 @@ namespace Drones.Objects
             return true;
         }
 
-        public float DeltaEnergy() => _data.energyOnJobStart - _data.totalEnergy;
+        public float DeltaEnergy() => _data.totalEnergy - _data.energyOnJobStart;
 
         public void AssignBattery(Battery battery) => _data.battery = battery.UID;
 
@@ -263,12 +263,12 @@ namespace Drones.Objects
                 AbstractCamera.ActiveCamera.BreakFollow();
         }
 
-        private IEnumerator Horizontal(bool load = false)
+        private IEnumerator Horizontal()
         {
             var wait = new WaitUntil(ReachedWaypoint);
             while (_data.waypoints.Count > 0)
             {
-                if (!load) NextWaypoint();
+                NextWaypoint();
                 if (Mathf.Abs(transform.position.y - Waypoint.y) > 0.5f)
                 {
                     _data.movement = (transform.position.y > Waypoint.y) ? DroneMovement.Descend : DroneMovement.Ascend;

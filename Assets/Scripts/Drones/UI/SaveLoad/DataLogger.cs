@@ -190,22 +190,23 @@ namespace Drones.UI.SaveLoad
         }
         public void SetData(HubData data, TimeKeeper.Chronos time)
         {
+            var hub = (Objects.Hub)SimManager.AllHubs[data.UID];
             _hubData[0] = DateTime.Now.ToString(CultureInfo.InvariantCulture);
             _hubData[1] = time.ToCsvFormat();
             _hubData[2] = data.drones.Count.ToString();
             _hubData[3] = Objects.Drone.ActiveDrones.childCount.ToString();
-            _hubData[4] = data.crashes.ToString();
+            _hubData[4] = data.NumberOfDroneCrashes.ToString();
             _hubData[5] = data.batteries.Count.ToString();
-            _hubData[6] = data.chargingBatteriesCount.ToString();
-            _hubData[7] = data.queuedJobs.ToString();
-            _hubData[8] = data.inQueueDelayed.ToString();
-            _hubData[9] = data.completedCount.ToString();
-            _hubData[10] = data.delayedJobs.ToString();
-            _hubData[11] = data.failedJobs.ToString();
-            _hubData[12] = data.revenue.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
-            _hubData[13] = (data.delay / data.completedCount).ToString("0.00");
-            _hubData[14] = data.audibility.ToString("0.00");
-            _hubData[15] = UnitConverter.Convert(Energy.kWh, data.energyConsumption);
+            _hubData[6] = hub.GetChargingBatteryCount().ToString();
+            _hubData[7] = data.NumberOfJobsInQueue.ToString();
+            _hubData[8] = data.NumberOfJobsDelayedInQueue.ToString();
+            _hubData[9] = data.CompletedJobCount.ToString();
+            _hubData[10] = data.DelayedCompletedJobs.ToString();
+            _hubData[11] = data.FailedJobs.ToString();
+            _hubData[12] = data.Earnings.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
+            _hubData[13] = (data.TotalDelayOfCompletedJobs / data.CompletedJobCount).ToString("0.00");
+            _hubData[14] = data.AudibleDuration.ToString("0.00");
+            _hubData[15] = UnitConverter.Convert(Energy.kWh, data.EnergyConsumption);
         }
 
         private IEnumerator Logging()

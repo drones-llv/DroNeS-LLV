@@ -57,17 +57,13 @@ namespace Drones.Data
                 return Mathf.Clamp(a / b, 0, 1);
             }
         }
-        public bool wasGoingDown;
-        public bool isGoingDown;
         public bool isWaiting;
-        public float targetAltitude;
         public Queue<Vector3> waypoints = new Queue<Vector3>();
         public Vector3 previousWaypoint;
         public Vector3 currentWaypoint;
         public Vector3 previousPosition;
         private Vector3 CurrentPosition => _source.transform.position;
         public Vector3 Direction => Vector3.Normalize(previousPosition - CurrentPosition);
-        public bool frequentRequests;
         public float energyOnJobStart;
     }
 

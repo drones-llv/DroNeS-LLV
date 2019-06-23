@@ -16,7 +16,8 @@ namespace Drones.Router
         protected const float MinAlt = 60;
         protected const int AltDivision = 10; // Altitude interval
         protected const int Rd = 2; // drone Radius
-        protected readonly int[] HubAlt = { 480, 490 };
+        protected const float HubMaxAlt = 350;
+        protected const float HubMinAlt = 210;
         public static Dictionary<uint, Obstacle> Hubs => _hubs ?? (_hubs = new Dictionary<uint, Obstacle>());
 
         public static Dictionary<uint, Obstacle> NoFlyZones => Nfz ?? (Nfz = new Dictionary<uint, Obstacle>());

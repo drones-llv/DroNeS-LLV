@@ -8,6 +8,7 @@ namespace Drones.Data
 
     public struct BatteryData
     {
+        public const float DischargeVoltage = 23;
         public const int DesignCycles = 500;
         public const float DesignCapacity = 576000f; // 576,000 Coulombs = 160,000 mAh
         public const float ChargeTarget = 0.98f;
@@ -22,7 +23,7 @@ namespace Drones.Data
             totalDischarge = 0;
             totalCharge = 0;
             cycles = 0;
-            charge = 0.1f * DesignCapacity;
+            charge = 0.7f * DesignCapacity;
             capacity = DesignCapacity;
             DeltaEnergy = 0;
         }
