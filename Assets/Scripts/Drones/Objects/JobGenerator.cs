@@ -7,21 +7,22 @@ namespace Drones.Objects
 {
     public class JobGenerator
     {
-        readonly Hub _owner;
+        private readonly Hub _owner;
         private Vector3 Position => _owner.Position;
         private float _lambda;
+        private readonly WaitForFixedUpdate _fixed = new WaitForFixedUpdate();
+        private readonly WaitUntil _capper;
         public JobGenerator(Hub hub, float lambda)
         {
             _owner = hub;
             _lambda = lambda;
+            _capper  = new WaitUntil(() => _owner.Scheduler.JobQueueLength < 1.5f * _owner.Drones.Count);
         }
 
         public void SetLambda(float l) => _lambda = l;
 
-        public IEnumerator Generate()
+        public IEnumerator GenerateDeliveries()
         {
-            var wait = new WaitForFixedUpdate();
-            var wait2 = new WaitUntil(() => _owner.Scheduler.JobQueueLength < Mathf.Min(1.5f * _owner.Drones.Count, 190));
             var time = TimeKeeper.Chronos.Get();
             var watch = Stopwatch.StartNew();
             while (true)
@@ -31,7 +32,7 @@ namespace Drones.Objects
                 while (f >= 1) f = Random.value;
                 var dt = -Mathf.Log(1 - f) / _lambda;
 
-                while (time.Timer() < dt) yield return wait;
+                while (time.Timer() < dt) yield return _fixed;
                 watch.Restart();
                 var v = Position;
                 v.y = 200;
@@ -41,15 +42,15 @@ namespace Drones.Objects
                 {
                     d = Random.insideUnitSphere * 7000;
                     d.y = 200;
-                    if (!(watch.ElapsedMilliseconds / 1000 > Time.fixedUnscaledDeltaTime)) continue;
-                    yield return wait;
+                    if (watch.ElapsedMilliseconds / 1000 < Time.fixedUnscaledDeltaTime) continue;
+                    yield return _fixed;
                     watch.Restart();
                 }
                 d.y = 0;
-                var job = new Job(_owner, d, Random.Range(0.1f, 2.5f), 5);
+                var job = new DeliveryJob(_owner, d, Random.Range(0.1f, 2.5f), 5);
 
                 _owner.OnJobCreate(job);
-                yield return wait2;
+                yield return _capper;
                 watch.Restart();
             }
 

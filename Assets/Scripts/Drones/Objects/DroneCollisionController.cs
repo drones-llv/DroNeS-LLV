@@ -42,9 +42,7 @@ namespace Drones.Objects
         {
             var otherLayer = other.gameObject.layer;
             
-            if (otherLayer == LayerMask.NameToLayer("IgnoreCollision")) return;
-            
-            if (other.CompareTag("Drone") && !other.GetComponent<DroneCollisionController>()._collisionOn) return;
+            if (otherLayer == LayerMask.NameToLayer("IgnoreCollision") || other.CompareTag("Drone")) return;
 
             if (otherLayer == LayerMask.NameToLayer("Hub"))
             {

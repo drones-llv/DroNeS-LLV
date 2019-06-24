@@ -134,7 +134,7 @@ namespace Drones.UI.SaveLoad
             }
         }
 
-        public static void LogJob(JobData data)
+        public static void LogJob(DeliveryData data)
         {
             if (!IsLogging) return;
             if (!Directory.Exists(_instance.LogPath)) Directory.CreateDirectory(_instance.LogPath);
@@ -164,7 +164,7 @@ namespace Drones.UI.SaveLoad
             _instance._jobData[5] = data.StDevDuration.ToString("0.00");
             _instance._jobData[6] = (data.Pickup - data.Dropoff).magnitude.ToString("0.00");
             _instance._jobData[7] = data.DeliveryAltitude.ToString("0.00");
-            _instance._jobData[8] = data.CostFunction.Reward.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
+            _instance._jobData[8] = data.CourierService.Reward.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
             _instance._jobData[9] = data.Earnings.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
             _instance._jobData[10] = UnitConverter.Convert(Energy.kWh, data.EnergyUse);
             _instance._jobData[11] = (data.Status == JobStatus.Failed) ? "YES" : "NO";

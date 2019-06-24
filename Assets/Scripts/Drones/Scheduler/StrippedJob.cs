@@ -16,6 +16,6 @@ namespace Drones.Scheduler
         public float expectedDuration;
         public float stDevDuration;
 
-        public static explicit operator Job(StrippedJob job) => SimManager.AllJobs[job.UID];
+        public static explicit operator DeliveryJob(StrippedJob job) => SimManager.AllJobs[job.UID];
     }
 }

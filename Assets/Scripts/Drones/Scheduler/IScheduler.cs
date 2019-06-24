@@ -19,7 +19,7 @@ namespace Drones.Scheduler
 
         Queue<Drone> DroneQueue { get; }
 
-        List<Job> JobQueue { get; set; }
+        List<DeliveryJob> JobQueue { get; set; }
 
     }
 }

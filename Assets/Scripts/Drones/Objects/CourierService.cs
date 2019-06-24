@@ -5,18 +5,19 @@ using UnityEngine;
 
 namespace Drones.Objects
 {
-    public class CostFunction
+    public struct CourierService
     {
-        public CostFunction(TimeKeeper.Chronos startTime, float revenue, float penalty = 5)
+        public CourierService(TimeKeeper.Chronos startTime, float revenue, float penalty = 5)
         {
             Start = startTime;
             Reward = revenue;
             Penalty = -Mathf.Abs(penalty);
         }
 
-        private TimeKeeper.Chronos Start { get; set; }
-        public float Reward { get; private set; }
-        public float Penalty { get; private set; }
+        private TimeKeeper.Chronos Start { get; }
+        public float Reward { get; }
+        public float Penalty { get; }
+        
         public const float Guarantee = 1800; // half hour
 
         public float GetPaid(TimeKeeper.Chronos complete)

@@ -12,14 +12,14 @@ using Utils;
 
 namespace Drones.Objects
 {
-    public class Job : IDataSource
+    public class DeliveryJob : IDataSource
     {
         private static readonly TimeKeeper.Chronos _EoT = new TimeKeeper.Chronos(int.MaxValue - 100, 23, 59, 59.99f);
         private static TimeKeeper.Chronos _clock = TimeKeeper.Chronos.Get();
 
-        public Job(Hub pickup, Vector3 dropoff, float weight, float penalty)
+        public DeliveryJob(Hub pickup, Vector3 dropoff, float weight, float penalty)
         {
-            _data = new JobData(pickup, dropoff, weight, penalty);
+            _data = new DeliveryData(pickup, dropoff, weight, penalty);
             GetHub().StartCoroutine(Tracker());
         }
 
@@ -48,11 +48,10 @@ namespace Drones.Objects
         public bool IsDataStatic => _data.IsDataStatic;
         #endregion
 
-        private readonly JobData _data;
+        private readonly DeliveryData _data;
         private Drone GetDrone() => (Drone)SimManager.AllDrones[_data.Drone];
         private Hub GetHub() => (Hub) SimManager.AllHubs[_data.Hub];
-        public RetiredDrone GetRetiredDrone() => (RetiredDrone)SimManager.AllRetiredDrones[_data.Drone];
-        
+
         public JobStatus Status => _data.Status;
         public Vector3 DropOff => _data.Dropoff;
         public Vector3 Pickup => _data.Pickup;
@@ -60,7 +59,7 @@ namespace Drones.Objects
         public TimeKeeper.Chronos Deadline => _data.Deadline;
         public TimeKeeper.Chronos CompletedOn => _data.Completed;
         public float PackageWeight => _data.PackageWeight;
-        public float Loss => -_data.CostFunction.GetPaid(_EoT);
+        public float Loss => -_data.CourierService.GetPaid(_EoT);
 
         public float ExpectedDuration => _data.ExpectedDuration;
 
@@ -96,7 +95,7 @@ namespace Drones.Objects
             _data.Completed = TimeKeeper.Chronos.Get();
             _data.Status = JobStatus.Complete;
             _data.IsDataStatic = true;
-            _data.Earnings = _data.CostFunction.GetPaid(CompletedOn);
+            _data.Earnings = _data.CourierService.GetPaid(CompletedOn);
 
             var drone = GetDrone();
             var hub = drone.GetHub();
@@ -137,18 +136,18 @@ namespace Drones.Objects
             return 1.00f;
         }
 
-        public static explicit operator StrippedJob(Job job)
+        public static explicit operator StrippedJob(DeliveryJob deliveryJob)
         {
             var j = new StrippedJob
             {
-                UID = job.UID,
-                pickup = job.Pickup,
-                dropoff = job.DropOff,
-                start = job._data.Created,
-                reward = job._data.CostFunction.Reward,
-                penalty = -job._data.CostFunction.Penalty,
-                expectedDuration = job._data.ExpectedDuration,
-                stDevDuration = job._data.StDevDuration
+                UID = deliveryJob.UID,
+                pickup = deliveryJob.Pickup,
+                dropoff = deliveryJob.DropOff,
+                start = deliveryJob._data.Created,
+                reward = deliveryJob._data.CourierService.Reward,
+                penalty = -deliveryJob._data.CourierService.Penalty,
+                expectedDuration = deliveryJob._data.ExpectedDuration,
+                stDevDuration = deliveryJob._data.StDevDuration
             };
             return j;
         }

@@ -17,11 +17,11 @@ namespace Drones.Scheduler
         {
             _owner = owner;
             DroneQueue = drones;
-            JobQueue = new List<Job>();
+            JobQueue = new List<DeliveryJob>();
         }
         public bool Started { get; private set; }
         public Queue<Drone> DroneQueue { get; }
-        public List<Job> JobQueue { get; set; }
+        public List<DeliveryJob> JobQueue { get; set; }
         public JobHandle Scheduling { get; private set; }
         public IEnumerator ProcessQueue()
         {

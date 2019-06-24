@@ -19,7 +19,7 @@ namespace Drones.Data
         public SecureSortedSet<uint, IDataSource> completeJobs;
         public SecureSortedSet<uint, IDataSource> retiredDrones;
         public SecureSortedSet<uint, Battery> batteries;
-        public SecureSortedSet<uint, Job> jobs;
+        public SecureSortedSet<uint, DeliveryJob> jobs;
         public float revenue;
         public float totalDelay;
         public float totalAudible;
@@ -55,17 +55,17 @@ namespace Drones.Data
 
             incompleteJobs = new SecureSortedSet<uint, IDataSource>
             {
-                MemberCondition = (item) => item is Job && ((Job)item).Status != JobStatus.Complete
+                MemberCondition = (item) => item is DeliveryJob && ((DeliveryJob)item).Status != JobStatus.Complete
             };
 
             completeJobs = new SecureSortedSet<uint, IDataSource>
             {
-                MemberCondition = (item) => item is Job
+                MemberCondition = (item) => item is DeliveryJob
             };
 
             batteries = new SecureSortedSet<uint, Battery>();
 
-            jobs = new SecureSortedSet<uint, Job>();
+            jobs = new SecureSortedSet<uint, DeliveryJob>();
         }
 
         private void SetUpCallbacks()

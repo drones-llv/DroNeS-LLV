@@ -35,7 +35,7 @@ namespace Drones.Scheduler
         private void OnEnable()
         {
             _generator = new JobGenerator(Owner, Owner.JobGenerationRate);
-            StartCoroutine(_generator.Generate());
+            StartCoroutine(_generator.GenerateDeliveries());
             NewAlgorithm();
         }
 
@@ -69,9 +69,9 @@ namespace Drones.Scheduler
             }
         }
 
-        public void AddToQueue(Job job)
+        public void AddToQueue(DeliveryJob deliveryJob)
         {
-            _algorithm.JobQueue.Add(job);
+            _algorithm.JobQueue.Add(deliveryJob);
             owner.JobEnqueued();
         }
 
@@ -130,11 +130,11 @@ namespace Drones.Scheduler
             var stdev = j.stDevDuration;
 
             var h = (4 * stdev + mu) / STEPS;
-            var expected = CostFunction.Evaluate(j, time) * Normal(0, mu, stdev) / 2;
-            expected += CostFunction.Evaluate(j, time + 4 * stdev) * Normal(4 * stdev, mu, stdev) / 2;
+            var expected = CourierService.Evaluate(j, time) * Normal(0, mu, stdev) / 2;
+            expected += CourierService.Evaluate(j, time + 4 * stdev) * Normal(4 * stdev, mu, stdev) / 2;
             for (var i = 1; i < STEPS; i++)
             {
-                expected += CostFunction.Evaluate(j, time + i * h) * Normal(i * h, mu, stdev);
+                expected += CourierService.Evaluate(j, time + i * h) * Normal(i * h, mu, stdev);
             }
             expected *= h;
 

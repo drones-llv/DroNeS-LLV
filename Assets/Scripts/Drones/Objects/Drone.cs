@@ -94,12 +94,12 @@ namespace Drones.Objects
         public uint UID => _data.UID;
         public string Name => $"D{_data.UID:000000}";
 
-        public bool AssignJob(Job job)
+        public bool AssignJob(DeliveryJob deliveryJob)
         {
             var i = 0;
             var hub = GetHub();
-            while (Mathf.Min(job.ExpectedDuration, 0.9f * CostFunction.Guarantee) >
-                   GetBattery().Charge * CostFunction.Guarantee)
+            while (Mathf.Min(deliveryJob.ExpectedDuration * 2, 0.9f * CourierService.Guarantee) >
+                   GetBattery().Charge * CourierService.Guarantee)
             {
                 if (++i < 2)
                 {
@@ -111,12 +111,12 @@ namespace Drones.Objects
                 return false;
             }
 
-            _data.job = job.UID;
-            job.AssignDrone(this);
-            job.StartDelivery();
+            _data.job = deliveryJob.UID;
+            deliveryJob.AssignDrone(this);
+            deliveryJob.StartDelivery();
 
             hub.Router.GetRoute(this, ref _data.waypoints);
-            job.SetAltitude(_data.waypoints.Peek().y);
+            deliveryJob.SetAltitude(_data.waypoints.Peek().y);
             StartMoving();
             _data.energyOnJobStart = _data.totalEnergy;
 
@@ -147,9 +147,9 @@ namespace Drones.Objects
             _data.hub = hub.UID;
         }
 
-        public Job GetJob()
+        public DeliveryJob GetJob()
         {
-            return (Job) SimManager.AllIncompleteJobs[_data.job];
+            return (DeliveryJob) SimManager.AllIncompleteJobs[_data.job];
         }
 
         public Hub GetHub() => (Hub)SimManager.AllHubs[_data.hub];

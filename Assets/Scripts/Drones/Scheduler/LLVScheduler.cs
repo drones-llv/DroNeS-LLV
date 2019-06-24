@@ -21,7 +21,7 @@ namespace Drones.Scheduler
         {
             _owner = owner;
             DroneQueue = drones;
-            JobQueue = new List<Job>();
+            JobQueue = new List<DeliveryJob>();
             _jobs = new NativeList<LLVStruct>(Allocator.Persistent);
             _loss = new NativeArray<float>(1, Allocator.Persistent);
             _duration = new NativeArray<float>(1, Allocator.Persistent);
@@ -31,7 +31,7 @@ namespace Drones.Scheduler
         public JobHandle Scheduling { get; private set; }
         public bool Started { get; private set; }
         public Queue<Drone> DroneQueue { get; }
-        public List<Job> JobQueue { get; set; }
+        public List<DeliveryJob> JobQueue { get; set; }
         public IEnumerator ProcessQueue()
         {
             Started = true;
@@ -80,7 +80,7 @@ namespace Drones.Scheduler
 
                     var n = FindMin(ref calculator.nlv);
                     var end = _jobs.Length - 1;
-                    var j = (Job) _jobs[n].job;
+                    var j = (DeliveryJob) _jobs[n].job;
                     if (drone.AssignJob(j))
                     {
                         _jobs.RemoveAtSwapBack(n);

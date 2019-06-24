@@ -34,7 +34,7 @@ namespace Drones.Managers
         public static SecureSortedSet<uint, IDataSource> AllIncompleteJobs => Instance._data.incompleteJobs;
         public static SecureSortedSet<uint, IDataSource> AllCompleteJobs => Instance._data.completeJobs;
         public static SecureSortedSet<uint, Battery> AllBatteries => Instance._data.batteries;
-        public static SecureSortedSet<uint, Job> AllJobs => Instance._data.jobs;
+        public static SecureSortedSet<uint, DeliveryJob> AllJobs => Instance._data.jobs;
 
 
         public static bool LoadComplete => Singletons.Manhattan != null && Singletons.Brooklyn != null && Singletons.Manhattan.RedrawComplete && Singletons.Brooklyn.RedrawComplete;
@@ -83,7 +83,7 @@ namespace Drones.Managers
             Battery.Reset();
             Hub.Reset();
             DroneData.Reset();
-            JobData.Reset();
+            DeliveryData.Reset();
             NfzData.Reset();
             Singletons.ResetSingletons();
             UIFocus.Reset();

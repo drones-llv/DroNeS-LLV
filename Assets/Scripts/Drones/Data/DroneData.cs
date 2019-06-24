@@ -19,8 +19,8 @@ namespace Drones.Data
         {
             _source = src;
             UID = ++Count;
-            completedJobs.ItemAdded += (obj) => _source.GetHub().JobComplete((Job)obj);
-            completedJobs.ItemAdded += (obj) => packageWeight += ((Job)obj).PackageWeight;
+            completedJobs.ItemAdded += (obj) => _source.GetHub().JobComplete((DeliveryJob)obj);
+            completedJobs.ItemAdded += (obj) => packageWeight += ((DeliveryJob)obj).PackageWeight;
             movement = DroneMovement.Idle;
             previousPosition = CurrentPosition;
             isWaiting = true;
@@ -31,9 +31,9 @@ namespace Drones.Data
         public uint hub;
         public uint battery;
         public SecureSortedSet<uint, IDataSource> completedJobs = new SecureSortedSet<uint, IDataSource>
-            ((x, y) => (((Job)x).CompletedOn >= ((Job)y).CompletedOn) ? -1 : 1)
+            ((x, y) => (((DeliveryJob)x).CompletedOn >= ((DeliveryJob)y).CompletedOn) ? -1 : 1)
         {
-            MemberCondition = (IDataSource obj) => { return obj is Job; }
+            MemberCondition = (IDataSource obj) => { return obj is DeliveryJob; }
         };
         public DroneMovement movement;
         public uint DeliveryCount => (uint)completedJobs.Count;
@@ -49,7 +49,7 @@ namespace Drones.Data
             get
             {
                 if (job == 0) return 0;
-                var j = (Job)AllIncompleteJobs[job];
+                var j = (DeliveryJob)AllIncompleteJobs[job];
                 if (j == null || j.Status != JobStatus.Delivering) return 0;
                 
                 var a = Vector3.Distance(CurrentPosition, j.Pickup);

@@ -586,9 +586,9 @@
           <e p="Drones" t="Include">
             <e p="Data" t="Include">
               <e p="BatteryData.cs" t="Include" />
+              <e p="DeliveryData.cs" t="Include" />
               <e p="DroneData.cs" t="Include" />
               <e p="HubData.cs" t="Include" />
-              <e p="JobData.cs" t="Include" />
               <e p="NFZData.cs" t="Include" />
               <e p="RetiredDroneData.cs" t="Include" />
               <e p="SimulationData.cs" t="Include" />
@@ -624,12 +624,12 @@
             </e>
             <e p="Objects" t="Include">
               <e p="Battery.cs" t="Include" />
-              <e p="CostFunction.cs" t="Include" />
+              <e p="CourierService.cs" t="Include" />
+              <e p="DeliveryJob.cs" t="Include" />
               <e p="Drone.cs" t="Include" />
               <e p="DroneCollisionController.cs" t="Include" />
               <e p="Hub.cs" t="Include" />
               <e p="HubCollisionController.cs" t="Include" />
-              <e p="Job.cs" t="Include" />
               <e p="JobGenerator.cs" t="Include" />
               <e p="NoFlyZone.cs" t="Include" />
               <e p="RetiredDrone.cs" t="Include" />

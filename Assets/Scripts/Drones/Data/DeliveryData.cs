@@ -8,7 +8,7 @@ namespace Drones.Data
 {
     using Utils;
 
-    public class JobData : IData
+    public class DeliveryData : IData
     {
         private static uint _count;
         public static void Reset() => _count = 0;
@@ -31,21 +31,21 @@ namespace Drones.Data
         public TimeKeeper.Chronos Deadline;
 
         public Vector3 Pickup;
-        public readonly CostFunction CostFunction;
+        public readonly CourierService CourierService;
         public readonly float PackageWeight;
         public float DeliveryAltitude;
 
-        public JobData(Hub pickup, Vector3 dropoff, float weight, float penalty) 
+        public DeliveryData(Hub pickup, Vector3 dropoff, float weight, float penalty) 
         {
             UID = ++_count;
             Hub = pickup.UID;
             Status = JobStatus.Assigning;
             Created = TimeKeeper.Chronos.Get();
-            Deadline = Created + CostFunction.Guarantee;
+            Deadline = Created + CourierService.Guarantee;
             Pickup = pickup.Position;
             Dropoff = LandingZoneIdentifier.Reposition(dropoff);
             PackageWeight = weight;
-            CostFunction = new CostFunction(Created, WeightToRev(Pricing.US, weight), penalty);
+            CourierService = new CourierService(Created, WeightToRev(Pricing.US, weight), penalty);
             ExpectedDuration = (LateralManhattan() + LateralEuclidean()) / (2 * DroneMovementJob.HSPEED) + (Pickup.y-dropoff.y) / DroneMovementJob.VSPEED;
             StDevDuration = LateralManhattan() / DroneMovementJob.HSPEED - ExpectedDuration + (this.Pickup.y - Dropoff.y) / DroneMovementJob.VSPEED;
         }

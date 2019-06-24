@@ -102,7 +102,7 @@ namespace Drones.Objects
             gameObject.SetActive(false);
             transform.SetParent(PC().PoolParent);
             if (!(_jobGenerator is null))
-                StopCoroutine(_jobGenerator.Generate());
+                StopCoroutine(_jobGenerator.GenerateDeliveries());
             _jobGenerator = null;
             _router = null;
         }
@@ -125,7 +125,7 @@ namespace Drones.Objects
             transform.SetParent(parent);
             gameObject.SetActive(true);
             _jobGenerator = new JobGenerator(this, JobGenerationRate);
-            StartCoroutine(_jobGenerator.Generate());
+            StartCoroutine(_jobGenerator.GenerateDeliveries());
             DataLogger.LogHub(this);
         }
         #endregion
@@ -212,13 +212,13 @@ namespace Drones.Objects
             SimManager.UpdateEnergy(dE);
         }
 
-        internal void DeleteJob(Job job)
+        internal void DeleteJob(DeliveryJob deliveryJob)
         {
-            _data.incompleteJobs.Remove(job);
+            _data.incompleteJobs.Remove(deliveryJob);
             _data.CompletedJobCount++;
             SimManager.UpdateCompleteCount();
-            SimManager.AllIncompleteJobs.Remove(job);
-            SimManager.AllJobs.Remove(job);
+            SimManager.AllIncompleteJobs.Remove(deliveryJob);
+            SimManager.AllJobs.Remove(deliveryJob);
         }
 
         public void UpdateRevenue(float value)
@@ -248,7 +248,7 @@ namespace Drones.Objects
             _data.AudibleDuration += dt;
             SimManager.UpdateAudible(dt);
         }
-        public void JobComplete(Job job) => _data.completedJobs.Add(job.UID, job);
+        public void JobComplete(DeliveryJob deliveryJob) => _data.completedJobs.Add(deliveryJob.UID, deliveryJob);
         public SecureSortedSet<uint, IDataSource> Drones => _data.drones;
         public float JobGenerationRate
         {
@@ -260,9 +260,9 @@ namespace Drones.Objects
                 _jobGenerator.SetLambda(value);
             }
         }
-        public void OnJobCreate(params Job[] jobs)
+        public void OnJobCreate(params DeliveryJob[] deliveryJobs)
         {
-            foreach (var job in jobs)
+            foreach (var job in deliveryJobs)
             {
                 _data.incompleteJobs.Add(job.UID, job);
                 Scheduler.AddToQueue(job);
