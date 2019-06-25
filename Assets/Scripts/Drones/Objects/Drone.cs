@@ -98,8 +98,8 @@ namespace Drones.Objects
         {
             var i = 0;
             var hub = GetHub();
-            while (Mathf.Min(deliveryJob.ExpectedDuration * 2, 0.9f * CourierService.Guarantee) >
-                   GetBattery().Charge * CourierService.Guarantee)
+            while (Mathf.Min(deliveryJob.ExpectedDuration * 2, 0.9f * DeliveryCost.Guarantee) >
+                   GetBattery().Charge * DeliveryCost.Guarantee)
             {
                 if (++i < 2)
                 {
@@ -317,6 +317,12 @@ namespace Drones.Objects
                 pkgWgt = _data.packageWeight,
                 moveType = _data.movement
             });
+        }
+
+        public void DeleteJob(DeliveryJob deliveryJob)
+        {
+            _data.DeliveryCount++;
+            GetHub().DeleteJob(deliveryJob);
         }
     };
 }

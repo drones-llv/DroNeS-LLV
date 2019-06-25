@@ -76,6 +76,11 @@ namespace Drones.Data
                 i.GetHub()?.Drones.Remove(i);
             };
             completeJobs.ItemAdded += (item) => { incompleteJobs.Remove(item); };
+            jobs.ItemRemoved += (item =>
+            {
+                incompleteJobs.Remove(item);
+                completeJobs.Remove(item);
+            });
         }
 
         public SimulationData()

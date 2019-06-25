@@ -605,6 +605,7 @@
               <e p="ChargingCounterJob.cs" t="Include" />
               <e p="DroneMovementJob.cs" t="Include" />
               <e p="EnergyConsumptionJob.cs" t="Include" />
+              <e p="JobFailer.cs" t="Include" />
             </e>
             <e p="Managers" t="Include">
               <e p="BatteryManager.cs" t="Include" />
@@ -624,10 +625,11 @@
             </e>
             <e p="Objects" t="Include">
               <e p="Battery.cs" t="Include" />
-              <e p="CourierService.cs" t="Include" />
+              <e p="DeliveryCost.cs" t="Include" />
               <e p="DeliveryJob.cs" t="Include" />
               <e p="Drone.cs" t="Include" />
               <e p="DroneCollisionController.cs" t="Include" />
+              <e p="EmergencyCost.cs" t="Include" />
               <e p="Hub.cs" t="Include" />
               <e p="HubCollisionController.cs" t="Include" />
               <e p="JobGenerator.cs" t="Include" />
@@ -638,7 +640,6 @@
               <e p="Obstacle.cs" t="Include" />
               <e p="Pathfinder.cs" t="Include" />
               <e p="PriorityQueue.cs" t="Include" />
-              <e p="Raypath.cs" t="Include" />
               <e p="SmartStarpath.cs" t="Include" />
               <e p="Starpath.cs" t="Include" />
             </e>
@@ -780,6 +781,7 @@
               <e p="MeshOptimizer.cs" t="Include" />
               <e p="MeshRendererModifier.cs" t="Include" />
               <e p="NativeConcurrentIntArray.cs" t="Include" />
+              <e p="NativeIntPtr.cs" t="Include" />
               <e p="ObjectPool.cs" t="Include" />
               <e p="PoolComponent.cs" t="Include" />
               <e p="PoolController.cs" t="Include" />

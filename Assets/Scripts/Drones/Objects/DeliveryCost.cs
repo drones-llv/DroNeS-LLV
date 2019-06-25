@@ -5,9 +5,9 @@ using UnityEngine;
 
 namespace Drones.Objects
 {
-    public struct CourierService
+    public struct DeliveryCost
     {
-        public CourierService(TimeKeeper.Chronos startTime, float revenue, float penalty = 5)
+        public DeliveryCost(TimeKeeper.Chronos startTime, float revenue, float penalty = 5)
         {
             Start = startTime;
             Reward = revenue;
@@ -50,13 +50,5 @@ namespace Drones.Objects
 
             return ((int)(ndt * division)) / (float)division;
         }
-
-        public float Step(float x, float n, float yU = 1, float yD = -1) => (x <= n) ? yU : yD;
-
-        public float Tanh(float x, float a = 1, float b = 1, float c = 0) => (float)(a * Math.Tanh(b * x + c));
-
-        public float Poly(float x, float a = 1, int n = 1) => (float)(a * Math.Pow(x, n));
-
-        public float Exp(float x, float a = 1, float b = 1) => (float)(a * Math.Exp(b * x));
     }
 }

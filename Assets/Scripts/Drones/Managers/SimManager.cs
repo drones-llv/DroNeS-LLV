@@ -17,6 +17,8 @@ namespace Drones.Managers
 {
     public class SimManager : MonoBehaviour
     {
+        public static SimulationMode Mode { get; set; } = SimulationMode.Delivery;
+
         #region Fields
         private SimulationData _data;
         private bool _initialized;
@@ -91,6 +93,7 @@ namespace Drones.Managers
             Selectable.Reset();
             Instance = null;
         }
+        
         #endregion
         public static void Quit() => Instance._isQuitting = true;
         public static void SetStatus(SimulationStatus status)
@@ -104,6 +107,7 @@ namespace Drones.Managers
             else
                 UIManager.Dashboard.OnEdit();
         }
+        
         public static void UpdateRevenue(float value) => Instance._data.revenue += value;
         public static void UpdateDelay(float dt)
         {

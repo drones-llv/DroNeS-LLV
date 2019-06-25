@@ -59,7 +59,7 @@ namespace Drones.Objects
         public TimeKeeper.Chronos Deadline => _data.Deadline;
         public TimeKeeper.Chronos CompletedOn => _data.Completed;
         public float PackageWeight => _data.PackageWeight;
-        public float Loss => -_data.CourierService.GetPaid(_EoT);
+        public float Loss => -_data.DeliveryCost.GetPaid(_EoT);
 
         public float ExpectedDuration => _data.ExpectedDuration;
 
@@ -78,6 +78,7 @@ namespace Drones.Objects
             _data.Completed = _EoT;
             _data.Earnings = -Loss;
             var drone = GetDrone();
+            
             var hub = drone != null ? drone.GetHub() : null;
             if (hub != null && !IsDelayed)
             {
@@ -95,13 +96,12 @@ namespace Drones.Objects
             _data.Completed = TimeKeeper.Chronos.Get();
             _data.Status = JobStatus.Complete;
             _data.IsDataStatic = true;
-            _data.Earnings = _data.CourierService.GetPaid(CompletedOn);
+            _data.Earnings = _data.DeliveryCost.GetPaid(CompletedOn);
 
             var drone = GetDrone();
+            drone.DeleteJob(this);
             var hub = drone.GetHub();
-            
-            hub.DeleteJob(this);
-            
+
             if (!IsDelayed) hub.UpdateRevenue(Earnings);
             
             drone.UpdateDelay(Deadline.Timer());
@@ -144,8 +144,8 @@ namespace Drones.Objects
                 pickup = deliveryJob.Pickup,
                 dropoff = deliveryJob.DropOff,
                 start = deliveryJob._data.Created,
-                reward = deliveryJob._data.CourierService.Reward,
-                penalty = -deliveryJob._data.CourierService.Penalty,
+                reward = deliveryJob._data.DeliveryCost.Reward,
+                penalty = -deliveryJob._data.DeliveryCost.Penalty,
                 expectedDuration = deliveryJob._data.ExpectedDuration,
                 stDevDuration = deliveryJob._data.StDevDuration
             };

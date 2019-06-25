@@ -20,6 +20,7 @@ namespace Drones.JobSystem
     [BurstCompile]
     public struct EnergyConsumptionJob : IJobParallelFor
     {
+        #region Constants
         private const float Mass = 22.5f;
         private const float Cd = 0.1f;
         private const float g = 9.81f;
@@ -30,10 +31,10 @@ namespace Drones.JobSystem
         private const float Eff = 1f; // efficiency
         private const float VSpeed = DroneMovementJob.VSPEED;
         private const float HSpeed = DroneMovementJob.HSPEED;
-
+        #endregion
+        
         public float DeltaTime;
         public NativeArray<BatteryData> Energies;
-        
         [ReadOnly] public NativeHashMap<uint, DroneInfo> DroneInfo;
         [WriteOnly] public NativeQueue<uint>.Concurrent DronesToDrop;
 

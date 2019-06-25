@@ -16,23 +16,20 @@ namespace Drones.Data
         public uint UID { get; }
         public bool IsDataStatic { get; set; } = false;
         public float EnergyUse { get; set; }
-
         public uint Drone;
         public readonly uint Hub;
-        public float Earnings;
-        public TimeKeeper.Chronos Assignment;
-        public TimeKeeper.Chronos Completed;
+        public JobStatus Status;
+        public readonly float PackageWeight;
         public readonly float ExpectedDuration;
         public readonly float StDevDuration;
-
-        public JobStatus Status;
-        public Vector3 Dropoff;
-        public TimeKeeper.Chronos Created;
-        public TimeKeeper.Chronos Deadline;
-
         public Vector3 Pickup;
-        public readonly CourierService CourierService;
-        public readonly float PackageWeight;
+        public Vector3 Dropoff;
+        public float Earnings;
+        public TimeKeeper.Chronos Created;
+        public TimeKeeper.Chronos Assignment;
+        public TimeKeeper.Chronos Completed;
+        public TimeKeeper.Chronos Deadline;
+        public readonly DeliveryCost DeliveryCost;
         public float DeliveryAltitude;
 
         public DeliveryData(Hub pickup, Vector3 dropoff, float weight, float penalty) 
@@ -41,11 +38,11 @@ namespace Drones.Data
             Hub = pickup.UID;
             Status = JobStatus.Assigning;
             Created = TimeKeeper.Chronos.Get();
-            Deadline = Created + CourierService.Guarantee;
+            Deadline = Created + DeliveryCost.Guarantee;
             Pickup = pickup.Position;
             Dropoff = LandingZoneIdentifier.Reposition(dropoff);
             PackageWeight = weight;
-            CourierService = new CourierService(Created, WeightToRev(Pricing.US, weight), penalty);
+            DeliveryCost = new DeliveryCost(Created, WeightToRev(Pricing.US, weight), penalty);
             ExpectedDuration = (LateralManhattan() + LateralEuclidean()) / (2 * DroneMovementJob.HSPEED) + (Pickup.y-dropoff.y) / DroneMovementJob.VSPEED;
             StDevDuration = LateralManhattan() / DroneMovementJob.HSPEED - ExpectedDuration + (this.Pickup.y - Dropoff.y) / DroneMovementJob.VSPEED;
         }
@@ -61,7 +58,6 @@ namespace Drones.Data
             v.y = 0;
             return v.magnitude;
         }
-
         private static float WeightToRev(Pricing p, float weight)
         {
             if (p == Pricing.UK)

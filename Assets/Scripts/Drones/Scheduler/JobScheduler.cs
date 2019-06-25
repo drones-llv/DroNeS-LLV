@@ -77,39 +77,6 @@ namespace Drones.Scheduler
 
         public int JobQueueLength => _algorithm.JobQueue.Count;
 
-        public void LoadDroneQueue(IEnumerable<uint> data)
-        {
-            _droneQueue = new Queue<Drone>();
-            foreach (var i in data) AddToQueue((Drone)SimManager.AllDrones[i]);
-        }
-
-        public List<uint> SerializeDrones()
-        {
-            var l = new List<uint>();
-            foreach (var d in _droneQueue)
-                l.Add(d.UID);
-            return l;
-        }
-
-        public void LoadJobQueue(IEnumerable<uint> data)
-        {
-            _algorithm.Complete();
-            NewAlgorithm();
-            foreach (var i in data)
-                _algorithm.JobQueue.Add(SimManager.AllJobs[i]);
-            StartCoroutine(_algorithm.ProcessQueue());
-        }
-
-        public List<uint> SerializeJobs()
-        {
-            var l = new List<uint>();
-            foreach (var job in _algorithm.JobQueue)
-            {
-                l.Add(job.UID);
-            }
-
-            return l;
-        }
 
         public static float EuclideanDist(StrippedJob job) => (job.pickup - job.dropoff).magnitude;
 
@@ -130,11 +97,11 @@ namespace Drones.Scheduler
             var stdev = j.stDevDuration;
 
             var h = (4 * stdev + mu) / STEPS;
-            var expected = CourierService.Evaluate(j, time) * Normal(0, mu, stdev) / 2;
-            expected += CourierService.Evaluate(j, time + 4 * stdev) * Normal(4 * stdev, mu, stdev) / 2;
+            var expected = DeliveryCost.Evaluate(j, time) * Normal(0, mu, stdev) / 2;
+            expected += DeliveryCost.Evaluate(j, time + 4 * stdev) * Normal(4 * stdev, mu, stdev) / 2;
             for (var i = 1; i < STEPS; i++)
             {
-                expected += CourierService.Evaluate(j, time + i * h) * Normal(i * h, mu, stdev);
+                expected += DeliveryCost.Evaluate(j, time + i * h) * Normal(i * h, mu, stdev);
             }
             expected *= h;
 

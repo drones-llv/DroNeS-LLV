@@ -109,4 +109,11 @@
         US,
         UK
     }
+
+    public enum SimulationMode
+    {
+        Emergency,
+        Delivery,
+        Courier
+    }
 }

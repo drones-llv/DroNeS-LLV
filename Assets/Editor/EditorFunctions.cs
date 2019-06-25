@@ -104,12 +104,6 @@ public class EditorFunctions : EditorWindow
                 GroupByTile(tile);
         }
 
-        if (GUILayout.Button("Test Raypath"))
-        {
-            Obstacle.Accessor.Clear();
-            TestRoute();
-        }
-
         if (GUILayout.Button("Test Starpath"))
         {
             Obstacle.Accessor.Clear();
@@ -249,19 +243,6 @@ public class EditorFunctions : EditorWindow
         catch (IndexOutOfRangeException)
         {
             Debug.Log("Error");
-        }
-    }
-
-    private static void TestRoute()
-    {
-        var pathfinder = new Raypath();
-
-        var q = pathfinder.GetRouteTest(GameObject.Find("Start").transform.position, GameObject.Find("End").transform.position);
-        while (q.Count > 0)
-        {
-            var qb = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            qb.transform.position = q.Dequeue();
-            qb.transform.localScale = Vector3.one * 25;
         }
     }
 

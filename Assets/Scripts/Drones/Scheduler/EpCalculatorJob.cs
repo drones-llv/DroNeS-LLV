@@ -25,6 +25,6 @@ namespace Drones.Scheduler
             else Ep[r * n + c] = Input[r].value;
         }
 
-        private TimeKeeper.Chronos FinishTime(StrippedJob job) => CourierService.Inverse(job, JobScheduler.ExpectedValue(job, Time));
+        private TimeKeeper.Chronos FinishTime(StrippedJob job) => DeliveryCost.Inverse(job, JobScheduler.ExpectedValue(job, Time));
     }
 }

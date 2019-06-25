@@ -24,6 +24,7 @@ namespace Drones.Data
             movement = DroneMovement.Idle;
             previousPosition = CurrentPosition;
             isWaiting = true;
+            DeliveryCount = 0;
         }
         public uint UID { get; }
         public bool IsDataStatic { get; set; } = false;
@@ -36,7 +37,7 @@ namespace Drones.Data
             MemberCondition = (IDataSource obj) => { return obj is DeliveryJob; }
         };
         public DroneMovement movement;
-        public uint DeliveryCount => (uint)completedJobs.Count;
+        public uint DeliveryCount;
         public float packageWeight;
         public float distanceTravelled;
         public uint batterySwaps;
@@ -57,6 +58,7 @@ namespace Drones.Data
                 return Mathf.Clamp(a / b, 0, 1);
             }
         }
+        
         public bool isWaiting;
         public Queue<Vector3> waypoints = new Queue<Vector3>();
         public Vector3 previousWaypoint;
