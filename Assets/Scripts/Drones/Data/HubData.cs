@@ -21,6 +21,7 @@ namespace Drones.Data
         public SecureSortedSet<uint, Battery> BatteriesWithNoDrones;
         public Vector3 Position => _source.transform.position;
         public int NumberOfDroneCrashes;
+        public int ActiveDroneCount;
         public int DelayedCompletedJobs;
         public int FailedJobs;
         public int CompletedJobCount;

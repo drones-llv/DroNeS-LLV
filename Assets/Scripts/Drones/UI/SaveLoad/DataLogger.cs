@@ -198,7 +198,7 @@ namespace Drones.UI.SaveLoad
             _hubData[0] = DateTime.Now.ToString(CultureInfo.InvariantCulture);
             _hubData[1] = time.ToCsvFormat();
             _hubData[2] = data.drones.Count.ToString();
-            _hubData[3] = Objects.Drone.ActiveDrones.childCount.ToString();
+            _hubData[3] = data.ActiveDroneCount.ToString();
             _hubData[4] = data.NumberOfDroneCrashes.ToString();
             _hubData[5] = data.batteries.Count.ToString();
             _hubData[6] = hub.GetChargingBatteryCount().ToString();
@@ -225,8 +225,11 @@ namespace Drones.UI.SaveLoad
                 Flush(filepath, ref jobCache);
                 filepath = Path.Combine(_logPath, "Simulation Log.csv");
                 Flush(filepath, ref simCache);
-                filepath = Path.Combine(_logPath, "Hub Log.csv");
-                Flush(filepath, ref hubCache);
+                foreach (var dataSource in SimManager.AllHubs.Values)
+                {
+                    var h = (Objects.Hub)dataSource;
+                    Flush(h.logPath, ref h.dataCache);
+                }
             }
         }
 

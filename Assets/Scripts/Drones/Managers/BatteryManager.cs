@@ -81,7 +81,7 @@ namespace Drones.Managers
 
                 _consumptionJobHandle = energyJob.Schedule(Battery.AllData.Length, 32);
                 _chargeCountJobHandle =
-                    countingJob.Schedule(Hub.ChargingBatteryCounts.Length, 2, _consumptionJobHandle);
+                    countingJob.Schedule(Hub.ChargingBatteryCounts.Length, 1, _consumptionJobHandle);
                 yield return null;
                 _chargeCountJobHandle.Complete();
             }

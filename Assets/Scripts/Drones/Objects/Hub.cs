@@ -281,10 +281,12 @@ namespace Drones.Objects
         {
             _data.DronesWithNoJobs.Remove(drone);
             drone.Deploy();
+            _data.ActiveDroneCount++;
         }
 
         public void OnDroneReturn(Drone drone)
         {
+            _data.ActiveDroneCount--;
             drone.WaitForDeployment();
             GetNewJob(drone);
         }
