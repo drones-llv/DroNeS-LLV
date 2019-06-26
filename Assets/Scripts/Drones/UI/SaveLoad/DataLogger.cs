@@ -78,7 +78,7 @@ namespace Drones.UI.SaveLoad
                                     "Jobs Completed",
                                     "Jobs Delayed",
                                     "Jobs Failed",
-                                    "Revenue",
+                                    "Revenue ($)",
                                     "Delay (s)",
                                     "Audibility (s)",
                                     "Energy (kWh)" };
@@ -116,7 +116,7 @@ namespace Drones.UI.SaveLoad
                     "Jobs Completed",
                     "Completed Jobs Delayed",
                     "Jobs Failed",
-                    "Revenue",
+                    "Income ($)",
                     "Delay (s)",
                     "Audibility (s)",
                     "Energy (kWh)" };
@@ -150,8 +150,8 @@ namespace Drones.UI.SaveLoad
                                     "Standard Deviation (s)",
                                     "Job Euclidean Distance (m)",
                                     "Delivery Altitude (m)",
-                                    "Initial Earnings",
-                                    "Delivery Earnings",
+                                    "Initial Earnings ($)",
+                                    "Delivery Earnings ($)",
                                     "Energy Use (kWh)",
                                     "Failed" };
                 WriteTupleToMemory(ref _instance.jobCache, headers);
@@ -166,9 +166,9 @@ namespace Drones.UI.SaveLoad
             _instance._jobData[6] = data.StDevDuration.ToString("0.00");
             _instance._jobData[7] = (data.Pickup - data.Dropoff).magnitude.ToString("0.00");
             _instance._jobData[8] = data.DeliveryAltitude.ToString("0.00");
-            _instance._jobData[9] = data.Cost.Reward.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
-            _instance._jobData[10] = data.Earnings.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
-            _instance._jobData[11] = UnitConverter.Convert(Energy.kWh, data.EnergyUse);
+            _instance._jobData[9] = data.Cost.Reward.ToString("0.00");
+            _instance._jobData[10] = data.Earnings.ToString("0.00");
+            _instance._jobData[11] = UnitConverter.ConvertValue(Energy.kWh, data.EnergyUse).ToString("0.00");
             _instance._jobData[12] = (data.Status == JobStatus.Failed) ? "YES" : "NO";
             WriteTupleToMemory(ref _instance.jobCache, _instance._jobData);
         }
@@ -185,7 +185,7 @@ namespace Drones.UI.SaveLoad
             _simulationData[7] = data.completedCount.ToString();
             _simulationData[8] = data.delayedJobs.ToString();
             _simulationData[9] = data.failedJobs.ToString();
-            _simulationData[10] = data.revenue.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
+            _simulationData[10] = data.revenue.ToString("0.00");
             _simulationData[11] = (data.totalDelay / data.completedCount).ToString("0.00");
             _simulationData[12] = data.totalAudible.ToString("0.00");
             _simulationData[13] = UnitConverter.Convert(Energy.kWh, data.totalEnergy);
@@ -205,7 +205,7 @@ namespace Drones.UI.SaveLoad
             _hubData[9] = data.CompletedJobCount.ToString();
             _hubData[10] = data.DelayedCompletedJobs.ToString();
             _hubData[11] = data.FailedJobs.ToString();
-            _hubData[12] = data.Earnings.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
+            _hubData[12] = data.Earnings.ToString("0.00");
             _hubData[13] = (data.TotalDelayOfCompletedJobs / data.CompletedJobCount).ToString("0.00");
             _hubData[14] = data.AudibleDuration.ToString("0.00");
             _hubData[15] = UnitConverter.Convert(Energy.kWh, data.EnergyConsumption);

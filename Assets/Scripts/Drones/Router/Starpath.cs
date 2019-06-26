@@ -83,7 +83,7 @@ namespace Drones.Router
         }
         #endregion
 
-        public Starpath(int meter)
+        public Starpath(int meter, uint hub) : base(hub)
         {
             _meter = meter;
             _map = Resources.Load($"Textures/height_bitmap_test_{_meter}m") as Texture2D;
@@ -215,7 +215,6 @@ namespace Drones.Router
                 var t = System.Diagnostics.Stopwatch.StartNew();
                 if (!Navigate()) throw new Exception("Failed");
                 
-                Debug.Log(t.ElapsedMilliseconds / 1000f);
                 ProcessPath();
                 var q = new Queue<Vector3>();
                 for (var i = _reversePath.Count - 1; i >= 0; i--)
@@ -233,10 +232,10 @@ namespace Drones.Router
 
         }
 
-        public override void GetRoute(Drone drone, ref Queue<Vector3> waypoints)
+        public override void GetRoute(Drone drone)
         {
             UpdateGameState();
-            Path = waypoints;
+            Path = drone.WaypointsQueue;
             var job = drone.GetJob();
             _destination =
                 job == null || job.Status == JobStatus.Pickup ? drone.GetHub().Position :

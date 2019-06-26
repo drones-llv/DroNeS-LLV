@@ -248,7 +248,7 @@ public class EditorFunctions : EditorWindow
 
     private static void TestStar()
     {
-        var pathfinder = new Starpath(8);
+        var pathfinder = new Starpath(8, 0);
 
         var q = pathfinder.GetRouteTest(GameObject.Find("Start").transform.position, GameObject.Find("End").transform.position);
         while (q.Count > 0)
@@ -261,7 +261,7 @@ public class EditorFunctions : EditorWindow
 
     private static void TestSmartStar()
     {
-        var pathfinder = new SmartStarpath();
+        var pathfinder = new SmartStarpath(0);
 
 
         var q = pathfinder.GetRouteTest(GameObject.Find("Start").transform.position, GameObject.Find("End").transform.position);

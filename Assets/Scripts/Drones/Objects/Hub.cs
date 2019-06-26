@@ -161,7 +161,7 @@ namespace Drones.Objects
                 return dronePath;
             }
         }
-        public Pathfinder Router => _router ?? (_router = new SmartStarpath());
+        public Pathfinder Router => _router ?? (_router = new SmartStarpath(UID));
 
         public JobScheduler Scheduler
         {
@@ -282,8 +282,14 @@ namespace Drones.Objects
 
         public void OnDroneReturn(Drone drone)
         {
-            _data.DronesWithNoJobs.Add(drone.UID, drone);
             drone.WaitForDeployment();
+            GetNewJob(drone);
+            
+        }
+
+        public void GetNewJob(Drone drone)
+        {
+            _data.DronesWithNoJobs.Add(drone.UID, drone);
             Scheduler.AddToQueue(drone);
         }
 

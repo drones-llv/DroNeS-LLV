@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Drones.Managers;
 using Drones.Objects;
 using UnityEngine;
 
@@ -8,6 +9,7 @@ namespace Drones.Router
     [Serializable]
     public abstract class Pathfinder
     {
+        protected uint OperatorHub;
         private List<Obstacle> _buildings;
         protected static Dictionary<uint, Obstacle> Nfz;
         private static Dictionary<uint, Obstacle> _hubs;
@@ -18,9 +20,9 @@ namespace Drones.Router
         protected const int Rd = 2; // drone Radius
         protected const float HubMaxAlt = 350;
         protected const float HubMinAlt = 210;
-        public static Dictionary<uint, Obstacle> Hubs => _hubs ?? (_hubs = new Dictionary<uint, Obstacle>());
+        protected static Dictionary<uint, Obstacle> Hubs => _hubs ?? (_hubs = new Dictionary<uint, Obstacle>());
 
-        public static Dictionary<uint, Obstacle> NoFlyZones => Nfz ?? (Nfz = new Dictionary<uint, Obstacle>());
+        protected static Dictionary<uint, Obstacle> NoFlyZones => Nfz ?? (Nfz = new Dictionary<uint, Obstacle>());
 
         protected List<Obstacle> Buildings
         {
@@ -37,8 +39,15 @@ namespace Drones.Router
             }
         }
 
-        public abstract void GetRoute(Drone drone, ref Queue<Vector3> waypoints);
+        protected Hub GetHub() => (Hub) SimManager.AllHubs[OperatorHub];
+        
+        public abstract void GetRoute(Drone drone);
 
+        protected Pathfinder(uint hub)
+        {
+            OperatorHub = hub;
+        }
+        
         ~Pathfinder()
         {
             _buildings?.Clear();

@@ -115,25 +115,20 @@ namespace Drones.Objects
             job.AssignDrone(this);
             job.StartDelivery();
 
-            hub.Router.GetRoute(this, ref _data.waypoints);
+            hub.Router.GetRoute(this);
             
-            job.SetAltitude(_data.waypoints.Peek().y);
-            StartMoving();
-            _data.energyOnJobStart = _data.totalEnergy;
+//            StartMoving();
 
             return true;
         }
 
-        public bool AssignJob()
+        public void AssignJob()
         {
             _data.job = 0;
-            if (_data.hub != 0)
-            {
-                var h = GetHub();
-                h.Router.GetRoute(this, ref _data.waypoints);
-            }
-            StartMoving();
-            return true;
+            if (_data.hub == 0) return;
+            var h = GetHub();
+            h.Router.GetRoute(this);
+//            StartMoving();
         }
 
         public float DeltaEnergy() => _data.totalEnergy - _data.energyOnJobStart;
@@ -197,7 +192,7 @@ namespace Drones.Objects
         #endregion
 
         #region Drone Properties
-        public DroneCollisionController CollisionController
+        private DroneCollisionController CollisionController
         {
             get
             {
@@ -208,11 +203,12 @@ namespace Drones.Objects
                 return collisionController;
             }
         }
-        public bool InHub => CollisionController.InHub;
+        private bool InHub => CollisionController.InHub;
         public DroneMovement Movement => _data.movement;
         public Vector3 Direction => _data.Direction;
         public float JobProgress => _data.JobProgress;
         public SecureSortedSet<uint, IDataSource> JobHistory => _data.completedJobs;
+        public Queue<Vector3> WaypointsQueue => _data.waypoints;
         public Vector3 Waypoint => _data.currentWaypoint;
         public Vector3 PreviousPosition
         {
@@ -254,10 +250,12 @@ namespace Drones.Objects
                 _data.movement == DroneMovement.Descend && position.y <= Waypoint.y;
         }
 
-        private void StartMoving()
+        public void StartMoving()
         {
+            if (_data.job != 0) GetJob().SetAltitude(_data.waypoints.Peek().y);
             if (InHub) GetHub().AddToDeploymentQueue(this);
             StartCoroutine(Horizontal());
+            _data.energyOnJobStart = _data.totalEnergy;
         }
 
         public void Drop()
@@ -307,6 +305,7 @@ namespace Drones.Objects
 
         private bool ReachedJob()
         {
+            if (_data.job == 0) return false;
             var d = GetJob().DropOff;
             var position = transform.position;
             d.y = position.y;
