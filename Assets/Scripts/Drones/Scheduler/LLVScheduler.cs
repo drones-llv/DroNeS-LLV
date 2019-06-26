@@ -12,7 +12,7 @@ namespace Drones.Scheduler
 {
     public class LLVScheduler : IScheduler
     {
-        private Hub _owner;
+        private readonly Hub _owner;
         private NativeList<LLVStruct> _jobs;
         private NativeArray<float> _loss;
         private NativeArray<float> _duration;

@@ -70,6 +70,7 @@ namespace Drones.Scheduler
                 var n = FindMax(ref calculator.Ep);
                 var end = _jobs.Length - 1;
 
+
                 var j = JobQueue[n];
                 var b = j.Status == JobStatus.Failed;
                 if (b || drone.AssignJob(j))

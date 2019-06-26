@@ -130,7 +130,7 @@ namespace Drones.UI.Drone
         {
             var job = ((RetiredDrone)Source).GetJob();
             var rd = (RetiredDroneData)data;
-            Data[0].SetField(Source);
+            Data[0].SetField(((RetiredDrone)Source).Name);
             Data[1].SetField(rd.hub);
             Data[2].SetField(rd.waypoint.ToStringXZ());
             Data[3].SetField(rd.destroyedTime);

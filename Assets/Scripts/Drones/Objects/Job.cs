@@ -16,7 +16,7 @@ namespace Drones.Objects
     {
         private static readonly TimeKeeper.Chronos _EoT = new TimeKeeper.Chronos(int.MaxValue - 100, 23, 59, 59.99f);
         private static TimeKeeper.Chronos _clock = TimeKeeper.Chronos.Get();
-
+        
         public Job(Hub pickup, Vector3 dropoff)
         {
             _data = new JobData(pickup, dropoff);
@@ -158,7 +158,7 @@ namespace Drones.Objects
             }
             return 1.00f;
         }
-        
+
         public static explicit operator SchedulingData(Job job)
         {
             var j = new SchedulingData

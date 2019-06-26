@@ -7,7 +7,7 @@ namespace Drones.Utils
 {
     public class AudioSensor : MonoBehaviour
     {
-        private static WaitUntil WaitForUnpause = new WaitUntil(() => TimeKeeper.TimeSpeed != TimeSpeed.Pause);
+        private static readonly WaitUntil _WaitForUnpause = new WaitUntil(() => TimeKeeper.TimeSpeed != TimeSpeed.Pause);
         private bool _active = false;
 
         private Drone _drone;
@@ -51,7 +51,7 @@ namespace Drones.Utils
         {
             _active = true;
             _time = TimeKeeper.Chronos.Get();
-            yield return WaitForUnpause;
+            yield return _WaitForUnpause;
             while (_active)
             {
                 _time.Now();

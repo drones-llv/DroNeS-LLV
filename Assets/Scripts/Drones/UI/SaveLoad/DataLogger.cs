@@ -25,6 +25,8 @@ namespace Drones.UI.SaveLoad
             return _instance;
         }
 
+        private void OnDisable() => Dump();
+
         public string session;
         public static bool IsLogging { get; set; } = true;
         public static float LoggingPeriod { get; set; } = 60;
@@ -170,7 +172,6 @@ namespace Drones.UI.SaveLoad
             _instance._jobData[10] = data.Earnings.ToString("0.00");
             _instance._jobData[11] = UnitConverter.ConvertValue(Energy.kWh, data.EnergyUse).ToString("0.00");
             _instance._jobData[12] = (data.Status == JobStatus.Failed) ? "YES" : "NO";
-
             WriteTupleToMemory(ref _instance.jobCache, _instance._jobData);
         }
         
@@ -239,15 +240,13 @@ namespace Drones.UI.SaveLoad
             data = "";
         }
 
-        public static void Dump()
+        private static void Dump()
         {
             if (!IsLogging) return;
             var filepath = Path.Combine(_instance.LogPath, "Job Log.csv");
             Flush(filepath, ref _instance.jobCache);
             filepath = Path.Combine(_instance.LogPath, "Hub Log.csv");
             Flush(filepath, ref _instance.hubCache);
-            //filepath = Path.Combine(_instance.LogPath, "Simulation Log.csv");
-            //Flush(filepath, ref _instance.simCache);
         }
     }
 

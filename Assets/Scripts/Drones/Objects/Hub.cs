@@ -211,7 +211,7 @@ namespace Drones.Objects
             _data.EnergyConsumption += dE;
             SimManager.UpdateEnergy(dE);
         }
-        
+
         internal void CompleteJob(Job job)
         {
             _data.incompleteJobs.Remove(job);
@@ -276,7 +276,6 @@ namespace Drones.Objects
         public void DeployDrone(Drone drone)
         {
             _data.DronesWithNoJobs.Remove(drone);
-            if (!GetBatteryForDrone(drone)) return;
             drone.Deploy();
         }
 
@@ -284,7 +283,6 @@ namespace Drones.Objects
         {
             drone.WaitForDeployment();
             GetNewJob(drone);
-            
         }
 
         public void GetNewJob(Drone drone)

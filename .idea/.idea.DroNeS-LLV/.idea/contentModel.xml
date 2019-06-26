@@ -655,6 +655,7 @@
               <e p="LLVStruct.cs" t="Include" />
               <e p="LLVSumJob.cs" t="Include" />
               <e p="SchedulingData.cs" t="Include" />
+              <e p="StrippedJob.cs" t="Include" />
             </e>
             <e p="Singletons.cs" t="Include" />
             <e p="StartScreen" t="Include">

@@ -2,6 +2,7 @@
 using UnityEngine.Networking;
 using UnityEngine.UI;
 using System.Collections;
+using Drones.Managers;
 using Drones.Mapbox;
 using Drones.Objects;
 using Drones.Scheduler;
@@ -34,7 +35,7 @@ namespace Drones.StartScreen
         [SerializeField] private Button back;
         [SerializeField] private Button reset;
         [SerializeField] private TMP_Dropdown scheduler;
-
+        [SerializeField] private TMP_Dropdown simulationMode;
         public Slider BatteryToDroneRatioSlider
         {
             get
@@ -43,7 +44,6 @@ namespace Drones.StartScreen
                 return batteryToDroneRatioSlider;
             }
         }
-
 
         public Toggle LogToggle
         {
@@ -115,10 +115,19 @@ namespace Drones.StartScreen
         {
             get
             {
-                if (scheduler) scheduler = GetComponentInChildren<TMP_Dropdown>();
+                if (scheduler == null) scheduler = GetComponentInChildren<TMP_Dropdown>();
                 return scheduler;
             }
         }
+        
+        public TMP_Dropdown SimMode
+        {
+            get
+            {
+                if (simulationMode == null) simulationMode = GetComponentInChildren<TMP_Dropdown>();
+                return simulationMode;
+            }
+        } 
 
         private void Awake()
         {
@@ -153,6 +162,12 @@ namespace Drones.StartScreen
             {
                 JobScheduler.ALGORITHM = (Scheduling)Enum.Parse(typeof(Scheduling), Scheduler.options[arg0].text);
             });
+            
+            SimMode.onValueChanged.AddListener((int arg0) =>
+            {
+                SimManager.Mode =
+                    (SimulationMode) Enum.Parse(typeof(SimulationMode), SimMode.options[arg0].text);
+            });
 
             Back.onClick.AddListener(GoBack);
             Reset.onClick.AddListener(OnReset);
@@ -166,6 +181,7 @@ namespace Drones.StartScreen
             LogPeriod.onValueChanged.Invoke(DataLogger.LoggingPeriod);
             BatteryToDroneRatioSlider.onValueChanged.Invoke(Hub.BatteryPerDrone);
             Scheduler.onValueChanged.Invoke((int)JobScheduler.ALGORITHM);
+            SimMode.onValueChanged.Invoke((int)SimManager.Mode);
         }
 
         private static void GoBack() => StartScreen.ShowMain();
@@ -178,12 +194,14 @@ namespace Drones.StartScreen
             LogPeriod.value = 60;
             BatteryToDroneRatioSlider.value = 300;
             Scheduler.value = (int)Scheduling.FCFS;
+            SimMode.value = (int) SimulationMode.Delivery;
             RenderLimit.onValueChanged.Invoke(RenderLimit.value);
             RenderToggle.onValueChanged.Invoke(RenderToggle.isOn);
             LogToggle.onValueChanged.Invoke(LogToggle.isOn);
             LogPeriod.onValueChanged.Invoke(LogPeriod.value);
             BatteryToDroneRatioSlider.onValueChanged.Invoke(BatteryToDroneRatioSlider.value);
             Scheduler.onValueChanged.Invoke(Scheduler.value);
+            SimMode.onValueChanged.Invoke(SimMode.value);
         }
 
     }

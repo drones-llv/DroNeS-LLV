@@ -32,7 +32,7 @@ namespace Drones.Data
         public readonly float StDevDuration;
         public float DeliveryAltitude;
 
-        public JobData(Hub pickup, Vector3 dropoff)
+        public JobData(Hub pickup, Vector3 dropoff) 
         {
             UID = ++_count;
             
@@ -47,7 +47,6 @@ namespace Drones.Data
             StDevDuration = LateralManhattan() / DroneMovementJob.HorizontalSpeed - ExpectedDuration + (Pickup.y - Dropoff.y) / DroneMovementJob.VerticalSpeed;
             
             Deadline = Cost.Start + Cost.Guarantee;
-            
         }
 
         private float LateralManhattan()

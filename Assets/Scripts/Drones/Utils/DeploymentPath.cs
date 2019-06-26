@@ -47,7 +47,7 @@ namespace Drones.Utils
             }
         }
 
-        public float period = 1.0f;
+        public float period = 0.1f;
         private static int AltitudeCompare(Drone a, Drone b)
         {
             if (a.Waypoint.y < b.Waypoint.y) return -1;
@@ -115,7 +115,7 @@ namespace Drones.Utils
             {
                 time.Now();
                 while (time.Timer() < period) yield return null;
-                if (!IsClear || _deploymentQueue.Count <= 0) continue;
+                while (!IsClear || _deploymentQueue.Count <= 0) yield return null;
                 var outgoing = _deploymentQueue.Remove();
                 _inQueue.Remove(outgoing.UID);
                 if (outgoing.InPool) continue;

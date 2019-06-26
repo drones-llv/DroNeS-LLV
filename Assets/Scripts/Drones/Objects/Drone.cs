@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Drones.Data;
+using Drones.Event_System;
 using Drones.JobSystem;
 using Drones.Managers;
 using Drones.Scheduler;
@@ -63,6 +64,9 @@ namespace Drones.Objects
             transform.SetParent(parent);
             gameObject.SetActive(true);
             InPool = false;
+            _waitForAltitude = new WaitUntil(ReachedAltitude);
+            _waitForWaypoint = new WaitUntil(ReachedWaypoint);
+            _waitForDeployment = new WaitUntil(() => !_data.isWaiting);
         }
 
         public bool InPool { get; private set; }
@@ -98,6 +102,7 @@ namespace Drones.Objects
         {
             var i = 0;
             var hub = GetHub();
+
             while (Mathf.Min(job.ExpectedDuration * 2, 0.9f * job.Guarantee) >
                    GetBattery().Charge * job.Guarantee)
             {
@@ -114,9 +119,8 @@ namespace Drones.Objects
             _data.job = job.UID;
             job.AssignDrone(this);
             job.StartDelivery();
-            
+
             hub.Router.GetRoute(this);
-            
             return true;
         }
 
@@ -153,6 +157,10 @@ namespace Drones.Objects
         public Battery GetBattery() => SimManager.AllBatteries[_data.battery];
         public void WaitForDeployment() => _data.isWaiting = true;
         public void Deploy() => _data.isWaiting = false;
+
+        private WaitUntil _waitForAltitude;
+        private WaitUntil _waitForWaypoint;
+        private WaitUntil _waitForDeployment;
 
         public void UpdateDelay(float dt)
         {
@@ -237,7 +245,7 @@ namespace Drones.Objects
             var a = transform.position;
             var b = _data.currentWaypoint;
             a.y = b.y = 0;
-            return Vector3.Distance(a, b) < 0.25f;
+            return Vector3.Distance(a, b) < 0.1f;
         }
 
         private bool ReachedAltitude()
@@ -250,54 +258,43 @@ namespace Drones.Objects
         public void StartMoving()
         {
             if (_data.job != 0) GetJob().SetAltitude(_data.waypoints.Peek().y);
-            if (InHub) GetHub().AddToDeploymentQueue(this);
-            StartCoroutine(Horizontal());
+            if (InHub) GetHub().DeployDrone(this);//.AddToDeploymentQueue(this);
+            StartCoroutine(MovementUpdate());
             _data.energyOnJobStart = _data.totalEnergy;
         }
 
         public void Drop()
         {
+            DebugLog.New($"{Name} died with move type {_data.movement} from altitude {transform.position.y}");
             _data.movement = DroneMovement.Drop;
             if (AbstractCamera.Followee == gameObject)
                 AbstractCamera.ActiveCamera.BreakFollow();
         }
 
-        private IEnumerator Horizontal()
+        private IEnumerator MovementUpdate()
         {
-            var wait = new WaitUntil(ReachedWaypoint);
+            _data.movement = DroneMovement.Idle;
+            yield return _waitForDeployment;
             while (_data.waypoints.Count > 0)
             {
                 NextWaypoint();
                 if (Mathf.Abs(transform.position.y - Waypoint.y) > 0.5f)
                 {
                     _data.movement = (transform.position.y > Waypoint.y) ? DroneMovement.Descend : DroneMovement.Ascend;
-                    StartCoroutine(Vertical());
-                    yield break;
+                    yield return _waitForAltitude;
+                    if (!InHub && transform.position.y < 10f && ReachedJob())
+                    {
+                        _data.movement = DroneMovement.Hover;
+                        GetJob().CompleteJob();
+                        yield break;
+                    }
                 }
                 _data.movement = DroneMovement.Horizontal;
-                yield return wait;
+                yield return _waitForWaypoint;
                 _data.movement = DroneMovement.Hover;
             }
-            if (!InHub) yield break;
-            _data.movement = DroneMovement.Horizontal;
-            yield return wait;
             _data.movement = DroneMovement.Idle;
             GetHub().OnDroneReturn(this);
-        }
-
-        private IEnumerator Vertical()
-        {
-            yield return new WaitUntil(ReachedAltitude);
-            _data.movement = DroneMovement.Hover;
-            if (!InHub)
-            {
-                if (transform.position.y < 10f && ReachedJob()) 
-                    GetJob().CompleteJob();
-                else
-                    StartCoroutine(Horizontal());
-                yield break;
-            }
-            StartCoroutine(Horizontal());
         }
 
         private bool ReachedJob()

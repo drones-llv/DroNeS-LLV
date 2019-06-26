@@ -43,6 +43,7 @@ namespace Drones.JobSystem
             var battery = Energies[i];
             if (!DroneInfo.TryGetValue(battery.UID, out var info) || info.moveType == DroneMovement.Idle)
             {
+                battery.status = BatteryStatus.Idle;
                 battery.DeltaEnergy = 0;
                 Charge(ref battery);
             }
@@ -69,6 +70,9 @@ namespace Drones.JobSystem
                         break;
                     case DroneMovement.Hover:
                         break;
+                    case DroneMovement.Idle:
+                        power = 0;
+                        break;
                     default:
                         break;
                 }
@@ -94,7 +98,6 @@ namespace Drones.JobSystem
         {
             if (info.charge > BatteryData.ChargeTarget * info.capacity)
             {
-                info.status = BatteryStatus.Idle;
                 return;
             }
             info.status = BatteryStatus.Charge;

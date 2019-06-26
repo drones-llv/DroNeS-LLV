@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using Drones.Event_System;
 using Drones.Managers;
 using Drones.Objects;
 using UnityEngine;
 using Utils;
-using Debug = UnityEngine.Debug;
-
 // ReSharper disable ForCanBeConvertedToForeach
 
 namespace Drones.Router
@@ -25,8 +21,6 @@ namespace Drones.Router
         private float[] _hubAlts;
         private float[] _altitudes;
         private int[] _assigned;
-        private readonly Queue<Drone> _droneQueue;
-        private readonly WaitUntil _waitForPopulation;
         private readonly PriorityQueue<Vertex> _frontier; // TBA
         private readonly Dictionary<Vertex, float> _costSoFar; // TBA
         private readonly HashSet<Vertex> _invalidVertices;
@@ -40,7 +34,6 @@ namespace Drones.Router
         private Vector3 _destination;
         private RaycastHit _info;
         private Vertex _end;
-        private readonly Stopwatch _clock;
         #endregion
 
         #region Properties
@@ -81,20 +74,15 @@ namespace Drones.Router
         }
         #endregion
 
-        public SmartStarpath(uint hub) : base(hub) 
+        public SmartStarpath(uint hub) : base(hub)
         {
-            _clock = Stopwatch.StartNew();
             _frontier = new PriorityQueue<Vertex>();
             _costSoFar = new Dictionary<Vertex, float>();
             _cameFrom = new Dictionary<Vertex, Vertex>();
             _invalidVertices = new HashSet<Vertex>();
             _visitedObstacles = new HashSet<Obstacle>();
             _neighbours = new List<Vertex>{Capacity = 128};
-            _droneQueue = new Queue<Drone>();
-            _waitForPopulation = new WaitUntil(() => _droneQueue.Count > 0);
             if (Buildings != null) { }
-
-            GetHub().StartCoroutine(NavigateDrones());
         }
 
         private int CountAt(int i)
@@ -133,9 +121,9 @@ namespace Drones.Router
             _destination.y = _chosenAltitude;
         }
 
-        private void IncreaseAltitude()
+        private void MaxAltitude()
         {
-            _chosenAltitude += 20;
+            _chosenAltitude = HubMaxAlt;
             _origin.y = _chosenAltitude;
             _destination.y = _chosenAltitude;
         }
@@ -169,58 +157,50 @@ namespace Drones.Router
                 return Path;
             }
         }
-
-        private IEnumerator NavigateDrones()
-        {
-            while (true)
-            {
-                yield return _waitForPopulation;
-                var drone = _droneQueue.Dequeue();
-                if (drone.InPool) continue;
-                UpdateGameState();
-                Path = drone.WaypointsQueue;
-                var job = drone.GetJob();
-                _destination =
-                    job == null || job.Status == JobStatus.Pickup ? drone.GetHub().Position :
-                    job.Status == JobStatus.Delivering ? job.DropOff :
-                    drone.GetHub().Position;
-                _origin = drone.transform.position;
-                _hubReturn = job == null || job.Status == JobStatus.Pickup;
-                ChooseAltitude();
-                while (!AStarSearch() && _chosenAltitude < HubMaxAlt)
-                {
-                    if (_clock.ElapsedMilliseconds > 16)
-                    {
-                        yield return null;
-                        _clock.Restart();
-                    }
-                    IncreaseAltitude();
-                }
-                if (_chosenAltitude < HubMaxAlt)
-                {
-                    drone.StartMoving();
-                    yield return null;
-                    continue;
-                }
-                if (!_hubReturn)
-                {
-                    if (job != null)
-                    {
-                        DebugLog.New($"Failed to route {drone}, failing job {job.Name}");
-                        job.FailJob();
-                    }
-                    GetHub().GetNewJob(drone);
-                }
-                DebugLog.New($"Failed to route {drone}, not on job, flying at 500m");
-                _chosenAltitude = 500;
-                _origin.y = _chosenAltitude;
-                _destination.y = _chosenAltitude;
-                GeneratePath(ref _end);
-            }
-        }
+        
         public override void GetRoute(Drone drone)
         {
-            _droneQueue.Enqueue(drone);
+            UpdateGameState();
+            Path = drone.WaypointsQueue;
+            var job = drone.GetJob();
+            _destination =
+                job == null || job.Status == JobStatus.Pickup ? GetHub().Position :
+                job.Status == JobStatus.Delivering ? job.DropOff :
+                GetHub().Position;
+            _origin = drone.transform.position;
+            _hubReturn = job == null || job.Status == JobStatus.Pickup;
+            
+            ChooseAltitude();
+            var i = 0;
+            while (i < 2)
+            {
+                if (AStarSearch())
+                {
+                    drone.StartMoving();
+                    return;
+                }
+                MaxAltitude();
+                i++;
+            }
+            // Log Failed
+            FailSafe(drone, job);
+        }
+
+        private void FailSafe(Drone drone, Job job)
+        {
+            if (!_hubReturn)
+            {
+                if (job != null)
+                {
+                    DebugLog.New($"Failed to route {drone}, failing job {job.Name}");
+                    job.FailJob();
+                }
+                GetHub().GetNewJob(drone);
+            }
+            DebugLog.New($"Failed to route {drone}, not on job");
+            MaxAltitude();
+            GeneratePath(ref _end);
+            drone.StartMoving();
         }
 
         private void Initialize()
@@ -230,6 +210,8 @@ namespace Drones.Router
             _costSoFar.Clear();
             _cameFrom.Clear();
             _invalidVertices.Clear();
+            _origin.y = _chosenAltitude;
+            _destination.y = _chosenAltitude;
             _end = new Vertex{point = _destination, index = -1, owner = int.MinValue};
             _frontier.Enqueue(_end, 0);
             _costSoFar.Add(_end, 0);

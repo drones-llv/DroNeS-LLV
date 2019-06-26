@@ -9,26 +9,23 @@ namespace Drones.Objects
 {
     public class JobGenerator
     {
-        readonly Hub _owner;
+        private readonly Hub _owner;
         private Vector3 Position => _owner.Position;
         private float _lambda;
 
         private readonly WaitUntil _capper;
-
         public JobGenerator(Hub hub, float lambda)
         {
             _owner = hub;
             _lambda = lambda;
+            _capper = new WaitUntil(() => _owner.Scheduler.JobQueueLength < 1.5f * _owner.Drones.Count);
         }
 
         public void SetLambda(float l) => _lambda = l;
-
+        
         public IEnumerator Generate()
         {
-            var wait = new WaitForFixedUpdate();
-            var wait2 = new WaitUntil(() => _owner.Scheduler.JobQueueLength < Mathf.Min(1.5f * _owner.Drones.Count, 190));
             var time = TimeKeeper.Chronos.Get();
-            var watch = Stopwatch.StartNew();
             while (true)
             {
                 time.Now();
@@ -37,26 +34,25 @@ namespace Drones.Objects
                 var dt = -Mathf.Log(1 - f) / _lambda;
                 
                 while (time.Timer() < dt) yield return null;
-
-                watch.Restart();
+                
                 var v = Position;
                 v.y = 200;
-                var d = Random.insideUnitSphere * (SimManager.Mode == SimulationMode.Delivery ? 7000 : 3500);
+                Vector3 d = Random.insideUnitCircle * (SimManager.Mode == SimulationMode.Delivery ? 7000 : 3500);
+                d.z = d.y;
                 d.y = 200;
                 while (!Physics.Raycast(new Ray(d, Vector3.down), 200, 1 << 13) || Vector3.Distance(v, d) < 100)
                 {
-                    d = Random.insideUnitSphere * (SimManager.Mode == SimulationMode.Delivery ? 7000 : 3500);
+                    d = Random.insideUnitCircle * (SimManager.Mode == SimulationMode.Delivery ? 7000 : 2750);
+                    d.z = d.y;
                     d.y = 200;
-                    if (watch.ElapsedMilliseconds  < 16) continue;
+                    if (TimeKeeper.DeltaFrame() < 16) continue;
                     yield return null;
-                    watch.Restart();
                 }
                 d.y = 0;
                 var job = new Job(_owner, d);
 
                 _owner.OnJobCreate(job);
-                yield return wait2;
-                watch.Restart();
+                yield return _capper;
             }
 
         }
