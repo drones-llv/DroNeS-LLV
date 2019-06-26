@@ -161,14 +161,14 @@ namespace Drones.UI.Drone
             Data[8].SetField(job?.DropOff.ToStringXZ());
             Data[9].SetField(job?.Deadline.ToString());
             Data[10].SetField(UnitConverter.Convert(Mass.g, job?.PackageWeight));
-            Data[11].SetField(job?.Earnings.ToString("C", CultureInfo.CurrentCulture));
+            Data[11].SetField(UnitConverter.Convert(Currency.USD, job?.Earnings));
             Data[12].SetField(drone?.JobProgress.ToString("0.000"));
 
             Data[13].SetField(drone.DeliveryCount);
             Data[14].SetField(UnitConverter.Convert(Mass.kg, drone.packageWeight));
             Data[15].SetField(UnitConverter.Convert(Length.km, drone.distanceTravelled));
 
-            float tmp = UnitConverter.ConvertValue(Mass.kg, drone.packageWeight);
+            var tmp = UnitConverter.ConvertValue(Mass.kg, drone.packageWeight);
             tmp /= UnitConverter.ConvertValue(Length.km, drone.distanceTravelled);
 
             Data[16].SetField(tmp.ToString("0.000") + " " + Mass.kg + "/" + Length.km);

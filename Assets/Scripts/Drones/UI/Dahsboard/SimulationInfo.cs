@@ -46,7 +46,7 @@ namespace Drones.UI.Dahsboard
             _Fields[5].SetField(data.delayedJobs.ToString());
             _Fields[6].SetField(data.failedJobs.ToString());
             _Fields[7].SetField(data.hubs.Count.ToString());
-            _Fields[8].SetField(data.revenue.ToString("C", CultureInfo.CurrentCulture));
+            _Fields[8].SetField(UnitConverter.Convert(Currency.USD, data.revenue));
             _Fields[9].SetField(UnitConverter.Convert(Chronos.min, data.totalDelay / data.completedCount));
             _Fields[10].SetField(UnitConverter.Convert(Energy.kWh, data.totalEnergy));
             _Fields[11].SetField(UnitConverter.Convert(Chronos.min, data.totalAudible));

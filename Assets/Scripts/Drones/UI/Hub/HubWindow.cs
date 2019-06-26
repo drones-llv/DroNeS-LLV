@@ -178,7 +178,7 @@ namespace Drones.UI.Hub
 
         private void GetDrone()
         {
-            for (int i = 0; i < 10; i++)
+            for (var i = 0; i < 10; i++)
                 ((Objects.Hub)Source).BuyDrone(); 
         }
 
@@ -203,7 +203,7 @@ namespace Drones.UI.Hub
             Data[8].SetField(hub.CompletedJobCount.ToString());
             Data[9].SetField(hub.DelayedCompletedJobs.ToString());
             Data[10].SetField(hub.FailedJobs.ToString());
-            Data[11].SetField(hub.Earnings.ToString("C", CultureInfo.CurrentCulture));
+            Data[11].SetField(UnitConverter.Convert(Currency.USD, hub.Earnings));
             Data[12].SetField(UnitConverter.Convert(Chronos.min, hub.TotalDelayOfCompletedJobs / hub.CompletedJobCount));
             Data[13].SetField(UnitConverter.Convert(Energy.kWh, hub.EnergyConsumption));
             Data[14].SetField(UnitConverter.Convert(Chronos.min, hub.AudibleDuration));

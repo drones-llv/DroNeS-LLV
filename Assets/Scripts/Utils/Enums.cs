@@ -110,6 +110,12 @@
         UK
     }
 
+    public enum Currency
+    {
+        USD,
+        GBP
+    }
+
     public enum SimulationMode
     {
         Emergency,

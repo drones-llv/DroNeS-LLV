@@ -8,6 +8,7 @@ using Drones.Objects;
 using Drones.Scheduler;
 using Drones.UI.SaveLoad;
 using TMPro;
+using UnityEngine.Experimental.PlayerLoop;
 using Utils;
 
 namespace Drones.StartScreen
@@ -32,6 +33,7 @@ namespace Drones.StartScreen
         [SerializeField] private Toggle logToggle;
         [SerializeField] private Slider logPeriod;
         [SerializeField] private Slider batteryToDroneRatioSlider;
+        [SerializeField] private Toggle invisible;
         [SerializeField] private Button back;
         [SerializeField] private Button reset;
         [SerializeField] private TMP_Dropdown scheduler;
@@ -75,6 +77,18 @@ namespace Drones.StartScreen
                     renderToggle = GetComponentsInChildren<Toggle>(true)[2];
                 }
                 return renderToggle;
+            }
+        }
+        
+        public Toggle PotatoToggle
+        {
+            get
+            {
+                if (invisible == null)
+                {
+                    invisible = GetComponentsInChildren<Toggle>(true)[3];
+                }
+                return invisible;
             }
         }
 
@@ -139,6 +153,8 @@ namespace Drones.StartScreen
                 RLDisplay.SetText(value.ToString());
                 CustomMap.FilterHeight = value;
             });
+            
+            PotatoToggle.onValueChanged.AddListener((bool value) => { CustomMap.PotatoMode = value; });
 
             LogToggle.onValueChanged.AddListener((bool value) =>
             {
@@ -177,6 +193,7 @@ namespace Drones.StartScreen
         {
             RenderLimit.onValueChanged.Invoke(RenderLimit.value);
             RenderToggle.onValueChanged.Invoke(RenderToggle.isOn);
+            PotatoToggle.onValueChanged.Invoke(PotatoToggle.isOn);
             LogToggle.onValueChanged.Invoke(DataLogger.IsLogging);
             LogPeriod.onValueChanged.Invoke(DataLogger.LoggingPeriod);
             BatteryToDroneRatioSlider.onValueChanged.Invoke(Hub.BatteryPerDrone);
@@ -189,9 +206,10 @@ namespace Drones.StartScreen
         private void OnReset()
         {
             RenderToggle.isOn = true;
-            RenderLimit.value = 0;
+            RenderLimit.value = 60;
             LogToggle.isOn = true;
             LogPeriod.value = 60;
+            PotatoToggle.isOn = false;
             BatteryToDroneRatioSlider.value = 300;
             Scheduler.value = (int)Scheduling.FCFS;
             SimMode.value = (int) SimulationMode.Delivery;

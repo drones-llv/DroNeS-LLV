@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using Drones.Data;
 using Drones.JobSystem;
 using Drones.Managers;
@@ -26,7 +27,9 @@ namespace Drones.Objects
             ChargingBatteryCounts.RemoveAtSwapBack(j);
             ((Hub)SimManager.AllHubs[ChargingBatteryCounts[j].Uid])._accessIndex = j;
         }
-        
+
+        public string logPath;
+        public string dataCache;
         private int _accessIndex;
         private static uint Count { get; set; }
         public static void Reset()
@@ -112,7 +115,8 @@ namespace Drones.Objects
             InPool = false;
             UID = ++Count;
             _data = new HubData(this);
-            
+            logPath = Path.Combine(DataLogger.LogPath, $"{Name} Log.csv");
+            dataCache = "";
             BatteryManager.ChargeCountJobHandle.Complete();
             _accessIndex = ChargingBatteryCounts.Length;
             ChargingBatteryCounts.Add(new ChargeCount

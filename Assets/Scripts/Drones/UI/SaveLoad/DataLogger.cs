@@ -20,7 +20,7 @@ namespace Drones.UI.SaveLoad
             _instance = new GameObject("DataLogger").AddComponent<DataLogger>();
             _instance.StopAllCoroutines();
             _instance.session = JobScheduler.ALGORITHM + " " + SimManager.Name.Replace("/", "-").Replace(":", "-");
-            _instance.LogPath = Path.Combine(SaveLoadManager.ExportPath, _instance.session);
+            _instance._logPath = Path.Combine(SaveLoadManager.ExportPath, _instance.session);
             Log();
             return _instance;
         }
@@ -37,12 +37,13 @@ namespace Drones.UI.SaveLoad
         public string simCache = "";
         public string jobCache = "";
         public string hubCache = "";
-        private string LogPath { get; set; }
+        private string _logPath;
+        public static string LogPath => _instance._logPath;
 
         private static void Log()
         {
             _instance.StopAllCoroutines();
-            //_instance.StartCoroutine(_instance.SimLog());
+            _instance.StartCoroutine(_instance.SimLog());
             _instance.StartCoroutine(_instance.Logging());
         }
 
@@ -66,8 +67,8 @@ namespace Drones.UI.SaveLoad
         {
             if (!IsLogging) yield break;
             yield return new WaitUntil(() => TimeKeeper.TimeSpeed != TimeSpeed.Pause);
-            if (!Directory.Exists(LogPath)) Directory.CreateDirectory(LogPath);
-            var filepath = Path.Combine(LogPath, "Simulation Log.csv");
+            if (!Directory.Exists(_logPath)) Directory.CreateDirectory(_logPath);
+            var filepath = Path.Combine(_logPath, "Simulation Log.csv");
             if (!File.Exists(filepath))
             {
                 string[] headers = {"Timestamp", 
@@ -102,9 +103,8 @@ namespace Drones.UI.SaveLoad
         {
             if (!IsLogging) yield break;
             yield return new WaitUntil(() => TimeKeeper.TimeSpeed != TimeSpeed.Pause);
-            if (!Directory.Exists(LogPath)) Directory.CreateDirectory(LogPath);
-            var filepath = Path.Combine(LogPath, "Hub Log.csv");
-            if (!File.Exists(filepath))
+            if (!Directory.Exists(_logPath)) Directory.CreateDirectory(_logPath);
+            if (!File.Exists(hub.logPath))
             {
                 string[] headers = {"Timestamp", 
                     "time (s)",
@@ -122,15 +122,15 @@ namespace Drones.UI.SaveLoad
                     "Delay (s)",
                     "Audibility (s)",
                     "Energy (kWh)" };
-                WriteTupleToMemory(ref hubCache, headers);
-                Flush(filepath, ref hubCache);
+                WriteTupleToMemory(ref hub.dataCache, headers);
+                Flush(hub.logPath, ref hub.dataCache);
             }
             var time = TimeKeeper.Chronos.Get();
             var wait = new WaitUntil(() => time.Timer() > LoggingPeriod);
             while (true)
             {
                 hub.GetData(this, time);
-                WriteTupleToMemory(ref hubCache, _hubData);
+                WriteTupleToMemory(ref hub.dataCache, _hubData);
                 yield return wait;
                 time.Now();
             }
@@ -139,8 +139,8 @@ namespace Drones.UI.SaveLoad
         public static void LogJob(JobData data)
         {
             if (!IsLogging) return;
-            if (!Directory.Exists(_instance.LogPath)) Directory.CreateDirectory(_instance.LogPath);
-            var filepath = Path.Combine(_instance.LogPath, "Job Log.csv");
+            if (!Directory.Exists(_instance._logPath)) Directory.CreateDirectory(_instance._logPath);
+            var filepath = Path.Combine(_instance._logPath, "Job Log.csv");
             if (!File.Exists(filepath))
             {
                 string[] headers = {"Timestamp",
@@ -221,16 +221,16 @@ namespace Drones.UI.SaveLoad
             {
                 yield return wait;
                 if (!IsLogging) continue;
-                var filepath = Path.Combine(LogPath, "Job Log.csv");
+                var filepath = Path.Combine(_logPath, "Job Log.csv");
                 Flush(filepath, ref jobCache);
-                filepath = Path.Combine(LogPath, "Simulation Log.csv");
+                filepath = Path.Combine(_logPath, "Simulation Log.csv");
                 Flush(filepath, ref simCache);
-                filepath = Path.Combine(LogPath, "Hub Log.csv");
+                filepath = Path.Combine(_logPath, "Hub Log.csv");
                 Flush(filepath, ref hubCache);
             }
         }
 
-        private static void Flush(string filepath, ref string data)
+        public static void Flush(string filepath, ref string data)
         {
             using (var writer = File.AppendText(filepath))
             {
@@ -243,10 +243,14 @@ namespace Drones.UI.SaveLoad
         private static void Dump()
         {
             if (!IsLogging) return;
-            var filepath = Path.Combine(_instance.LogPath, "Job Log.csv");
+            var filepath = Path.Combine(LogPath, "Job Log.csv");
             Flush(filepath, ref _instance.jobCache);
-            filepath = Path.Combine(_instance.LogPath, "Hub Log.csv");
-            Flush(filepath, ref _instance.hubCache);
+            foreach (var dataSource in SimManager.AllHubs.Values)
+            {
+                var h = (Objects.Hub) dataSource;
+                Flush(h.logPath, ref h.dataCache);
+            }
+            
         }
     }
 

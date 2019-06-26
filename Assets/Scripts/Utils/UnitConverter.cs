@@ -85,6 +85,12 @@ namespace Utils
             {Voltage.V, 1f},
             {Voltage.mV, 1000f},
         };
+        
+        private static readonly Dictionary<Enum, float> _CurrencyFormat = new Dictionary<Enum, float>
+        {
+            {Currency.USD, 1f},
+            {Currency.GBP, 1f}
+        };
 
         private static readonly Dictionary<Type, Dictionary<Enum, float>> _Conversions = new Dictionary<Type, Dictionary<Enum, float>>
         {
@@ -97,18 +103,19 @@ namespace Utils
             {typeof(Force), _ForceConversions},
             {typeof(Current), _CurrentConversions},
             {typeof(Charge), _ChargeConversions},
-            {typeof(Voltage), _VoltageConversions}
+            {typeof(Voltage), _VoltageConversions},
+            {typeof(Currency), _CurrencyFormat}
         };
+        
+        
         #endregion
 
         public static string Convert(Enum unit, float? input)
         {
-            if (_Conversions.TryGetValue(unit.GetType(), out Dictionary<Enum, float> k))
-            {
-                input *= k[unit];
-                return input?.ToString("0.00") + " " + unit;
-            }
-            return "";
+            if (!_Conversions.TryGetValue(unit.GetType(), out Dictionary<Enum, float> k)) return "";
+            
+            input *= k[unit];
+            return input?.ToString("0.00") + " " + unit;
         }
 
         public static float ConvertValue(Enum unit, float input)

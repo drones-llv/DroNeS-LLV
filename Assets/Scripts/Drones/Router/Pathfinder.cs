@@ -10,7 +10,7 @@ namespace Drones.Router
     public abstract class Pathfinder
     {
         protected readonly uint OperatorHub;
-        private List<Obstacle> _buildings;
+        private static List<Obstacle> _buildings;
         protected static Dictionary<uint, Obstacle> Nfz;
         private static Dictionary<uint, Obstacle> _hubs;
         protected Queue<Vector3> Path;
@@ -24,7 +24,7 @@ namespace Drones.Router
 
         protected static Dictionary<uint, Obstacle> NoFlyZones => Nfz ?? (Nfz = new Dictionary<uint, Obstacle>());
 
-        protected List<Obstacle> Buildings
+        protected static List<Obstacle> Buildings
         {
             get
             {

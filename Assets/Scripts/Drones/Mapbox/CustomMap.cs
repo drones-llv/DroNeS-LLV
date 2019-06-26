@@ -7,8 +7,14 @@ namespace Drones.Mapbox
 
         public static float FilterHeight { get; set; } = 0;
 
+        public static bool PotatoMode = false;
+
         protected override void Awake()
         {
+            if (PotatoMode)
+            {
+                Options.extentOptions.extentType = MapExtentType.RangeAroundCenter;
+            }
             base.Awake();
             if (FilterHeight > 1)
             {
