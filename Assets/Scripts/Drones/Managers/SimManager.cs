@@ -17,7 +17,7 @@ namespace Drones.Managers
 {
     public class SimManager : MonoBehaviour
     {
-        public static SimulationMode Mode { get; set; } = SimulationMode.Delivery;
+        public static SimulationMode Mode { get; set; } = SimulationMode.Emergency;
 
         #region Fields
         private SimulationData _data;
@@ -36,8 +36,7 @@ namespace Drones.Managers
         public static SecureSortedSet<uint, IDataSource> AllIncompleteJobs => Instance._data.incompleteJobs;
         public static SecureSortedSet<uint, IDataSource> AllCompleteJobs => Instance._data.completeJobs;
         public static SecureSortedSet<uint, Battery> AllBatteries => Instance._data.batteries;
-        public static SecureSortedSet<uint, DeliveryJob> AllJobs => Instance._data.jobs;
-
+        public static SecureSortedSet<uint, Job> AllJobs => Instance._data.jobs;
 
         public static bool LoadComplete => Singletons.Manhattan != null && Singletons.Brooklyn != null && Singletons.Manhattan.RedrawComplete && Singletons.Brooklyn.RedrawComplete;
         public static bool Initialized
@@ -85,7 +84,7 @@ namespace Drones.Managers
             Battery.Reset();
             Hub.Reset();
             DroneData.Reset();
-            DeliveryData.Reset();
+            JobData.Reset();
             NfzData.Reset();
             Singletons.ResetSingletons();
             UIFocus.Reset();

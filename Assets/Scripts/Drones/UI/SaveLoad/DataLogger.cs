@@ -30,7 +30,7 @@ namespace Drones.UI.SaveLoad
         public static float LoggingPeriod { get; set; } = 60;
         
         private readonly string[] _simulationData = new string[14];
-        private readonly string[] _jobData = new string[12];
+        private readonly string[] _jobData = new string[13];
         private readonly string[] _hubData = new string[16];
         public string simCache = "";
         public string jobCache = "";
@@ -134,7 +134,7 @@ namespace Drones.UI.SaveLoad
             }
         }
 
-        public static void LogJob(DeliveryData data)
+        public static void LogJob(JobData data)
         {
             if (!IsLogging) return;
             if (!Directory.Exists(_instance.LogPath)) Directory.CreateDirectory(_instance.LogPath);
@@ -143,6 +143,7 @@ namespace Drones.UI.SaveLoad
             {
                 string[] headers = {"Timestamp",
                                     "Generated Time (s)",
+                                    "Deadline Time (s)",
                                     "Assignment Time (s)",
                                     "Completed Time (s)",
                                     "Expected Duration (s)",
@@ -157,17 +158,18 @@ namespace Drones.UI.SaveLoad
                 Flush(filepath, ref _instance.jobCache);
             }
             _instance._jobData[0] = DateTime.Now.ToString(CultureInfo.InvariantCulture);
-            _instance._jobData[1] = data.Created.ToCsvFormat();
-            _instance._jobData[2] = data.Assignment.ToCsvFormat();
-            _instance._jobData[3] = data.Completed.ToCsvFormat();
-            _instance._jobData[4] = data.ExpectedDuration.ToString("0.00");
-            _instance._jobData[5] = data.StDevDuration.ToString("0.00");
-            _instance._jobData[6] = (data.Pickup - data.Dropoff).magnitude.ToString("0.00");
-            _instance._jobData[7] = data.DeliveryAltitude.ToString("0.00");
-            _instance._jobData[8] = data.DeliveryCost.Reward.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
-            _instance._jobData[9] = data.Earnings.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
-            _instance._jobData[10] = UnitConverter.Convert(Energy.kWh, data.EnergyUse);
-            _instance._jobData[11] = (data.Status == JobStatus.Failed) ? "YES" : "NO";
+            _instance._jobData[1] = data.Cost.Start.ToCsvFormat();
+            _instance._jobData[2] = data.Deadline.ToCsvFormat();
+            _instance._jobData[3] = data.Assignment.ToCsvFormat();
+            _instance._jobData[4] = data.Completed.ToCsvFormat();
+            _instance._jobData[5] = data.ExpectedDuration.ToString("0.00");
+            _instance._jobData[6] = data.StDevDuration.ToString("0.00");
+            _instance._jobData[7] = (data.Pickup - data.Dropoff).magnitude.ToString("0.00");
+            _instance._jobData[8] = data.DeliveryAltitude.ToString("0.00");
+            _instance._jobData[9] = data.Cost.Reward.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
+            _instance._jobData[10] = data.Earnings.ToString("C", CultureInfo.CurrentCulture).Replace(",", "");
+            _instance._jobData[11] = UnitConverter.Convert(Energy.kWh, data.EnergyUse);
+            _instance._jobData[12] = (data.Status == JobStatus.Failed) ? "YES" : "NO";
             WriteTupleToMemory(ref _instance.jobCache, _instance._jobData);
         }
         

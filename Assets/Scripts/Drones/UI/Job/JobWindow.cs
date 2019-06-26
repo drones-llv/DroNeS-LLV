@@ -51,24 +51,24 @@ namespace Drones.UI.Job
             base.Awake();
             GoToOrigin.onClick.AddListener(delegate
             {
-                var position = ((Objects.DeliveryJob)Source).Pickup;
+                var position = ((Objects.Job)Source).Pickup;
                 AbstractCamera.LookHere(position);
             });
 
             GoToDestination.onClick.AddListener(delegate
             {
-                var position = ((Objects.DeliveryJob)Source).DropOff;
+                var position = ((Objects.Job)Source).DropOff;
                 AbstractCamera.LookHere(position);
             });
         }
 
         public override void SetData(IData data)
         {
-            var job = (DeliveryData)data;
+            var job = (JobData)data;
             Data[0].SetField(Source);
             Data[1].SetField(job.Pickup.ToStringXZ());
             Data[2].SetField(job.Dropoff.ToStringXZ());
-            Data[3].SetField(job.Created.ToString());
+            Data[3].SetField(job.Cost.Start.ToString());
             Data[4].SetField(job.Assignment.ToString());
             Data[5].SetField(job.Deadline.ToString());
             Data[6].SetField(job.Completed.ToString());
@@ -76,7 +76,7 @@ namespace Drones.UI.Job
             Data[8].SetField(job.Earnings.ToString("C", CultureInfo.CurrentCulture));
             Data[9].SetField((job.Deadline.IsNull()) ? "" : UnitConverter.Convert(Chronos.min, job.Deadline.Timer()));
             Data[10].SetField("D" + job.Drone.ToString("000000"));
-            Data[11].SetField(((Objects.DeliveryJob)Source).Progress());
+            Data[11].SetField(((Objects.Job)Source).Progress());
         }
     }
 

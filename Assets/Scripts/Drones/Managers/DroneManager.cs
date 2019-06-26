@@ -24,7 +24,7 @@ namespace Drones.Managers
         private TimeKeeper.Chronos _time = TimeKeeper.Chronos.Get();
         private static SecureSortedSet<uint, IDataSource> Drones => SimManager.AllDrones;
         private TransformAccessArray _transforms;
-        private NativeArray<MovementInfo> _movementInfoArray;
+        private NativeArray<DroneMovementInfo> _movementInfoArray;
 
         private void OnDisable()
         {
@@ -37,7 +37,7 @@ namespace Drones.Managers
         private void Initialise()
         {
             _transforms = new TransformAccessArray(0);
-            _movementInfoArray = new NativeArray<MovementInfo>(_transforms.length, Allocator.Persistent);
+            _movementInfoArray = new NativeArray<DroneMovementInfo>(_transforms.length, Allocator.Persistent);
             _time.Now();
         }
 
@@ -64,8 +64,8 @@ namespace Drones.Managers
                     j++;
                 }
 
-                movementJob.nextMove = _movementInfoArray;
-                movementJob.deltaTime = _time.Timer();
+                movementJob.NextMove = _movementInfoArray;
+                movementJob.DeltaTime = _time.Timer();
                 _time.Now();
 
                 _movementJobHandle = movementJob.Schedule(_transforms);
@@ -86,7 +86,7 @@ namespace Drones.Managers
                 _transforms.Add(drone.transform);
             }
             _movementInfoArray.Dispose();
-            _movementInfoArray = new NativeArray<MovementInfo>(_transforms.length, Allocator.Persistent);
+            _movementInfoArray = new NativeArray<DroneMovementInfo>(_transforms.length, Allocator.Persistent);
 
             var j = 0;
             foreach (var dataSource in Drones.Values)

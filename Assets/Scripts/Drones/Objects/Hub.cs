@@ -212,13 +212,13 @@ namespace Drones.Objects
             SimManager.UpdateEnergy(dE);
         }
 
-        internal void DeleteJob(DeliveryJob deliveryJob)
+        internal void CompleteJob(Job job)
         {
-            _data.incompleteJobs.Remove(deliveryJob);
+            _data.incompleteJobs.Remove(job);
             _data.CompletedJobCount++;
             SimManager.UpdateCompleteCount();
-            SimManager.AllIncompleteJobs.Remove(deliveryJob);
-            SimManager.AllJobs.Remove(deliveryJob);
+            SimManager.AllIncompleteJobs.Remove(job);
+            SimManager.AllJobs.Remove(job);
         }
 
         public void UpdateRevenue(float value)
@@ -248,7 +248,7 @@ namespace Drones.Objects
             _data.AudibleDuration += dt;
             SimManager.UpdateAudible(dt);
         }
-        public void JobComplete(DeliveryJob deliveryJob) => _data.completedJobs.Add(deliveryJob.UID, deliveryJob);
+        public void JobComplete(Job job) => _data.completedJobs.Add(job.UID, job);
         public SecureSortedSet<uint, IDataSource> Drones => _data.drones;
         public float JobGenerationRate
         {
@@ -260,9 +260,9 @@ namespace Drones.Objects
                 _jobGenerator.SetLambda(value);
             }
         }
-        public void OnJobCreate(params DeliveryJob[] deliveryJobs)
+        public void OnJobCreate(params Job[] jobs)
         {
-            foreach (var job in deliveryJobs)
+            foreach (var job in jobs)
             {
                 _data.incompleteJobs.Add(job.UID, job);
                 Scheduler.AddToQueue(job);

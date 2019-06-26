@@ -19,7 +19,7 @@ namespace Drones.Scheduler
             for (int i = 0; i < jobs.Length; i++)
             {
                 totalLosses[0] += jobs[i].loss;
-                totalDuration[0] += jobs[i].job.expectedDuration;
+                totalDuration[0] += jobs[i].job.ExpectedDuration;
             }
 
         }

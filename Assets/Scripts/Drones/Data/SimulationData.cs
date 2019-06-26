@@ -1,5 +1,6 @@
 using System;
 using Drones.Objects;
+using Drones.Utils;
 using Drones.Utils.Interfaces;
 using Utils;
 
@@ -19,7 +20,8 @@ namespace Drones.Data
         public SecureSortedSet<uint, IDataSource> completeJobs;
         public SecureSortedSet<uint, IDataSource> retiredDrones;
         public SecureSortedSet<uint, Battery> batteries;
-        public SecureSortedSet<uint, DeliveryJob> jobs;
+        public SecureSortedSet<uint, Job> jobs;
+        public NativeIntPtr SimulationRevenue;
         public float revenue;
         public float totalDelay;
         public float totalAudible;
@@ -55,17 +57,17 @@ namespace Drones.Data
 
             incompleteJobs = new SecureSortedSet<uint, IDataSource>
             {
-                MemberCondition = (item) => item is DeliveryJob && ((DeliveryJob)item).Status != JobStatus.Complete
+                MemberCondition = (item) => item is Job && ((Job)item).Status != JobStatus.Complete
             };
 
             completeJobs = new SecureSortedSet<uint, IDataSource>
             {
-                MemberCondition = (item) => item is DeliveryJob
+                MemberCondition = (item) => item is Job
             };
 
             batteries = new SecureSortedSet<uint, Battery>();
 
-            jobs = new SecureSortedSet<uint, DeliveryJob>();
+            jobs = new SecureSortedSet<uint, Job>();
         }
 
         private void SetUpCallbacks()

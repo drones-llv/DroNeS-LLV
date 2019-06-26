@@ -11,7 +11,7 @@ using BatteryStatus = Utils.BatteryStatus;
 
 namespace Drones.JobSystem
 {
-    public struct DroneInfo
+    public struct BusyDroneData
     {
         public float pkgWgt;
         public DroneMovement moveType;
@@ -29,26 +29,26 @@ namespace Drones.JobSystem
         private const float PropellerDiameter = 0.3f; // propeller radius
         private const float NumPropellers = 4; // number of propellers
         private const float Eff = 1f; // efficiency
-        private const float VSpeed = DroneMovementJob.VSPEED;
-        private const float HSpeed = DroneMovementJob.HSPEED;
+        private const float VSpeed = DroneMovementJob.VerticalSpeed;
+        private const float HSpeed = DroneMovementJob.HorizontalSpeed;
         #endregion
         
         public float DeltaTime;
         public NativeArray<BatteryData> Energies;
-        [ReadOnly] public NativeHashMap<uint, DroneInfo> DroneInfo;
+        [ReadOnly] public NativeHashMap<uint, BusyDroneData> DroneInfo;
         [WriteOnly] public NativeQueue<uint>.Concurrent DronesToDrop;
 
         public void Execute(int i)
         {
-            var tmp = Energies[i];
-            if (!DroneInfo.TryGetValue(tmp.UID, out var info) || info.moveType == DroneMovement.Idle)
+            var battery = Energies[i];
+            if (!DroneInfo.TryGetValue(battery.UID, out var info) || info.moveType == DroneMovement.Idle)
             {
-                tmp.DeltaEnergy = 0;
-                Charge(ref tmp);
+                battery.DeltaEnergy = 0;
+                Charge(ref battery);
             }
             else
             {
-                tmp.status = BatteryStatus.Discharge;
+                battery.status = BatteryStatus.Discharge;
                 var w = (Mass + info.pkgWgt) * g;
                 var power = NumPropellers * math.sqrt(math.pow(w / NumPropellers, 3) * 2 / Mathf.PI / math.pow(PropellerDiameter, 2) / Rho) / Eff;
                 switch (info.moveType)
@@ -72,12 +72,12 @@ namespace Drones.JobSystem
                     default:
                         break;
                 }
-                tmp.DeltaEnergy = power * DeltaTime;
-                Discharge(ref tmp);
+                battery.DeltaEnergy = power * DeltaTime;
+                Discharge(ref battery);
             }
-            Energies[i] = tmp;
+            Energies[i] = battery;
         }
-
+        
         private void Discharge(ref BatteryData info)
         {
             var dQ = info.DeltaEnergy / BatteryData.DischargeVoltage;

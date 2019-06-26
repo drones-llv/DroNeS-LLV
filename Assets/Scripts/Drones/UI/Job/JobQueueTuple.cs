@@ -10,11 +10,11 @@ namespace Drones.UI.Job
     {
         public override void SetData(IData data)
         {
-            var job = (DeliveryData)data;
+            var job = (JobData)data;
 
             Data[0].SetField(job.Pickup.ToStringXZ());
             Data[1].SetField(job.Dropoff.ToStringXZ());
-            Data[2].SetField(job.Created.ToString());
+            Data[2].SetField(job.Cost.Start.ToString());
             Data[3].SetField(job.Assignment.ToString());
             Data[4].SetField("D" + job.Drone.ToString("000000"));
 

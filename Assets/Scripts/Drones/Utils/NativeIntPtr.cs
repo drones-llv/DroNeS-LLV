@@ -58,13 +58,13 @@ namespace Drones.Utils
 			}
 #else
 			/// <summary>
-			/// Create a parallel version of the object
+			/// Create a concurrent version of the object
 			/// </summary>
 			/// 
 			/// <param name="value">
 			/// Pointer to the value
 			/// </param>
-			internal Parallel(int* value)
+			internal Concurrent(int* value)
 			{
 				m_Buffer = value;
 			}

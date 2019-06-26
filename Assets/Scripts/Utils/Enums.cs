@@ -113,7 +113,6 @@
     public enum SimulationMode
     {
         Emergency,
-        Delivery,
-        Courier
+        Delivery
     }
 }

@@ -163,8 +163,6 @@ namespace Drones.Router
             _origin = drone.transform.position;
             _hubReturn = job == null || job.Status == JobStatus.Pickup;
             
-//            if (_hubReturn) _chosenAltitude = HubAlt[(_destination - _origin).z > 0 ? 0 : 1];
-//            else ChooseAltitude();
             ChooseAltitude();
             
             if (AStarSearch()) return;

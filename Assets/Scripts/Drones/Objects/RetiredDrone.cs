@@ -27,7 +27,7 @@ namespace Drones.Objects
 
         public string Name => "D" + _data.UID.ToString("000000");
 
-        public DeliveryJob GetJob() => (DeliveryJob)SimManager.AllIncompleteJobs[_data.job];
+        public Job GetJob() => (Job)SimManager.AllIncompleteJobs[_data.job];
         private readonly RetiredDroneData _data;
 
         #region IDataSource

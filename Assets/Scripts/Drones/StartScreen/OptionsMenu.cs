@@ -165,7 +165,7 @@ namespace Drones.StartScreen
             LogToggle.onValueChanged.Invoke(DataLogger.IsLogging);
             LogPeriod.onValueChanged.Invoke(DataLogger.LoggingPeriod);
             BatteryToDroneRatioSlider.onValueChanged.Invoke(Hub.BatteryPerDrone);
-            Scheduler.onValueChanged.Invoke(Scheduler.value);
+            Scheduler.onValueChanged.Invoke((int)JobScheduler.ALGORITHM);
         }
 
         private static void GoBack() => StartScreen.ShowMain();

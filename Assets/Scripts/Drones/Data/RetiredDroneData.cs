@@ -42,7 +42,7 @@ namespace Drones.Data
             waypoint = drone.Waypoint;
             destroyedTime = TimeKeeper.Chronos.Get();
             collisionLocation = drone.transform.position;
-            packageWorth = job == 0 ? 0 : -j.Loss;
+            packageWorth = job == 0 ? 0 : j.Loss;
 
         }
 
@@ -58,7 +58,7 @@ namespace Drones.Data
             waypoint = drone.Waypoint;
             destroyedTime = TimeKeeper.Chronos.Get();
             collisionLocation = drone.transform.position;
-            packageWorth = job == 0 ? 0 : -j.Loss;
+            packageWorth = job == 0 ? 0 : j.Loss;
             otherDrone = "Retired";
         }
 

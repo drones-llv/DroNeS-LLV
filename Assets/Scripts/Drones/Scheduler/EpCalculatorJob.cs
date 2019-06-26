@@ -20,11 +20,11 @@ namespace Drones.Scheduler
             var n = Input.Length;
             var r = i / n;
             var c = i % n;
-
-            if (r != c) Ep[r * n + c] = Input[r].value + JobScheduler.ExpectedValue(Input[c].job, FinishTime(Input[r].job));
+            var j = Input[r].job;
+            var finish = CostFunction.Inverse(in j.Cost, JobScheduler.ExpectedValue(j, Time));
+            
+            if (r != c) Ep[r * n + c] = Input[r].value + JobScheduler.ExpectedValue(Input[c].job, finish);
             else Ep[r * n + c] = Input[r].value;
         }
-
-        private TimeKeeper.Chronos FinishTime(StrippedJob job) => DeliveryCost.Inverse(job, JobScheduler.ExpectedValue(job, Time));
     }
 }

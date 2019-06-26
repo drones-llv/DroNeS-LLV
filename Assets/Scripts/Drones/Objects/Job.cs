@@ -12,21 +12,29 @@ using Utils;
 
 namespace Drones.Objects
 {
-    public class DeliveryJob : IDataSource
+    public class Job : IDataSource
     {
         private static readonly TimeKeeper.Chronos _EoT = new TimeKeeper.Chronos(int.MaxValue - 100, 23, 59, 59.99f);
         private static TimeKeeper.Chronos _clock = TimeKeeper.Chronos.Get();
-
-        public DeliveryJob(Hub pickup, Vector3 dropoff, float weight, float penalty)
+    
+        public Job(Hub pickup, Vector3 dropoff)
         {
-            _data = new DeliveryData(pickup, dropoff, weight, penalty);
-            GetHub().StartCoroutine(Tracker());
+            _data = new JobData(pickup, dropoff);
+            if (SimManager.Mode == SimulationMode.Delivery)
+            {
+                _waitingForTheEnd = new WaitUntil(() => Status == JobStatus.Delivering || Deadline < _clock.Now());
+                GetHub().StartCoroutine(Tracker());
+            }
+            else
+            {
+                _waitingForTheEnd = new WaitUntil(() => Status == JobStatus.Complete || Deadline < _clock.Now());
+                GetHub().StartCoroutine(Failer());
+            }
         }
-
+        private readonly WaitUntil _waitingForTheEnd;
         public uint UID => _data.UID;
         public string Name => $"J{UID:00000000}";
         public override string ToString() => Name;
-
         #region IDataSource
         public void GetData(ISingleDataSourceReceiver receiver) => receiver.SetData(_data);
 
@@ -48,7 +56,7 @@ namespace Drones.Objects
         public bool IsDataStatic => _data.IsDataStatic;
         #endregion
 
-        private readonly DeliveryData _data;
+        private readonly JobData _data;
         private Drone GetDrone() => (Drone)SimManager.AllDrones[_data.Drone];
         private Hub GetHub() => (Hub) SimManager.AllHubs[_data.Hub];
 
@@ -56,10 +64,11 @@ namespace Drones.Objects
         public Vector3 DropOff => _data.Dropoff;
         public Vector3 Pickup => _data.Pickup;
         public float Earnings => _data.Earnings;
+        public float Guarantee => _data.Cost.Guarantee;
         public TimeKeeper.Chronos Deadline => _data.Deadline;
         public TimeKeeper.Chronos CompletedOn => _data.Completed;
         public float PackageWeight => _data.PackageWeight;
-        public float Loss => -_data.DeliveryCost.GetPaid(_EoT);
+        public float Loss => _data.Cost.Penalty;
 
         public float ExpectedDuration => _data.ExpectedDuration;
 
@@ -76,30 +85,35 @@ namespace Drones.Objects
             _data.IsDataStatic = true;
             _data.Status = JobStatus.Failed;
             _data.Completed = _EoT;
-            _data.Earnings = -Loss;
-            var drone = GetDrone();
-            
-            var hub = drone != null ? drone.GetHub() : null;
-            if (hub != null && !IsDelayed)
+            _data.Earnings = Loss;
+
+            if (_data.Hub != 0 && !IsDelayed)
             {
+                var hub = GetHub();
                 hub.UpdateRevenue(Earnings);
                 hub.UpdateFailedCount();
             }
-            _data.EnergyUse = drone.DeltaEnergy();
-            drone.AssignJob();
-            _data.Drone = 0;
+
+            if (_data.Drone != 0)
+            {
+                var drone = GetDrone();
+                _data.EnergyUse = drone.DeltaEnergy();
+                drone.AssignJob();
+                _data.Drone = 0;
+            }
+            
             DataLogger.LogJob(_data);
         }
 
         public void CompleteJob()
         {
-            _data.Completed = TimeKeeper.Chronos.Get();
-            _data.Status = JobStatus.Complete;
             _data.IsDataStatic = true;
-            _data.Earnings = _data.DeliveryCost.GetPaid(CompletedOn);
+            _data.Status = JobStatus.Complete;
+            _data.Completed = TimeKeeper.Chronos.Get();
+            _data.Earnings = CostFunction.Evaluate(in _data.Cost, in _data.Completed);
 
             var drone = GetDrone();
-            drone.DeleteJob(this);
+            drone.CompleteJob(this);
             var hub = drone.GetHub();
 
             if (!IsDelayed) hub.UpdateRevenue(Earnings);
@@ -116,7 +130,7 @@ namespace Drones.Objects
 
         private IEnumerator Tracker()
         {
-            yield return new WaitUntil(() => Status == JobStatus.Delivering || Deadline < _clock.Now());
+            yield return _waitingForTheEnd;
             if (Status == JobStatus.Delivering)
             {
                 IsDelayed = false;
@@ -124,7 +138,15 @@ namespace Drones.Objects
             }
             IsDelayed = true;
             GetHub().InQueueDelayed();
-            GetHub().UpdateRevenue(-Loss);
+            GetHub().UpdateRevenue(Loss);
+        }
+
+        private IEnumerator Failer()
+        {
+            yield return _waitingForTheEnd;
+            if (Status == JobStatus.Complete) yield break;
+            GetHub().Scheduler.FailedInQueue();
+            FailJob();
         }
         
         public float Progress()
@@ -136,18 +158,14 @@ namespace Drones.Objects
             return 1.00f;
         }
 
-        public static explicit operator StrippedJob(DeliveryJob deliveryJob)
+        public static explicit operator SchedulingData(Job job)
         {
-            var j = new StrippedJob
+            var j = new SchedulingData
             {
-                UID = deliveryJob.UID,
-                pickup = deliveryJob.Pickup,
-                dropoff = deliveryJob.DropOff,
-                start = deliveryJob._data.Created,
-                reward = deliveryJob._data.DeliveryCost.Reward,
-                penalty = -deliveryJob._data.DeliveryCost.Penalty,
-                expectedDuration = deliveryJob._data.ExpectedDuration,
-                stDevDuration = deliveryJob._data.StDevDuration
+                UID = job.UID,
+                Cost = job._data.Cost,
+                ExpectedDuration = job._data.ExpectedDuration,
+                StDevDuration = job._data.StDevDuration
             };
             return j;
         }

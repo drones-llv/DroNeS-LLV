@@ -12,7 +12,7 @@ namespace Drones.Router
         protected static Dictionary<uint, Obstacle> Nfz;
         private static Dictionary<uint, Obstacle> _hubs;
         protected Queue<Vector3> Path;
-        protected const float MaxAlt = 200;
+        protected const float MaxAlt = 250;
         protected const float MinAlt = 60;
         protected const int AltDivision = 10; // Altitude interval
         protected const int Rd = 2; // drone Radius

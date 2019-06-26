@@ -155,13 +155,13 @@ namespace Drones.UI.Drone
             Data[4].SetField(battery?.Charge.ToString("0.000"));
             Data[5].SetField(battery?.Capacity.ToString("0.000"));
 
-            Objects.DeliveryJob deliveryJob = source.GetJob();
-            Data[6].SetField(deliveryJob?.Name);
-            Data[7].SetField(deliveryJob?.Pickup.ToStringXZ());
-            Data[8].SetField(deliveryJob?.DropOff.ToStringXZ());
-            Data[9].SetField(deliveryJob?.Deadline.ToString());
-            Data[10].SetField(UnitConverter.Convert(Mass.g, deliveryJob?.PackageWeight));
-            Data[11].SetField(deliveryJob?.Earnings.ToString("C", CultureInfo.CurrentCulture));
+            Objects.Job job = source.GetJob();
+            Data[6].SetField(job?.Name);
+            Data[7].SetField(job?.Pickup.ToStringXZ());
+            Data[8].SetField(job?.DropOff.ToStringXZ());
+            Data[9].SetField(job?.Deadline.ToString());
+            Data[10].SetField(UnitConverter.Convert(Mass.g, job?.PackageWeight));
+            Data[11].SetField(job?.Earnings.ToString("C", CultureInfo.CurrentCulture));
             Data[12].SetField(drone?.JobProgress.ToString("0.000"));
 
             Data[13].SetField(drone.DeliveryCount);

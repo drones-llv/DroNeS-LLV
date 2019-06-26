@@ -7,49 +7,49 @@ using Utils;
 
 namespace Drones.JobSystem
 {
-    public struct MovementInfo
+    public struct DroneMovementInfo
     {
-        public DroneMovement moveType;
-        public float height;
-        public int isWaiting;
-        public float3 waypoint;
-        public float3 prev_pos;
+        public DroneMovement MoveType;
+        public int IsWaiting;
+        public float3 Waypoint;
+        public float3 PrevPos;
     }
     [BurstCompile]
     public struct DroneMovementJob : IJobParallelForTransform
     {
         private const float g = 9.81f;
-        public const float VSPEED = 4.0f;
-        public const float HSPEED = 12f;
-        public float deltaTime;
-        public NativeArray<MovementInfo> nextMove;
+        public const float VerticalSpeed = 4.0f;
+        public const float HorizontalSpeed = 12f;
+        public float DeltaTime;
+        public NativeArray<DroneMovementInfo> NextMove;
 
         public void Execute(int k, TransformAccess transform)
         {
-            if (nextMove[k].isWaiting != 0) return;
-
-            var info = nextMove[k];
-            if (info.moveType == DroneMovement.Ascend || nextMove[k].moveType == DroneMovement.Descend)
+            var next = NextMove[k];
+            
+            if (next.IsWaiting != 0) return;
+            
+            if (next.MoveType == DroneMovement.Ascend || next.MoveType == DroneMovement.Descend)
             {
-                var step = deltaTime * VSPEED;
                 var target = transform.position;
-                target.y = nextMove[k].height;
-                info.prev_pos = transform.position;
+                target.y = next.Waypoint.y;
+                var step = DeltaTime * VerticalSpeed;
+                next.PrevPos = transform.position;
                 transform.position = Vector3.MoveTowards(transform.position, target, step);
             }
-            else if (nextMove[k].moveType == DroneMovement.Horizontal)
+            else if (next.MoveType == DroneMovement.Horizontal)
             {
-                var step = deltaTime * HSPEED;
-                info.prev_pos = transform.position;
-                transform.position = Vector3.MoveTowards(transform.position, nextMove[k].waypoint, step);
+                var step = DeltaTime * HorizontalSpeed;
+                next.PrevPos = transform.position;
+                transform.position = Vector3.MoveTowards(transform.position, next.Waypoint, step);
             }
-            else if (nextMove[k].moveType == DroneMovement.Drop)
+            else if (next.MoveType == DroneMovement.Drop)
             {
                 var rt = (float3)transform.position;
-                transform.position = 2 * rt - info.prev_pos + new float3(0,-g,0) * deltaTime * deltaTime;
-                info.prev_pos = rt;
+                transform.position = 2 * rt - next.PrevPos + new float3(0,-g,0) * DeltaTime * DeltaTime;
+                next.PrevPos = rt;
             }
-            nextMove[k] = info;
+            NextMove[k] = next;
         }
     }
 }

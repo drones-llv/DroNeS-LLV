@@ -94,12 +94,12 @@ namespace Drones.Objects
         public uint UID => _data.UID;
         public string Name => $"D{_data.UID:000000}";
 
-        public bool AssignJob(DeliveryJob deliveryJob)
+        public bool AssignJob(Job job)
         {
             var i = 0;
             var hub = GetHub();
-            while (Mathf.Min(deliveryJob.ExpectedDuration * 2, 0.9f * DeliveryCost.Guarantee) >
-                   GetBattery().Charge * DeliveryCost.Guarantee)
+            while (Mathf.Min(job.ExpectedDuration * 2, 0.9f * job.Guarantee) >
+                   GetBattery().Charge * job.Guarantee)
             {
                 if (++i < 2)
                 {
@@ -111,12 +111,13 @@ namespace Drones.Objects
                 return false;
             }
 
-            _data.job = deliveryJob.UID;
-            deliveryJob.AssignDrone(this);
-            deliveryJob.StartDelivery();
+            _data.job = job.UID;
+            job.AssignDrone(this);
+            job.StartDelivery();
 
             hub.Router.GetRoute(this, ref _data.waypoints);
-            deliveryJob.SetAltitude(_data.waypoints.Peek().y);
+            
+            job.SetAltitude(_data.waypoints.Peek().y);
             StartMoving();
             _data.energyOnJobStart = _data.totalEnergy;
 
@@ -126,7 +127,11 @@ namespace Drones.Objects
         public bool AssignJob()
         {
             _data.job = 0;
-            if (_data.hub != 0) GetHub().Router.GetRoute(this, ref _data.waypoints);
+            if (_data.hub != 0)
+            {
+                var h = GetHub();
+                h.Router.GetRoute(this, ref _data.waypoints);
+            }
             StartMoving();
             return true;
         }
@@ -147,9 +152,9 @@ namespace Drones.Objects
             _data.hub = hub.UID;
         }
 
-        public DeliveryJob GetJob()
+        public Job GetJob()
         {
-            return (DeliveryJob) SimManager.AllIncompleteJobs[_data.job];
+            return (Job) SimManager.AllIncompleteJobs[_data.job];
         }
 
         public Hub GetHub() => (Hub)SimManager.AllHubs[_data.hub];
@@ -172,15 +177,14 @@ namespace Drones.Objects
             _data.audibleDuration += dt;
             GetHub().UpdateAudible(dt);
         }
-        public MovementInfo GetMovementInfo()
+        public DroneMovementInfo GetMovementInfo()
         {
-            var info = new MovementInfo
+            var info = new DroneMovementInfo
             {
-                moveType = _data.movement,
-                height = Waypoint.y,
-                waypoint = _data.currentWaypoint,
-                isWaiting = _data.isWaiting ? 1 : 0,
-                prev_pos = PreviousPosition
+                MoveType = _data.movement,
+                Waypoint = _data.currentWaypoint,
+                IsWaiting = _data.isWaiting ? 1 : 0,
+                PrevPos = PreviousPosition
             };
 
             return info;
@@ -309,20 +313,20 @@ namespace Drones.Objects
             return Vector3.Distance(d, position) < 0.25f;
         }
 
-        public void UpdateMovement(ref NativeHashMap<uint,DroneInfo> droneMovements)
+        public void UpdateMovement(ref NativeHashMap<uint, BusyDroneData> droneMovements)
         {
             if (_data.battery == 0) return;
-            droneMovements.TryAdd(_data.battery, new DroneInfo
+            droneMovements.TryAdd(_data.battery, new BusyDroneData
             {
                 pkgWgt = _data.packageWeight,
                 moveType = _data.movement
             });
         }
 
-        public void DeleteJob(DeliveryJob deliveryJob)
+        public void CompleteJob(Job job)
         {
             _data.DeliveryCount++;
-            GetHub().DeleteJob(deliveryJob);
+            GetHub().CompleteJob(job);
         }
     };
 }

@@ -24,7 +24,8 @@ namespace Drones.Scheduler
             }
         }
         private JobGenerator _generator;
-        private Queue<Drone> _droneQueue = new Queue<Drone>();
+        private readonly Queue<Drone> _droneQueue = new Queue<Drone>();
+        
         private IScheduler _algorithm;
 
         private void OnDisable()
@@ -50,7 +51,7 @@ namespace Drones.Scheduler
                     _algorithm = new LLVScheduler(_droneQueue, owner);
                     break;
                 case Scheduling.FCFS:
-                    _algorithm = new FCFSScheduler(_droneQueue, owner);
+                    _algorithm = new FcfsScheduler(_droneQueue, owner);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -69,45 +70,36 @@ namespace Drones.Scheduler
             }
         }
 
-        public void AddToQueue(DeliveryJob deliveryJob)
+        public void AddToQueue(Job job)
         {
-            _algorithm.JobQueue.Add(deliveryJob);
+            _algorithm.JobQueue.Add(job);
             owner.JobEnqueued();
         }
 
         public int JobQueueLength => _algorithm.JobQueue.Count;
 
-
-        public static float EuclideanDist(StrippedJob job) => (job.pickup - job.dropoff).magnitude;
-
-        public static float ManhattanDist(StrippedJob job)
+        private static float Normal(float z, float mu, float sigma)
         {
-            var v = job.pickup - job.dropoff;
-            return Mathf.Abs(v.x) + Mathf.Abs(v.y) + Mathf.Abs(v.z);
+            return 1 / (Mathf.Sqrt(2 * Mathf.PI) * sigma) * Mathf.Exp(-Mathf.Pow(z - mu, 2) / (2 * sigma * sigma));
         }
 
-        public static float Normal(float z, float mu, float stdev)
+        public static float ExpectedValue(in SchedulingData j, in TimeKeeper.Chronos time)
         {
-            return 1 / (Mathf.Sqrt(2 * Mathf.PI) * stdev) * Mathf.Exp(-Mathf.Pow(z - mu, 2) / (2 * stdev * stdev));
-        }
+            var mu = j.ExpectedDuration;
+            var std = j.StDevDuration;
 
-        public static float ExpectedValue(StrippedJob j, TimeKeeper.Chronos time)
-        {
-            var mu = j.expectedDuration;
-            var stdev = j.stDevDuration;
-
-            var h = (4 * stdev + mu) / STEPS;
-            var expected = DeliveryCost.Evaluate(j, time) * Normal(0, mu, stdev) / 2;
-            expected += DeliveryCost.Evaluate(j, time + 4 * stdev) * Normal(4 * stdev, mu, stdev) / 2;
+            var h = (4 * std + mu) / STEPS;
+            var expected = CostFunction.Evaluate(j.Cost, time) * Normal(0, mu, std) / 2;
+            expected += CostFunction.Evaluate(j.Cost,time + 4 * std) * Normal(4 * std, mu, std) / 2;
             for (var i = 1; i < STEPS; i++)
             {
-                expected += DeliveryCost.Evaluate(j, time + i * h) * Normal(i * h, mu, stdev);
+                expected += CostFunction.Evaluate(j.Cost,time + i * h) * Normal(i * h, mu, std);
             }
             expected *= h;
 
             return expected;
         }
 
-        public static float ExpectedDuration(StrippedJob job) => (ManhattanDist(job) + EuclideanDist(job)) / (2 * DroneMovementJob.HSPEED);
+        public void FailedInQueue() => _algorithm.FailedInQueue++;
     }
 }

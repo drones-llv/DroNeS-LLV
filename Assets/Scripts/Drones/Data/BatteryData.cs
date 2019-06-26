@@ -23,7 +23,7 @@ namespace Drones.Data
             totalDischarge = 0;
             totalCharge = 0;
             cycles = 0;
-            charge = 0.7f * DesignCapacity;
+            charge = DesignCapacity;
             capacity = DesignCapacity;
             DeltaEnergy = 0;
         }

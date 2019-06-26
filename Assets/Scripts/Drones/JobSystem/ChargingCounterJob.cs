@@ -12,7 +12,7 @@ namespace Drones.JobSystem
         public uint Uid;
         public int Count;
     }
-    
+
     public struct ChargingCounterJob : IJobParallelFor
     {
         public NativeArray<ChargeCount> HubData;
@@ -33,4 +33,5 @@ namespace Drones.JobSystem
             HubData[index] = h;
         }
     }
+    
 }

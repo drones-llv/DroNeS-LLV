@@ -80,7 +80,7 @@ namespace Drones.Data
             completedJobs.ItemRemoved += (job) => AllCompleteJobs.Remove(job);
             incompleteJobs.ItemAdded += delegate (IDataSource job)
             {
-                AllJobs.Add(job.UID, (DeliveryJob)job);
+                AllJobs.Add(job.UID, (Job)job);
                 AllIncompleteJobs.Add(job.UID, job);
             };
             incompleteJobs.ItemRemoved += (job) => AllIncompleteJobs.Remove(job);
@@ -104,11 +104,11 @@ namespace Drones.Data
             };
             incompleteJobs = new SecureSortedSet<uint, IDataSource>
             {
-                MemberCondition = (item) => item is DeliveryJob && ((DeliveryJob)item).Status != JobStatus.Complete
+                MemberCondition = (item) => item is Job && ((Job)item).Status != JobStatus.Complete
             };
             completedJobs = new SecureSortedSet<uint, IDataSource>
             {
-                MemberCondition = (item) => item is DeliveryJob
+                MemberCondition = (item) => item is Job
             };
         }
 

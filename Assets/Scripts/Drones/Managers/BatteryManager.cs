@@ -28,7 +28,7 @@ namespace Drones.Managers
         private TimeKeeper.Chronos _time = TimeKeeper.Chronos.Get();
         private static SecureSortedSet<uint, Battery> Batteries => SimManager.AllBatteries;
         private static SecureSortedSet<uint, IDataSource> Hubs => SimManager.AllHubs;
-        private NativeHashMap<uint, DroneInfo> _droneInfo;
+        private NativeHashMap<uint, BusyDroneData> _droneInfo;
         private NativeQueue<uint> _dronesToDrop;
 
         private void OnDisable()
@@ -48,7 +48,7 @@ namespace Drones.Managers
             Hubs.ItemRemoved += OnHubRemove;
             Battery.AllData = new NativeList<BatteryData>(Allocator.Persistent);
             Hub.ChargingBatteryCounts = new NativeList<ChargeCount>(Allocator.Persistent);
-            _droneInfo = new NativeHashMap<uint, DroneInfo>(SimManager.AllDrones.Count, Allocator.Persistent);
+            _droneInfo = new NativeHashMap<uint, BusyDroneData>(SimManager.AllDrones.Count, Allocator.Persistent);
             _dronesToDrop = new NativeQueue<uint>(Allocator.Persistent);
             _time.Now();
             StartCoroutine(Operate());
@@ -81,10 +81,9 @@ namespace Drones.Managers
 
                 _consumptionJobHandle = energyJob.Schedule(Battery.AllData.Length, 32);
                 _chargeCountJobHandle =
-                    countingJob.Schedule(Hub.ChargingBatteryCounts.Length, 4, _consumptionJobHandle);
+                    countingJob.Schedule(Hub.ChargingBatteryCounts.Length, 2, _consumptionJobHandle);
                 yield return null;
                 _chargeCountJobHandle.Complete();
-
             }
         }
 
@@ -109,7 +108,7 @@ namespace Drones.Managers
         {
             _chargeCountJobHandle.Complete();
             _droneInfo.Dispose();
-            _droneInfo = new NativeHashMap<uint, DroneInfo>(SimManager.AllDrones.Count, Allocator.Persistent);
+            _droneInfo = new NativeHashMap<uint, BusyDroneData>(SimManager.AllDrones.Count, Allocator.Persistent);
             Battery.DeleteData(removed);
             _time.Now();
         }

@@ -1,4 +1,5 @@
 ﻿using Drones.JobSystem;
+using Drones.Managers;
 using Drones.Objects;
 using Drones.Utils.Interfaces;
 using UnityEngine;
@@ -8,43 +9,45 @@ namespace Drones.Data
 {
     using Utils;
 
-    public class DeliveryData : IData
+    public class JobData : IData
     {
         private static uint _count;
         public static void Reset() => _count = 0;
 
         public uint UID { get; }
-        public bool IsDataStatic { get; set; } = false;
+        public bool IsDataStatic { get; set; }
         public float EnergyUse { get; set; }
         public uint Drone;
         public readonly uint Hub;
         public JobStatus Status;
         public readonly float PackageWeight;
-        public readonly float ExpectedDuration;
-        public readonly float StDevDuration;
         public Vector3 Pickup;
         public Vector3 Dropoff;
         public float Earnings;
-        public TimeKeeper.Chronos Created;
         public TimeKeeper.Chronos Assignment;
         public TimeKeeper.Chronos Completed;
-        public TimeKeeper.Chronos Deadline;
-        public readonly DeliveryCost DeliveryCost;
+        public readonly TimeKeeper.Chronos Deadline;
+        public readonly CostFunction Cost;
+        public readonly float ExpectedDuration;
+        public readonly float StDevDuration;
         public float DeliveryAltitude;
 
-        public DeliveryData(Hub pickup, Vector3 dropoff, float weight, float penalty) 
+        public JobData(Hub pickup, Vector3 dropoff)
         {
             UID = ++_count;
+            
             Hub = pickup.UID;
             Status = JobStatus.Assigning;
-            Created = TimeKeeper.Chronos.Get();
-            Deadline = Created + DeliveryCost.Guarantee;
             Pickup = pickup.Position;
             Dropoff = LandingZoneIdentifier.Reposition(dropoff);
-            PackageWeight = weight;
-            DeliveryCost = new DeliveryCost(Created, WeightToRev(Pricing.US, weight), penalty);
-            ExpectedDuration = (LateralManhattan() + LateralEuclidean()) / (2 * DroneMovementJob.HSPEED) + (Pickup.y-dropoff.y) / DroneMovementJob.VSPEED;
-            StDevDuration = LateralManhattan() / DroneMovementJob.HSPEED - ExpectedDuration + (this.Pickup.y - Dropoff.y) / DroneMovementJob.VSPEED;
+            PackageWeight = Random.Range(0.1f, 2.5f);
+            
+            Cost = new CostFunction(WeightToRev(Pricing.US, PackageWeight));
+            ExpectedDuration = (LateralManhattan() + LateralEuclidean()) / (2 * DroneMovementJob.HorizontalSpeed) + (Pickup.y-dropoff.y) / DroneMovementJob.VerticalSpeed;
+            StDevDuration = LateralManhattan() / DroneMovementJob.HorizontalSpeed - ExpectedDuration + (Pickup.y - Dropoff.y) / DroneMovementJob.VerticalSpeed;
+            
+            Deadline = Cost.Start + Cost.Guarantee;
+            
         }
 
         private float LateralManhattan()

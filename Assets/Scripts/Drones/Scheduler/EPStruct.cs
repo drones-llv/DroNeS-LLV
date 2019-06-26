@@ -2,7 +2,7 @@
 {
     public struct EPStruct
     {
-        public StrippedJob job;
+        public SchedulingData job;
         public float value;
     }
 }

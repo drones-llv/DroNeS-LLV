@@ -2,7 +2,7 @@
 {
     public struct LLVStruct
     {
-        public StrippedJob job;
+        public SchedulingData job;
         public float loss;
     }
 }

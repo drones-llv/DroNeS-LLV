@@ -21,7 +21,7 @@ namespace Drones.Scheduler
         public void Execute(int i)
         {
             var pLost = totalLosses[0] - input[i].loss;
-            var mean = (totalDuration[0] - input[i].job.expectedDuration) / (input.Length - 1);
+            var mean = (totalDuration[0] - input[i].job.ExpectedDuration) / (input.Length - 1);
             var pGain = JobScheduler.ExpectedValue(input[i].job, time) - JobScheduler.ExpectedValue(input[i].job, time + mean);
             nlv[i] = pLost - pGain;
         }

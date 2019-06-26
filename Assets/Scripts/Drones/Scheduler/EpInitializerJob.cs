@@ -8,15 +8,15 @@ namespace Drones.Scheduler
     [BurstCompile]
     public struct EpInitializerJob : IJobParallelFor
     {
-        public TimeKeeper.Chronos time;
+        public TimeKeeper.Chronos Time;
 
-        public NativeArray<EPStruct> results;
+        public NativeArray<EPStruct> Results;
 
         public void Execute(int i)
         {
-            var tmp = results[i];
-            tmp.value = JobScheduler.ExpectedValue(tmp.job, time);
-            results[i] = tmp;
+            var tmp = Results[i];
+            tmp.value = JobScheduler.ExpectedValue(in tmp.job, in Time);
+            Results[i] = tmp;
         }
     }
 }

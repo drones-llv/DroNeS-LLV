@@ -9,19 +9,19 @@ using Utils;
 
 namespace Drones.Scheduler
 {
-    public class FCFSScheduler : IScheduler
+    public class FcfsScheduler : IScheduler
     {
-        private Hub _owner;
-
-        public FCFSScheduler(Queue<Drone> drones, Hub owner)
+        private readonly Hub _owner;
+        public FcfsScheduler(Queue<Drone> drones, Hub owner)
         {
             _owner = owner;
             DroneQueue = drones;
-            JobQueue = new List<DeliveryJob>();
+            JobQueue = new List<Job>();
         }
+        public int FailedInQueue { get; set; }
         public bool Started { get; private set; }
         public Queue<Drone> DroneQueue { get; }
-        public List<DeliveryJob> JobQueue { get; set; }
+        public List<Job> JobQueue { get; set; }
         public JobHandle Scheduling { get; private set; }
         public IEnumerator ProcessQueue()
         {
@@ -34,12 +34,21 @@ namespace Drones.Scheduler
                 {
                     var drone = DroneQueue.Dequeue();
                     if (drone.InPool) continue;
-                    
-                    if (drone.AssignJob(JobQueue[0]))
+                    var j = JobQueue[0];
+                    if (j.Status == JobStatus.Failed || drone.AssignJob(j))
                     {
-                        _owner.JobDequeued(JobQueue[0].IsDelayed);
+                        _owner.JobDequeued(j.IsDelayed);
                         JobQueue.RemoveAt(0);
                     }
+
+                    for (var i = JobQueue.Count - 1; i >= 0 && FailedInQueue > 0; i--)
+                    {
+                        if (JobQueue[i].Status != JobStatus.Failed) continue;
+                        _owner.JobDequeued(JobQueue[i].IsDelayed);
+                        JobQueue.RemoveAt(i);
+                        FailedInQueue--;
+                    }
+                    
                     yield return null;
                 }
             }
