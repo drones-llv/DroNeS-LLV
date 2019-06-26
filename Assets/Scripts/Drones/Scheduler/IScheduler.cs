@@ -20,7 +20,7 @@ namespace Drones.Scheduler
         Queue<Drone> DroneQueue { get; }
 
         List<Job> JobQueue { get; set; }
-        
+
         int FailedInQueue { get; set; }
 
     }

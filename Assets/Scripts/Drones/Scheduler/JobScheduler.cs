@@ -36,7 +36,7 @@ namespace Drones.Scheduler
         private void OnEnable()
         {
             _generator = new JobGenerator(Owner, Owner.JobGenerationRate);
-            StartCoroutine(_generator.GenerateDeliveries());
+            StartCoroutine(_generator.Generate());
             NewAlgorithm();
         }
 
@@ -87,7 +87,7 @@ namespace Drones.Scheduler
         {
             var mu = j.ExpectedDuration;
             var std = j.StDevDuration;
-
+            
             var h = (4 * std + mu) / STEPS;
             var expected = CostFunction.Evaluate(j.Cost, time) * Normal(0, mu, std) / 2;
             expected += CostFunction.Evaluate(j.Cost,time + 4 * std) * Normal(4 * std, mu, std) / 2;

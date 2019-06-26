@@ -9,7 +9,7 @@ namespace Drones.Router
     [Serializable]
     public abstract class Pathfinder
     {
-        protected uint OperatorHub;
+        protected readonly uint OperatorHub;
         private List<Obstacle> _buildings;
         protected static Dictionary<uint, Obstacle> Nfz;
         private static Dictionary<uint, Obstacle> _hubs;

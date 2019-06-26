@@ -176,6 +176,7 @@ namespace Drones.Router
             {
                 yield return _waitForPopulation;
                 var drone = _droneQueue.Dequeue();
+                if (drone.InPool) continue;
                 UpdateGameState();
                 Path = drone.WaypointsQueue;
                 var job = drone.GetJob();

@@ -102,7 +102,7 @@ namespace Drones.Objects
             gameObject.SetActive(false);
             transform.SetParent(PC().PoolParent);
             if (!(_jobGenerator is null))
-                StopCoroutine(_jobGenerator.GenerateDeliveries());
+                StopCoroutine(_jobGenerator.Generate());
             _jobGenerator = null;
             _router = null;
         }
@@ -125,7 +125,7 @@ namespace Drones.Objects
             transform.SetParent(parent);
             gameObject.SetActive(true);
             _jobGenerator = new JobGenerator(this, JobGenerationRate);
-            StartCoroutine(_jobGenerator.GenerateDeliveries());
+            StartCoroutine(_jobGenerator.Generate());
             DataLogger.LogHub(this);
         }
         #endregion
@@ -211,7 +211,7 @@ namespace Drones.Objects
             _data.EnergyConsumption += dE;
             SimManager.UpdateEnergy(dE);
         }
-
+        
         internal void CompleteJob(Job job)
         {
             _data.incompleteJobs.Remove(job);

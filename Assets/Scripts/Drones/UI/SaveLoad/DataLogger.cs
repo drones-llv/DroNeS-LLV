@@ -170,6 +170,7 @@ namespace Drones.UI.SaveLoad
             _instance._jobData[10] = data.Earnings.ToString("0.00");
             _instance._jobData[11] = UnitConverter.ConvertValue(Energy.kWh, data.EnergyUse).ToString("0.00");
             _instance._jobData[12] = (data.Status == JobStatus.Failed) ? "YES" : "NO";
+
             WriteTupleToMemory(ref _instance.jobCache, _instance._jobData);
         }
         

@@ -41,7 +41,7 @@ namespace Drones.Scheduler
                 
                 var drone = DroneQueue.Dequeue();
                 if (drone.InPool) continue;
-
+                
                 Scheduling.Complete();
                 for (var i = _jobs.Length; i < JobQueue.Count; i++)
                 {

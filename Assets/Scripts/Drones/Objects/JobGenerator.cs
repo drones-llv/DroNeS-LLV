@@ -9,21 +9,24 @@ namespace Drones.Objects
 {
     public class JobGenerator
     {
-        private readonly Hub _owner;
+        readonly Hub _owner;
         private Vector3 Position => _owner.Position;
         private float _lambda;
+
         private readonly WaitUntil _capper;
+
         public JobGenerator(Hub hub, float lambda)
         {
             _owner = hub;
             _lambda = lambda;
-            _capper  = new WaitUntil(() => _owner.Scheduler.JobQueueLength < 1.5f * _owner.Drones.Count);
         }
 
         public void SetLambda(float l) => _lambda = l;
 
-        public IEnumerator GenerateDeliveries()
+        public IEnumerator Generate()
         {
+            var wait = new WaitForFixedUpdate();
+            var wait2 = new WaitUntil(() => _owner.Scheduler.JobQueueLength < Mathf.Min(1.5f * _owner.Drones.Count, 190));
             var time = TimeKeeper.Chronos.Get();
             var watch = Stopwatch.StartNew();
             while (true)
@@ -32,8 +35,9 @@ namespace Drones.Objects
                 var f = Random.value;
                 while (f >= 1) f = Random.value;
                 var dt = -Mathf.Log(1 - f) / _lambda;
-
+                
                 while (time.Timer() < dt) yield return null;
+
                 watch.Restart();
                 var v = Position;
                 v.y = 200;
@@ -51,7 +55,7 @@ namespace Drones.Objects
                 var job = new Job(_owner, d);
 
                 _owner.OnJobCreate(job);
-                yield return _capper;
+                yield return wait2;
                 watch.Restart();
             }
 

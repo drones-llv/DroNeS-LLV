@@ -17,7 +17,7 @@ namespace Drones.Managers
 {
     public class SimManager : MonoBehaviour
     {
-        public static SimulationMode Mode { get; set; } = SimulationMode.Emergency;
+        public static SimulationMode Mode { get; set; } = SimulationMode.Delivery;
 
         #region Fields
         private SimulationData _data;

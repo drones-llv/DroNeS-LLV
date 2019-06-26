@@ -21,7 +21,6 @@ namespace Drones.Data
         public SecureSortedSet<uint, IDataSource> retiredDrones;
         public SecureSortedSet<uint, Battery> batteries;
         public SecureSortedSet<uint, Job> jobs;
-        public NativeIntPtr SimulationRevenue;
         public float revenue;
         public float totalDelay;
         public float totalAudible;

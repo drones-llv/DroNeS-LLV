@@ -44,7 +44,7 @@ namespace Drones.Scheduler
 
                 var drone = DroneQueue.Dequeue();
                 if (drone.InPool) continue;
-
+                
                 for (var i = _jobs.Length; i < JobQueue.Count; i++)
                 {
                     _jobs.Add(new LLVStruct { job = (SchedulingData)JobQueue[i] });

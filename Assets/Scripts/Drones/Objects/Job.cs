@@ -16,7 +16,7 @@ namespace Drones.Objects
     {
         private static readonly TimeKeeper.Chronos _EoT = new TimeKeeper.Chronos(int.MaxValue - 100, 23, 59, 59.99f);
         private static TimeKeeper.Chronos _clock = TimeKeeper.Chronos.Get();
-    
+
         public Job(Hub pickup, Vector3 dropoff)
         {
             _data = new JobData(pickup, dropoff);
@@ -59,7 +59,8 @@ namespace Drones.Objects
         private readonly JobData _data;
         private Drone GetDrone() => (Drone)SimManager.AllDrones[_data.Drone];
         private Hub GetHub() => (Hub) SimManager.AllHubs[_data.Hub];
-
+        public RetiredDrone GetRetiredDrone() => (RetiredDrone)SimManager.AllRetiredDrones[_data.Drone];
+        
         public JobStatus Status => _data.Status;
         public Vector3 DropOff => _data.Dropoff;
         public Vector3 Pickup => _data.Pickup;
@@ -157,7 +158,7 @@ namespace Drones.Objects
             }
             return 1.00f;
         }
-
+        
         public static explicit operator SchedulingData(Job job)
         {
             var j = new SchedulingData

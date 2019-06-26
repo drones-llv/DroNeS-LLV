@@ -42,7 +42,9 @@ namespace Drones.Objects
         {
             var otherLayer = other.gameObject.layer;
             
-            if (otherLayer == LayerMask.NameToLayer("IgnoreCollision") || other.CompareTag("Drone")) return;
+            if (otherLayer == LayerMask.NameToLayer("IgnoreCollision")) return;
+            
+            if (other.CompareTag("Drone")) return;
 
             if (otherLayer == LayerMask.NameToLayer("Hub"))
             {
@@ -61,7 +63,7 @@ namespace Drones.Objects
             if (other.gameObject.layer == LayerMask.NameToLayer("IgnoreCollision")) return;
 
             _collisionOn |= (other.gameObject.layer == LayerMask.NameToLayer("Hub")
-                && other.GetComponent<Hub>() == DroneHub);
+                && (other.GetComponent<DeploymentPath>() == Descent || other.GetComponent<Hub>() == DroneHub));
         }
 
         private void Collide(Collider other)

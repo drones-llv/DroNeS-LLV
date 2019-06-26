@@ -114,11 +114,9 @@ namespace Drones.Objects
             _data.job = job.UID;
             job.AssignDrone(this);
             job.StartDelivery();
-
+            
             hub.Router.GetRoute(this);
             
-//            StartMoving();
-
             return true;
         }
 
@@ -128,7 +126,6 @@ namespace Drones.Objects
             if (_data.hub == 0) return;
             var h = GetHub();
             h.Router.GetRoute(this);
-//            StartMoving();
         }
 
         public float DeltaEnergy() => _data.totalEnergy - _data.energyOnJobStart;
