@@ -25,6 +25,8 @@ namespace Drones.UI.SaveLoad
             return _instance;
         }
 
+        private void OnDisable() => Dump();
+
         public string session;
         public static bool IsLogging { get; set; } = true;
         public static float LoggingPeriod { get; set; } = 60;
@@ -241,13 +243,11 @@ namespace Drones.UI.SaveLoad
             data = "";
         }
 
-        public static void Dump()
+        private static void Dump()
         {
             if (!IsLogging) return;
             var filepath = Path.Combine(LogPath, "Job Log.csv");
             Flush(filepath, ref _instance.jobCache);
-            filepath = Path.Combine(LogPath, "Simulation Log.csv");
-            Flush(filepath, ref _instance.simCache);
             foreach (var dataSource in SimManager.AllHubs.Values)
             {
                 var h = (Objects.Hub) dataSource;

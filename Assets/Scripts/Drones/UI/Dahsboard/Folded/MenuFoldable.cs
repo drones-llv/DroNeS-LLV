@@ -37,7 +37,6 @@ namespace Drones.UI.Dahsboard.Folded
 
         private void QuitToMainMenu()
         {
-            DataLogger.Dump();
             SimManager.SetStatus(SimulationStatus.Paused);
             SimManager.Quit();
             SimManager.Instance.StartCoroutine(LoadMainMenu());
